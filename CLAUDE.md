@@ -107,6 +107,18 @@ Fallback is automatic. BrasilAPI is always primary. Headers include `User-Agent:
 - ESLint config: `import { config } from '@n8n/node-cli/eslint'`
 - Must pass `@n8n/scan-community-package`
 
+## Planning Method
+
+This project uses **Manus-style file-based planning** (skill: `planning-with-files`). Three files in the project root serve as persistent working memory:
+
+| File | Purpose |
+|------|---------|
+| `task_plan.md` | Phase tracking, decisions, error log |
+| `findings.md` | Research, discoveries, technical notes |
+| `progress.md` | Session log, test results, milestones |
+
+**Rules:** Create/read plan before starting work. Update after each phase. Log all errors. After every 2 search/view operations, save findings to disk.
+
 ## Spec & Plan
 
 - **Design spec:** `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
