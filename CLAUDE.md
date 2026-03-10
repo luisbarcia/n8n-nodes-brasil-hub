@@ -119,6 +119,24 @@ This project uses **Manus-style file-based planning** (skill: `planning-with-fil
 
 **Rules:** Create/read plan before starting work. Update after each phase. Log all errors. After every 2 search/view operations, save findings to disk.
 
+## CI/CD — Regra Obrigatória
+
+**Após qualquer `git push` ou `gh release create`, SEMPRE verificar o resultado do CI/CD antes de considerar o trabalho concluído.**
+
+```bash
+# Após push — verificar CI
+gh run list --limit 3
+gh run view <run-id> --log-failed   # se falhou
+
+# Após release — verificar CI + Release workflow
+gh run list --workflow=ci.yml --limit 1
+gh run list --workflow=release.yml --limit 1
+```
+
+- CI verde é pré-requisito para considerar qualquer tarefa finalizada
+- Se falhar: diagnosticar e corrigir imediatamente, antes de seguir para próxima tarefa
+- Nunca lançar release sem CI passando
+
 ## Spec & Plan
 
 - **Design spec:** `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
