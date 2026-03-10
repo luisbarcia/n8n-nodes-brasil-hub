@@ -52,6 +52,18 @@ const normalizers: Record<string, (data: Record<string, unknown>) => ICepResult>
 	opencep: normalizeOpenCep,
 };
 
+/**
+ * Normalizes raw CEP API response into the unified {@link ICepResult} schema.
+ *
+ * Dispatches to provider-specific normalizers (BrasilAPI, ViaCEP, OpenCEP)
+ * that handle field name mapping. ViaCEP's `{erro: true}` response is detected
+ * and thrown as an error during normalization.
+ *
+ * @param data - Raw JSON response from the provider.
+ * @param provider - Provider identifier (e.g. `"brasilapi"`, `"viacep"`, `"opencep"`).
+ * @returns Normalized CEP result.
+ * @throws {Error} If the provider name is not recognized.
+ */
 export function normalizeCep(data: unknown, provider: string): ICepResult {
 	const normalizer = normalizers[provider];
 	if (!normalizer) {

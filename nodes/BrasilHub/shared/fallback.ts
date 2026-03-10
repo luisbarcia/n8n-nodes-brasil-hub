@@ -1,9 +1,13 @@
 import type { IExecuteFunctions } from 'n8n-workflow';
 import type { IProvider, IFallbackResult } from '../types';
 
+/** Delay in milliseconds between provider retry attempts. */
 const DELAY_BETWEEN_RETRIES_MS = 1000;
+
+/** HTTP request timeout in milliseconds per provider attempt. */
 const REQUEST_TIMEOUT_MS = 10000;
 
+/** Returns a promise that resolves after {@link ms} milliseconds. */
 function delay(ms: number): Promise<void> {
 	return new Promise((resolve) => {
 		// eslint-disable-next-line @n8n/community-nodes/no-restricted-globals
@@ -11,6 +15,19 @@ function delay(ms: number): Promise<void> {
 	});
 }
 
+/**
+ * Queries multiple providers in sequence until one succeeds (fallback strategy).
+ *
+ * Tries each provider in order, waiting {@link DELAY_BETWEEN_RETRIES_MS} between
+ * attempts. Uses n8n's `httpRequest` helper with a {@link REQUEST_TIMEOUT_MS} timeout.
+ * Collects error messages from failed providers for diagnostic metadata.
+ *
+ * @param context - n8n execution context, used for `httpRequest`.
+ * @param providers - Ordered list of provider endpoints to try.
+ * @param itemIndex - Current item index (for n8n item pairing).
+ * @returns Raw response data from the first successful provider.
+ * @throws {Error} When all providers fail, with concatenated error messages.
+ */
 export async function queryWithFallback(
 	context: IExecuteFunctions,
 	providers: IProvider[],

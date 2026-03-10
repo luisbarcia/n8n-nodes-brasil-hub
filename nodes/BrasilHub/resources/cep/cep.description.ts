@@ -3,6 +3,12 @@ import type { INodeProperties } from 'n8n-workflow';
 const showForCep = { resource: ['cep'] };
 const showForCepQuery = { resource: ['cep'], operation: ['query'] };
 
+/**
+ * n8n node property definitions for the CEP resource.
+ *
+ * Defines the Operation selector (Query / Validate), the CEP input field,
+ * and the "Include Raw Response" toggle for the query operation.
+ */
 export const cepDescription: INodeProperties[] = [
 	{
 		displayName: 'Operation',

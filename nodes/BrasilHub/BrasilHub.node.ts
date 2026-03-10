@@ -10,16 +10,29 @@ import { cnpjQuery, cnpjValidate } from './resources/cnpj/cnpj.execute';
 import { cepDescription } from './resources/cep/cep.description';
 import { cepQuery, cepValidate } from './resources/cep/cep.execute';
 
+/** Signature for resource/operation execute handlers. */
 type ExecuteFunction = (
 	context: IExecuteFunctions,
 	itemIndex: number,
 ) => Promise<INodeExecutionData>;
 
+/**
+ * Dictionary map routing resource+operation pairs to their execute handlers.
+ * Adding a new resource or operation only requires a new entry here.
+ */
 const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
 	cnpj: { query: cnpjQuery, validate: cnpjValidate },
 	cep: { query: cepQuery, validate: cepValidate },
 };
 
+/**
+ * Brasil Hub n8n community node.
+ *
+ * Queries Brazilian public data (CNPJ, CEP) with automatic multi-provider
+ * fallback. Uses a dictionary map router to dispatch resource/operation
+ * combinations to their respective handlers. Supports `continueOnFail` and
+ * is AI Agent-compatible (`usableAsTool: true`).
+ */
 export class BrasilHub implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Brasil Hub',

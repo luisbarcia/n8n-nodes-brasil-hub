@@ -3,6 +3,12 @@ import type { INodeProperties } from 'n8n-workflow';
 const showForCnpj = { resource: ['cnpj'] };
 const showForCnpjQuery = { resource: ['cnpj'], operation: ['query'] };
 
+/**
+ * n8n node property definitions for the CNPJ resource.
+ *
+ * Defines the Operation selector (Query / Validate), the CNPJ input field,
+ * and the "Include Raw Response" toggle for the query operation.
+ */
 export const cnpjDescription: INodeProperties[] = [
 	{
 		displayName: 'Operation',

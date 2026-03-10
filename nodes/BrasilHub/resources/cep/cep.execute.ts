@@ -18,6 +18,17 @@ function buildProviders(cep: string): IProvider[] {
 	});
 }
 
+/**
+ * Executes a CEP query against public APIs with multi-provider fallback.
+ *
+ * Sanitizes input, validates length, queries providers in order (BrasilAPI → ViaCEP → OpenCEP),
+ * normalizes the response, and attaches metadata. Optionally includes the raw provider response.
+ *
+ * @param context - n8n execution context.
+ * @param itemIndex - Current item index for parameter retrieval and item pairing.
+ * @returns n8n execution data with normalized CEP result as JSON.
+ * @throws {NodeOperationError} If the CEP doesn't have 8 digits or all providers fail.
+ */
 export async function cepQuery(
 	context: IExecuteFunctions,
 	itemIndex: number,
@@ -53,6 +64,15 @@ export async function cepQuery(
 	};
 }
 
+/**
+ * Validates a CEP number locally by checking format and rejecting all-zero values.
+ *
+ * No API call is made. Returns `{valid, formatted, input}` as n8n execution data.
+ *
+ * @param context - n8n execution context.
+ * @param itemIndex - Current item index for parameter retrieval and item pairing.
+ * @returns n8n execution data with validation result as JSON.
+ */
 export async function cepValidate(
 	context: IExecuteFunctions,
 	itemIndex: number,

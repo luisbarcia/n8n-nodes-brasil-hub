@@ -1,5 +1,6 @@
 import type { ICnpjResult } from '../../types';
 
+/** Concatenates DDD area code and phone number, returning empty string if either is missing. */
 function buildPhone(ddd?: string | null, phone?: string | null): string {
 	if (ddd && phone) return `${ddd}${phone}`;
 	return '';
@@ -146,6 +147,17 @@ const normalizers: Record<string, (data: Record<string, unknown>) => ICnpjResult
 	receitaws: normalizeReceitaWs,
 };
 
+/**
+ * Normalizes raw CNPJ API response into the unified {@link ICnpjResult} schema.
+ *
+ * Dispatches to provider-specific normalizers (BrasilAPI, CNPJ.ws, ReceitaWS)
+ * that handle field name mapping and data type coercion.
+ *
+ * @param data - Raw JSON response from the provider.
+ * @param provider - Provider identifier (e.g. `"brasilapi"`, `"cnpjws"`, `"receitaws"`).
+ * @returns Normalized CNPJ result.
+ * @throws {Error} If the provider name is not recognized.
+ */
 export function normalizeCnpj(data: unknown, provider: string): ICnpjResult {
 	const normalizer = normalizers[provider];
 	if (!normalizer) {
