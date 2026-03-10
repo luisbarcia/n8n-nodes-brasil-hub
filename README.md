@@ -1,5 +1,9 @@
 # n8n-nodes-brasil-hub
 
+[![npm version](https://img.shields.io/npm/v/n8n-nodes-brasil-hub)](https://www.npmjs.com/package/n8n-nodes-brasil-hub)
+[![CI](https://github.com/luisbarcia/n8n-nodes-brasil-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/luisbarcia/n8n-nodes-brasil-hub/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Community n8n node for querying Brazilian public data with multi-provider fallback.
 
 ## Features
