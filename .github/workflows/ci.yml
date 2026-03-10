@@ -132,5 +132,4 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: npm audit
-        run: npm audit --audit-level=high
-        continue-on-error: true
+        run: npm audit --audit-level=critical
