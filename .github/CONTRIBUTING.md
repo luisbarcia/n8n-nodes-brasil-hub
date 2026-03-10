@@ -101,12 +101,53 @@ nodes/BrasilHub/
 We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
+<type>: <description>
+```
+
+| Type | Description | Version Bump |
+|------|-------------|--------------|
+| `feat` | New feature | MINOR |
+| `fix` | Bug fix | PATCH |
+| `docs` | Documentation only | — |
+| `test` | Adding or updating tests | — |
+| `refactor` | Code change (no new feature or fix) | — |
+| `chore` | Maintenance (deps, CI, tooling) | — |
+
+**Breaking changes** use `!` suffix: `feat!:` or `fix!:` → MAJOR version bump.
+
+Examples:
+
+```
 feat: add Banks resource with BrasilAPI provider
 fix: handle empty CNPJ response from ReceitaWS
 test: add edge case tests for CEP normalizer
 docs: update README with Banks resource documentation
 chore: update dependencies
+feat!: change normalized output schema for CNPJ
 ```
+
+## Versioning
+
+This project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`):
+
+- **MAJOR** — Breaking changes to node output schema or behavior
+- **MINOR** — New resources, operations, or providers
+- **PATCH** — Bug fixes, documentation, internal improvements
+
+## Changelog
+
+We follow [Keep a Changelog](https://keepachangelog.com/). All notable changes are documented in `CHANGELOG.md` using these sections:
+
+| Section | When to use |
+|---------|-------------|
+| `Added` | New features, resources, providers |
+| `Changed` | Changes to existing functionality |
+| `Deprecated` | Features to be removed in future |
+| `Removed` | Features removed |
+| `Fixed` | Bug fixes |
+| `Security` | Vulnerability fixes |
+
+Changes go under `[Unreleased]` until a release is cut. At release time, `[Unreleased]` is moved to a versioned section with the release date.
 
 ## Pull Request Process
 
