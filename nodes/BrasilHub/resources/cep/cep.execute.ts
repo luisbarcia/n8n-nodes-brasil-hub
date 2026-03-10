@@ -11,6 +11,7 @@ const CEP_PROVIDERS: IProvider[] = [
 	{ name: 'opencep', url: 'https://opencep.com/v1/' },
 ];
 
+/** Appends the sanitized CEP to each provider base URL (ViaCEP needs `/json` suffix). */
 function buildProviders(cep: string): IProvider[] {
 	return CEP_PROVIDERS.map((p) => {
 		const suffix = p.name === 'viacep' ? `${cep}/json` : cep;

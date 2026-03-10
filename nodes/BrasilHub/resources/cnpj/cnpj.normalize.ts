@@ -7,6 +7,7 @@ function buildPhone(ddd?: string | null, phone?: string | null): string {
 	return '';
 }
 
+/** Maps BrasilAPI flat response fields to the unified {@link ICnpjResult} schema. */
 function normalizeBrasilApi(data: Record<string, unknown>): ICnpjResult {
 	const qsa = Array.isArray(data.qsa) ? data.qsa : [];
 	return {
@@ -47,6 +48,7 @@ function normalizeBrasilApi(data: Record<string, unknown>): ICnpjResult {
 	};
 }
 
+/** Maps CNPJ.ws nested response (estabelecimento, socios) to {@link ICnpjResult}. */
 function normalizeCnpjWs(data: Record<string, unknown>): ICnpjResult {
 	const est = (data.estabelecimento ?? {}) as Record<string, unknown>;
 	const ativPrincipal = (est.atividade_principal ?? {}) as Record<string, unknown>;
@@ -99,6 +101,7 @@ function normalizeCnpjWs(data: Record<string, unknown>): ICnpjResult {
 	};
 }
 
+/** Maps ReceitaWS response to {@link ICnpjResult}. QSA entries lack cpf_cnpj and data_entrada. */
 function normalizeReceitaWs(data: Record<string, unknown>): ICnpjResult {
 	const ativPrincipal = Array.isArray(data.atividade_principal) ? data.atividade_principal[0] ?? {} : {};
 	const qsa = Array.isArray(data.qsa) ? data.qsa : [];
@@ -138,6 +141,7 @@ function normalizeReceitaWs(data: Record<string, unknown>): ICnpjResult {
 	};
 }
 
+/** Provider name → normalizer function dispatch table. */
 const normalizers: Record<string, (data: Record<string, unknown>) => ICnpjResult> = {
 	brasilapi: normalizeBrasilApi,
 	cnpjws: normalizeCnpjWs,

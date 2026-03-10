@@ -11,6 +11,7 @@ const CNPJ_PROVIDERS: IProvider[] = [
 	{ name: 'receitaws', url: 'https://receitaws.com.br/v1/cnpj/' },
 ];
 
+/** Appends the sanitized CNPJ to each provider base URL. */
 function buildProviders(cnpj: string): IProvider[] {
 	return CNPJ_PROVIDERS.map((p) => ({ name: p.name, url: `${p.url}${cnpj}` }));
 }

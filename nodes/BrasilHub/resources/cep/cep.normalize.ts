@@ -1,6 +1,7 @@
 import type { ICepResult } from '../../types';
 import { stripNonDigits } from '../../shared/utils';
 
+/** Maps BrasilAPI response (street/neighborhood/city/state) to {@link ICepResult}. */
 function normalizeBrasilApi(data: Record<string, unknown>): ICepResult {
 	return {
 		cep: stripNonDigits(String(data.cep ?? '')),
@@ -28,6 +29,7 @@ function normalizeViaCepFormat(data: Record<string, unknown>): ICepResult {
 	};
 }
 
+/** Maps ViaCEP response to {@link ICepResult}, detecting `{erro: true}` as not-found. */
 function normalizeViaCep(data: Record<string, unknown>): ICepResult {
 	if (data.erro) {
 		throw new Error('CEP not found');
@@ -35,6 +37,7 @@ function normalizeViaCep(data: Record<string, unknown>): ICepResult {
 	return normalizeViaCepFormat(data);
 }
 
+/** Provider name → normalizer function dispatch table. */
 const normalizers: Record<string, (data: Record<string, unknown>) => ICepResult> = {
 	brasilapi: normalizeBrasilApi,
 	viacep: normalizeViaCep,
