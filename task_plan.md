@@ -4,7 +4,7 @@
 Implementar o community node n8n "Brasil Hub" que consulta dados públicos brasileiros (CNPJ e CEP) com fallback multi-provider, seguindo todos os padrões oficiais n8n.
 
 ## Current Phase
-Phase 5 (complete)
+Phase 9 (in_progress) — Verification & Creator Portal Submission
 
 ## Phases
 
@@ -79,8 +79,55 @@ Phase 5 (complete)
 | ESLint: globalThis restricted | 1 | Reverted to setTimeout with eslint-disable |
 | ESLint: _itemIndex unused | 1 | `void itemIndex` to acknowledge parameter |
 
+### Phase 6: Documentation + Code Review
+- [x] JSDoc em todos os 25 exports públicos
+- [x] Code review: 6 findings identificados e corrigidos
+  - Strategy semantics (direct vs fallback)
+  - DRY: stripNonDigits extraído para shared/utils.ts
+  - DRY: runWithTimers extraído para __tests__/helpers.ts
+  - Dead parameter removido de queryWithFallback
+  - Normalizers duplicados unificados (normalizeViaCepFormat)
+- [x] 13 testes adicionados (36 → 49), cobertura 99.46%
+- [x] Integration tests: BrasilHub.execute.spec.ts (8 cenários)
+- **Status:** complete
+
+### Phase 7: Security + Release v0.1.0
+- [x] Security review manual (templates, CSP, inputs)
+- [x] Automated security: gitleaks, trivy, npm audit — limpo
+- [x] CHANGELOG atualizado para v0.1.0
+- [x] Tag v0.1.0 + GitHub Release criada
+- [ ] npm publish via release.yml (falhou — CI broken, corrigido na Phase 8)
+- **Status:** complete (release criada, publish pendente re-trigger)
+
+### Phase 8: CI/CD Fix
+- [x] Diagnóstico: isolated-vm (native C++ addon) falha no Node < 22
+- [x] Fix: --ignore-scripts em todos os npm ci do CI e release
+- [x] Fix: mock isolated-vm no Jest (moduleNameMapper)
+- [x] Drop Node 18 da matrix (EOL)
+- [x] Release workflow atualizado para Node 22
+- [x] CI verde confirmado: Lint ✓, Test Node 20 ✓, Test Node 22 ✓, Build ✓
+- **Status:** complete
+
+### Phase 9: Verification & Creator Portal Submission
+- [x] Fix BLOCKER: removido `setTimeout` do fallback.ts (delay entre retries removido)
+- [x] Fix: limpar aliases em português do codex (.node.json) → inglês only
+- [x] Removido `jest.useFakeTimers()` e `runWithTimers` de todos os testes
+- [x] Removido `__tests__/helpers.ts` (não mais necessário)
+- [x] Build + lint + tests passando (49 tests, 0 errors)
+- [x] Scan local contra dist/: ✅ 11 arquivos, 0 violações
+- [ ] Publicar v0.1.1 com fixes
+- [ ] Rodar `npx @n8n/scan-community-package n8n-nodes-brasil-hub` contra npm — deve passar
+- [ ] Limpar /tmp/n8n-nodes-starter
+- [ ] Submeter no n8n Creator Portal (https://creators.n8n.io/)
+- **Status:** in_progress
+
+## Pending
+- [x] npm publish via release workflow — publicado com provenance
+- [ ] Submeter no n8n Creator Portal para verificação
+- [x] Actions atualizadas (checkout v6, setup-node v6, upload-artifact v7) — PRs #1-3 fechados
+
 ## Notes
 - Plano detalhado: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`
 - Spec de design: `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
-- 11 tasks no total, 4 chunks
+- 11 tasks originais em 4 chunks + 3 fases pós-implementação
 - TDD: red → green → commit em todas as tasks com código testável

@@ -64,6 +64,119 @@
 - Screenshots: Úteis mas só possíveis pós-install — adicionar depois
 - Sem GIFs (problema de data load e manutenção)
 
+## CI/CD Findings
+
+### isolated-vm Problem
+- `n8n-workflow` → `@n8n/ai-node-sdk` → `@n8n/ai-utilities` → `langchain` → `isolated-vm`
+- `isolated-vm@6.0.2` é addon nativo C++ que exige Node >= 22 para compilar
+- Nosso node **não usa** isolated-vm — só precisa dos tipos TypeScript
+- **Solução:** `npm ci --ignore-scripts` + Jest `moduleNameMapper` apontando para `__mocks__/isolated-vm.js`
+- Node 18 removido da matrix CI (EOL, deps transitivas exigem >= 20)
+
+### CI/CD Monitoring Rule
+- **Lição aprendida:** v0.1.0 foi lançada com CI e Release falhando
+- Regra adicionada: sempre verificar `gh run list` após push/release
+- Documentado em: CLAUDE.md, memory/MEMORY.md, ~/.claude/CLAUDE.md (global)
+
+### n8n-node prerelease guard
+- `@n8n/node-cli` injeta `"prepublishOnly": "n8n-node prerelease"` no starter template
+- `n8n-node prerelease` imprime "Run `npm run release` to publish" e sai com exit code 1
+- Isso bloqueia `npm publish` direto — design intencional para forçar uso de `npm run release`
+- Mas `npm run release` (`n8n-node release`) não suporta `--provenance` (OIDC)
+- **Solução:** `npm publish --ignore-scripts` no CI (já buildamos antes, guard desnecessário)
+
+### npm token para CI publish
+- Token npm precisa de **bypass 2FA** para publicar via CI (GitHub Actions)
+- Tokens "Granular Access": habilitar "Bypass 2FA for automation" nas permissões
+- Tokens "Classic/Automation": já bypassam 2FA por design
+- Secret no GitHub: `NPM_TOKEN` em Settings → Secrets and variables → Actions
+
+### Release workflow usa ref do tag
+- `on: release: [published]` faz checkout do ref do tag, não de `main`
+- Se corrigir workflows depois de criar o tag, o re-run ainda usa código antigo
+- Precisa deletar tag + release e recriar no commit correto
+- **Regra:** só tagar quando CI está verde em main
+
+### Dependabot PRs
+- actions/checkout v4 → v6, setup-node v4 → v6, upload-artifact v4 → v7
+- Foram superados por commit manual `fd22874` que aplica os 3 bumps juntos
+- PRs #1, #2, #3 fechados
+
+## n8n Verification Guidelines (Creator Portal)
+
+### Critérios de Verificação (extraídos de docs.n8n.io)
+1. Usar `n8n-node` CLI tool para criar e verificar o pacote
+2. Node NÃO pode ser duplicata de node existente (ok — Brasil Hub é único)
+3. Sem Logic/Flow control nodes (ok — somos data lookup)
+4. **Package source verification:**
+   - npm repo URL deve bater com GitHub repo ✓
+   - Author deve bater entre npm e repo ✓
+   - Git link deve funcionar e repo deve ser público ✓
+   - Documentação adequada (README) ✓
+   - Licença MIT ✓
+   - **Publicar via GitHub Action com provenance** ✓ (já fazemos)
+5. **Zero dependências externas** ✓
+6. **Sem acesso a env vars ou filesystem** ✓
+7. **Linter deve passar:** `npx @n8n/scan-community-package n8n-nodes-brasil-hub`
+8. **Tudo em inglês** — parâmetros, descrições, help text, erros, README
+9. A partir de **1º maio 2026**, provenance será obrigatório (já temos!)
+
+### Codex File (.node.json) Requirements
+- `node`: nome do pacote (community nodes usam o nome do pacote npm)
+- `nodeVersion`: deve bater com `version` no node principal (ex: "1.0")
+- `codexVersion`: versão atual é "1.0"
+- `categories`: deve usar nomes exatos — ex: "Data & Storage", "Development", "Utility"
+- `subcategories`: subcategorias dentro da categoria
+- `alias`: array de strings para busca no editor n8n
+- `resources.primaryDocumentation`: link para docs do node
+
+### Scan Results — Problemas Encontrados e Corrigidos
+1. ~~**BLOCKER: ESLint `setTimeout` restrito**~~ ✅ FIXED — removido delay entre retries
+   - `@n8n/scan-community-package` roda lint contra `dist/` com `allowInlineConfig: false`
+   - eslint-disable comments são ignorados — única solução é eliminar o global
+2. ~~**Aliases em português no codex**~~ ✅ FIXED — substituídos por inglês
+   - De: `brasil, receita, empresa, endereco` → Para: `tax-id, zip-code`
+
+### UX Guidelines Checklist (docs/reference/ux-guidelines.md)
+- [x] Resource + Operation pattern (CNPJ, CEP × query, validate)
+- [x] Title Case para displayName, Sentence case para descriptions
+- [x] Placeholders com "e.g." — FIXED: adicionado `e.g.` prefix
+- [x] Boolean descriptions começam com "Whether..." ✅ já seguia
+- [x] Error messages seguem pattern: what happened + how to fix
+- [ ] Delete operations retornam `{deleted: true}` — N/A (não temos delete)
+- [x] Simplify parameter (>10 campos) — N/A: nosso output JÁ É normalizado (13 top-level, vários objects). O Simplify existe para APIs raw com 30+ campos. Nosso normalizer É o simplify.
+
+### Code Standards Checklist (docs/reference/code-standards.md)
+- [x] TypeScript strict mode
+- [x] Resource + Operation pattern com displayOptions
+- [x] Modular file structure (resources/cnpj/, resources/cep/)
+- [x] Usa `context.helpers.httpRequest` (built-in, não lib externa)
+- [x] Não muda incoming data (clone-safe)
+- [x] Error handling com NodeOperationError + itemIndex
+
+### Error Handling Checklist (docs/reference/error-handling.md)
+- [x] NodeOperationError para validation failures
+- [x] itemIndex passado em todos os erros
+- [x] continueOnFail suportado
+- [ ] NodeApiError para HTTP failures — atualmente usamos Error genérico no fallback (**TODO**: avaliar migrar)
+- [x] Error messages descritivas
+
+### Submission Checklist (docs/deploy/submit-community-nodes.md)
+- [x] Package name começa com `n8n-nodes-` ✓
+- [x] Keyword `n8n-community-node-package` ✓
+- [x] Nodes/credentials listados no `n8n` attr do package.json ✓
+- [x] Linter passa (`npm run lint`) ✓
+- [x] Publicado no npm ✓
+- [x] Publicado via GitHub Action com provenance ✓
+- [x] MIT license ✓
+- [x] README com docs ✓
+- [ ] Scan passa (`npx @n8n/scan-community-package`) — passa local, precisa publicar v0.1.1
+
+### Comparação package.json com Starter Template
+- **Match:** `n8n.n8nNodesApiVersion: 1`, `n8n.strict: true`, `files: ["dist"]`, `peerDependencies`, scripts core
+- **Extra nosso (ok):** `main: "index.js"`, keywords adicionais, scripts `test`/`test:watch`
+- **Starter tem, nós não (ok):** `credentials` array (não temos credentials), `prettier`, `release-it`
+
 ## Resources
 - Spec: `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
 - Plano: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`

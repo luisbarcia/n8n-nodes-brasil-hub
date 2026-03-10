@@ -107,6 +107,25 @@ Fallback is automatic. BrasilAPI is always primary. Headers include `User-Agent:
 - ESLint config: `import { config } from '@n8n/node-cli/eslint'`
 - Must pass `@n8n/scan-community-package`
 
+## n8n Skills Disponíveis
+
+Skills especializadas em `~/.claude/skills/n8n-*/` — usar conforme necessidade:
+
+| Skill | Quando usar neste projeto |
+|-------|--------------------------|
+| `n8n-node-dev` | Desenvolvimento do node (declarative/programmatic, credentials, versioning, publish) |
+| `n8n-validation` | Validar configuração do node, interpretar erros de validação |
+| `n8n-workflow` | Testar o node em workflows via MCP, buscar nodes/templates |
+| `n8n-code` | Referência para Code nodes (JS/Python) — útil para testar integração |
+| `n8n-expressions` | Sintaxe `{{ }}` nos campos do node |
+| `n8n-data` | Transforms de dados, item linking, binary data |
+| `n8n-ai` | Integração com AI agents (`usableAsTool: true`) |
+| `n8n-security` | Criptografia de credentials, segurança de community nodes |
+| `n8n-hosting` | Instalação, configuração, scaling do n8n |
+| `n8n-devops` | Source control, environments, API |
+
+**Prioridade neste projeto:** `n8n-node-dev` (principal) → `n8n-validation` → `n8n-workflow` → demais conforme contexto.
+
 ## Planning Method
 
 This project uses **Manus-style file-based planning** (skill: `planning-with-files`). Three files in the project root serve as persistent working memory:
@@ -117,7 +136,34 @@ This project uses **Manus-style file-based planning** (skill: `planning-with-fil
 | `findings.md` | Research, discoveries, technical notes |
 | `progress.md` | Session log, test results, milestones |
 
-**Rules:** Create/read plan before starting work. Update after each phase. Log all errors. After every 2 search/view operations, save findings to disk.
+**Rules — OBRIGATÓRIO, sem precisar o usuário pedir:**
+- **Início de sessão:** Ler os 3 arquivos para recuperar contexto
+- **Após cada commit:** Atualizar `progress.md` com ações realizadas, arquivos modificados, hash do commit
+- **Após cada descoberta técnica:** Atualizar `findings.md`
+- **Após concluir uma fase ou tarefa:** Atualizar `task_plan.md` (marcar checkboxes, atualizar status, adicionar novas fases se necessário)
+- **Ao encontrar erros:** Logar em `progress.md` (Error Log) e `task_plan.md` (Errors Encountered)
+- **Fim de sessão ou pausa longa:** Atualizar o "5-Question Reboot Check" no `progress.md`
+- Esses updates são parte do trabalho, não extras — fazer proativamente sem esperar o usuário pedir
+
+## CI/CD — Armadilhas Conhecidas
+
+### isolated-vm (native addon)
+- `n8n-workflow` puxa `isolated-vm` (C++ addon) como dependência transitiva via `@n8n/ai-node-sdk`
+- Exige Node >= 22 para compilar, mas nosso node **não usa**
+- **Solução CI:** `npm ci --ignore-scripts` em todos os workflows (pula `node-gyp`)
+- **Solução Jest:** `moduleNameMapper` em `jest.config.js` aponta `isolated-vm` para `__mocks__/isolated-vm.js`
+- Test matrix: Node 20 + 22 (Node 18 removido — EOL e incompatível)
+
+### n8n-node prerelease guard
+- `package.json` tem `"prepublishOnly": "n8n-node prerelease"` (gerado pelo starter template)
+- Este script **bloqueia** `npm publish` direto — exige usar `npm run release` (que faz versioning interno)
+- **Solução CI:** `npm publish --provenance --access public --ignore-scripts` no release workflow
+- O workflow já roda tests + build antes do publish, então pular lifecycle scripts é seguro
+
+### Workflow de release usa código do tag
+- O `release.yml` roda no ref do tag, não no `main`
+- Se corrigir workflows após criar o tag, precisa **deletar tag + release e recriar** no commit corrigido
+- Ordem correta: CI verde → tag → release (nunca tagar com CI falhando)
 
 ## CI/CD — Regra Obrigatória
 
