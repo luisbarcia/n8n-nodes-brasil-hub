@@ -6,10 +6,19 @@
   "homepage": "https://github.com/luisbarcia/n8n-nodes-brasil-hub",
   "main": "index.js",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "n8n",
+    "brazil",
+    "brasil",
+    "cnpj",
+    "cep",
+    "brasilapi",
+    "receita-federal",
+    "viacep"
   ],
   "author": {
-    "name": "Luis Barcia"
+    "name": "Luis Barcia",
+    "url": "https://github.com/luisbarcia"
   },
   "repository": {
     "type": "git",

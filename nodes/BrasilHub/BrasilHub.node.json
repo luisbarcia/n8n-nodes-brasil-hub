@@ -3,6 +3,10 @@
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Data & Storage"],
+	"subcategories": {
+		"Data & Storage": ["Request Making"]
+	},
+	"alias": ["brazil", "brasil", "cnpj", "cep", "receita", "empresa", "endereco", "address", "company"],
 	"resources": {
 		"primaryDocumentation": [
 			{

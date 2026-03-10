@@ -39,12 +39,40 @@
 | `package.json` sem `"main"` | Adicionado `"main": "index.js"` |
 | Spec diz operation em PT (consultar/validar) | Plano usa EN (query/validate) — correto pois UI deve ser em inglês |
 
+## Discoverability Research (pre-release)
+
+### Como n8n descobre community nodes
+- GUI: Settings > Community Nodes > Browse → npm search com `keywords:n8n-community-node-package`
+- 5,834+ community nodes (jan 2026), crescendo ~13.6/dia
+- Verificação no Creator Portal dá badge "Verified" e acesso n8n Cloud (2,000 nodes)
+
+### Campos package.json que afetam discoveribilidade
+- **keywords**: `n8n-community-node-package` (obrigatório) + keywords de domínio
+- **description**: Indexado pelo npm search, 30-150 chars
+- **author.email**: Recomendado para verificação
+- **repository**: GitHub URL válida
+
+### Melhorias identificadas para nosso pacote
+1. **Keywords de domínio**: Faltam brazil, cnpj, cep, brasilapi, receita-federal, viacep
+2. **Codex metadata**: Faltam subcategories, alias para busca no editor n8n
+3. **README Resources**: Faltam links para docs n8n, BrasilAPI, ViaCEP, etc
+4. **Verificação n8n Cloud**: Submeter no Creator Portal pós-release
+
+### Padrões de README de nodes populares
+- Seções: Installation, Operations, Credentials, Compatibility, Usage, Resources
+- Badges: npm version, CI status, license (já temos)
+- Screenshots: Úteis mas só possíveis pós-install — adicionar depois
+- Sem GIFs (problema de data load e manutenção)
+
 ## Resources
 - Spec: `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
 - Plano: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`
 - BrasilAPI docs: `https://brasilapi.com.br/docs`
 - n8n community nodes guide: `https://docs.n8n.io/integrations/community-nodes/`
 - n8n starter template: `https://github.com/n8n-io/n8n-nodes-starter`
+- n8n codex files: `https://docs.n8n.io/integrations/creating-nodes/build/reference/node-codex-files/`
+- n8n verification guidelines: `https://docs.n8n.io/integrations/creating-nodes/build/reference/verification-guidelines/`
+- n8n Creator Portal: `https://creators.n8n.io/`
 
 ---
 *Update this file after every 2 view/browser/search operations*

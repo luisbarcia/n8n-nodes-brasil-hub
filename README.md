@@ -122,6 +122,15 @@ npm install n8n-nodes-brasil-hub
 - **n8n:** 1.0+
 - **Node.js:** 18, 20, 22
 
+## Resources
+
+- [n8n Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
+- [BrasilAPI](https://brasilapi.com.br/docs) — Primary data provider
+- [CNPJ.ws](https://publica.cnpj.ws) — CNPJ fallback provider
+- [ReceitaWS](https://receitaws.com.br) — CNPJ fallback provider
+- [ViaCEP](https://viacep.com.br) — CEP fallback provider
+- [OpenCEP](https://opencep.com) — CEP fallback provider
+
 ## Development
 
 ```bash
