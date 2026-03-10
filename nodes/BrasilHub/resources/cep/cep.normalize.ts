@@ -1,8 +1,5 @@
 import type { ICepResult } from '../../types';
-
-function stripNonDigits(value: string): string {
-	return value.replace(/\D/g, '');
-}
+import { stripNonDigits } from '../../shared/utils';
 
 function normalizeBrasilApi(data: Record<string, unknown>): ICepResult {
 	return {
@@ -17,10 +14,8 @@ function normalizeBrasilApi(data: Record<string, unknown>): ICepResult {
 	};
 }
 
-function normalizeViaCep(data: Record<string, unknown>): ICepResult {
-	if (data.erro) {
-		throw new Error('CEP not found');
-	}
+/** Shared normalizer for ViaCEP and OpenCEP (identical field mapping). */
+function normalizeViaCepFormat(data: Record<string, unknown>): ICepResult {
 	return {
 		cep: stripNonDigits(String(data.cep ?? '')),
 		logradouro: String(data.logradouro ?? ''),
@@ -33,23 +28,17 @@ function normalizeViaCep(data: Record<string, unknown>): ICepResult {
 	};
 }
 
-function normalizeOpenCep(data: Record<string, unknown>): ICepResult {
-	return {
-		cep: stripNonDigits(String(data.cep ?? '')),
-		logradouro: String(data.logradouro ?? ''),
-		complemento: String(data.complemento ?? ''),
-		bairro: String(data.bairro ?? ''),
-		cidade: String(data.localidade ?? ''),
-		uf: String(data.uf ?? ''),
-		ibge: String(data.ibge ?? ''),
-		ddd: String(data.ddd ?? ''),
-	};
+function normalizeViaCep(data: Record<string, unknown>): ICepResult {
+	if (data.erro) {
+		throw new Error('CEP not found');
+	}
+	return normalizeViaCepFormat(data);
 }
 
 const normalizers: Record<string, (data: Record<string, unknown>) => ICepResult> = {
 	brasilapi: normalizeBrasilApi,
 	viacep: normalizeViaCep,
-	opencep: normalizeOpenCep,
+	opencep: normalizeViaCepFormat,
 };
 
 /**

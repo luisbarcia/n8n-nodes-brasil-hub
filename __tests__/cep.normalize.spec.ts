@@ -71,6 +71,10 @@ describe('normalizeCep', () => {
 		expect(result.cidade).toBe('');
 	});
 
+	it('should throw for unknown provider', () => {
+		expect(() => normalizeCep({}, 'unknown')).toThrow('Unknown CEP provider: unknown');
+	});
+
 	it('should detect ViaCEP error response', () => {
 		expect(() => normalizeCep({ erro: true }, 'viacep')).toThrow();
 	});

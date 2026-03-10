@@ -1,4 +1,5 @@
 import { cepQuery, cepValidate } from '../nodes/BrasilHub/resources/cep/cep.execute';
+import { runWithTimers } from './helpers';
 
 jest.useFakeTimers();
 
@@ -26,15 +27,6 @@ function createMockContext(overrides: Record<string, unknown> = {}) {
 	} as unknown as Parameters<typeof cepQuery>[0];
 }
 
-async function runWithTimers<T>(promise: Promise<T>): Promise<T> {
-	const result = promise;
-	for (let i = 0; i < 5; i++) {
-		jest.advanceTimersByTime(1100);
-		await Promise.resolve();
-	}
-	return result;
-}
-
 afterAll(() => jest.useRealTimers());
 
 describe('cepQuery', () => {
@@ -44,12 +36,21 @@ describe('cepQuery', () => {
 		expect(result.json).toHaveProperty('cep', '01001000');
 		expect(result.json).toHaveProperty('_meta');
 		expect(result.json._meta).toHaveProperty('provider', 'brasilapi');
+		expect(result.json._meta).toHaveProperty('strategy', 'direct');
 		expect(result.pairedItem).toEqual({ item: 0 });
 	});
 
 	it('should throw on invalid CEP length', async () => {
 		const ctx = createMockContext({ cep: '123' });
 		await expect(cepQuery(ctx, 0)).rejects.toThrow('CEP must have 8 digits');
+	});
+});
+
+describe('cepQuery with includeRaw', () => {
+	it('should include raw response when includeRaw is true', async () => {
+		const ctx = createMockContext({ includeRaw: true });
+		const result = await runWithTimers(cepQuery(ctx, 0));
+		expect(result.json).toHaveProperty('_raw');
 	});
 });
 

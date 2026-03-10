@@ -24,16 +24,13 @@ function delay(ms: number): Promise<void> {
  *
  * @param context - n8n execution context, used for `httpRequest`.
  * @param providers - Ordered list of provider endpoints to try.
- * @param itemIndex - Current item index (for n8n item pairing).
  * @returns Raw response data from the first successful provider.
  * @throws {Error} When all providers fail, with concatenated error messages.
  */
 export async function queryWithFallback(
 	context: IExecuteFunctions,
 	providers: IProvider[],
-	itemIndex: number,
 ): Promise<IFallbackResult> {
-	void itemIndex;
 	const errors: string[] = [];
 
 	for (let i = 0; i < providers.length; i++) {

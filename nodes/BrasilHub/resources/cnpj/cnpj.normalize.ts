@@ -1,13 +1,10 @@
 import type { ICnpjResult } from '../../types';
+import { stripNonDigits } from '../../shared/utils';
 
 /** Concatenates DDD area code and phone number, returning empty string if either is missing. */
 function buildPhone(ddd?: string | null, phone?: string | null): string {
 	if (ddd && phone) return `${ddd}${phone}`;
 	return '';
-}
-
-function stripNonDigits(value: string): string {
-	return value.replace(/\D/g, '');
 }
 
 function normalizeBrasilApi(data: Record<string, unknown>): ICnpjResult {

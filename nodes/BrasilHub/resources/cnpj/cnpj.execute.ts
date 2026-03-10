@@ -39,7 +39,7 @@ export async function cnpjQuery(
 	}
 
 	const providers = buildProviders(cnpj);
-	const result = await queryWithFallback(context, providers, itemIndex);
+	const result = await queryWithFallback(context, providers);
 
 	const normalized = normalizeCnpj(result.data, result.provider);
 
@@ -47,7 +47,7 @@ export async function cnpjQuery(
 		provider: result.provider,
 		query: cnpj,
 		queried_at: new Date().toISOString(),
-		strategy: 'fallback',
+		strategy: result.errors.length > 0 ? 'fallback' : 'direct',
 		...(result.errors.length > 0 && { errors: result.errors }),
 	};
 

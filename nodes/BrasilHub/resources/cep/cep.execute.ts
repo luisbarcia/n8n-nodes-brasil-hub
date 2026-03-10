@@ -42,7 +42,7 @@ export async function cepQuery(
 	}
 
 	const providers = buildProviders(cep);
-	const result = await queryWithFallback(context, providers, itemIndex);
+	const result = await queryWithFallback(context, providers);
 
 	const normalized = normalizeCep(result.data, result.provider);
 
@@ -50,7 +50,7 @@ export async function cepQuery(
 		provider: result.provider,
 		query: cep,
 		queried_at: new Date().toISOString(),
-		strategy: 'fallback',
+		strategy: result.errors.length > 0 ? 'fallback' : 'direct',
 		...(result.errors.length > 0 && { errors: result.errors }),
 	};
 

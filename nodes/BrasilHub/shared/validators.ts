@@ -1,9 +1,5 @@
 import type { IValidationResult } from '../types';
-
-/** Removes all non-digit characters from a string. */
-function stripNonDigits(value: string): string {
-	return value.replace(/\D/g, '');
-}
+import { stripNonDigits } from './utils';
 
 /** Formats a 14-digit string into `XX.XXX.XXX/XXXX-XX`. */
 function formatCnpj(digits: string): string {

@@ -1,4 +1,5 @@
 import { cnpjQuery, cnpjValidate } from '../nodes/BrasilHub/resources/cnpj/cnpj.execute';
+import { runWithTimers } from './helpers';
 
 jest.useFakeTimers();
 
@@ -41,15 +42,6 @@ function createMockContext(overrides: Record<string, unknown> = {}) {
 	} as unknown as Parameters<typeof cnpjQuery>[0];
 }
 
-async function runWithTimers<T>(promise: Promise<T>): Promise<T> {
-	const result = promise;
-	for (let i = 0; i < 5; i++) {
-		jest.advanceTimersByTime(1100);
-		await Promise.resolve();
-	}
-	return result;
-}
-
 afterAll(() => jest.useRealTimers());
 
 describe('cnpjQuery', () => {
@@ -59,12 +51,21 @@ describe('cnpjQuery', () => {
 		expect(result.json).toHaveProperty('cnpj', '11222333000181');
 		expect(result.json).toHaveProperty('_meta');
 		expect(result.json._meta).toHaveProperty('provider', 'brasilapi');
+		expect(result.json._meta).toHaveProperty('strategy', 'direct');
 		expect(result.pairedItem).toEqual({ item: 0 });
 	});
 
 	it('should throw on invalid CNPJ length', async () => {
 		const ctx = createMockContext({ cnpj: '123' });
 		await expect(cnpjQuery(ctx, 0)).rejects.toThrow('CNPJ must have 14 digits');
+	});
+});
+
+describe('cnpjQuery with includeRaw', () => {
+	it('should include raw response when includeRaw is true', async () => {
+		const ctx = createMockContext({ includeRaw: true });
+		const result = await runWithTimers(cnpjQuery(ctx, 0));
+		expect(result.json).toHaveProperty('_raw');
 	});
 });
 

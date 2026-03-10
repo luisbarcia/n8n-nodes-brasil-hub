@@ -145,6 +145,10 @@ describe('normalizeCnpj', () => {
 		expect(result.contato.telefone).toBe('');
 	});
 
+	it('should throw for unknown provider', () => {
+		expect(() => normalizeCnpj({}, 'unknown')).toThrow('Unknown CNPJ provider: unknown');
+	});
+
 	it('should never produce "undefined" strings in phone field', () => {
 		const withPartialPhone = {
 			...cnpjWsResponse,

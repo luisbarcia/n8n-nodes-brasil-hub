@@ -1,5 +1,6 @@
 import { queryWithFallback } from '../nodes/BrasilHub/shared/fallback';
 import type { IProvider } from '../nodes/BrasilHub/types';
+import { runWithTimers } from './helpers';
 
 jest.useFakeTimers();
 
@@ -24,15 +25,6 @@ const providers: IProvider[] = [
 	{ name: 'provider3', url: 'https://api3.example.com/123' },
 ];
 
-async function runWithTimers<T>(promise: Promise<T>): Promise<T> {
-	const result = promise;
-	for (let i = 0; i < 5; i++) {
-		jest.advanceTimersByTime(1100);
-		await Promise.resolve();
-	}
-	return result;
-}
-
 afterAll(() => {
 	jest.useRealTimers();
 });
@@ -40,7 +32,7 @@ afterAll(() => {
 describe('queryWithFallback', () => {
 	it('should return data from the first provider on success', async () => {
 		const ctx = createMockContext([{ success: true, data: { name: 'Test' } }]);
-		const result = await runWithTimers(queryWithFallback(ctx, providers, 0));
+		const result = await runWithTimers(queryWithFallback(ctx, providers));
 
 		expect(result.data).toEqual({ name: 'Test' });
 		expect(result.provider).toBe('provider1');
@@ -53,7 +45,7 @@ describe('queryWithFallback', () => {
 			{ success: false, error: 'Timeout' },
 			{ success: true, data: { name: 'Fallback' } },
 		]);
-		const result = await runWithTimers(queryWithFallback(ctx, providers, 0));
+		const result = await runWithTimers(queryWithFallback(ctx, providers));
 
 		expect(result.data).toEqual({ name: 'Fallback' });
 		expect(result.provider).toBe('provider2');
@@ -67,7 +59,7 @@ describe('queryWithFallback', () => {
 			{ success: false, error: 'Error 2' },
 			{ success: true, data: { name: 'Third' } },
 		]);
-		const result = await runWithTimers(queryWithFallback(ctx, providers, 0));
+		const result = await runWithTimers(queryWithFallback(ctx, providers));
 
 		expect(result.data).toEqual({ name: 'Third' });
 		expect(result.provider).toBe('provider3');
@@ -81,9 +73,25 @@ describe('queryWithFallback', () => {
 			{ success: false, error: 'E3' },
 		]);
 
-		await expect(runWithTimers(queryWithFallback(ctx, providers, 0))).rejects.toThrow(
+		await expect(runWithTimers(queryWithFallback(ctx, providers))).rejects.toThrow(
 			'All providers failed',
 		);
+	});
+
+	it('should handle non-Error thrown values', async () => {
+		let callIndex = 0;
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callIndex++;
+					if (callIndex === 1) throw 'string error';
+					return { ok: true };
+				}),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+		const result = await runWithTimers(queryWithFallback(ctx, providers));
+		expect(result.errors).toEqual(['provider1: string error']);
+		expect(result.provider).toBe('provider2');
 	});
 
 	it('should collect all error messages from failed providers', async () => {
@@ -92,7 +100,7 @@ describe('queryWithFallback', () => {
 			{ success: false, error: '404 Not Found' },
 			{ success: true, data: {} },
 		]);
-		const result = await runWithTimers(queryWithFallback(ctx, providers, 0));
+		const result = await runWithTimers(queryWithFallback(ctx, providers));
 
 		expect(result.errors).toEqual([
 			'provider1: Timeout',
