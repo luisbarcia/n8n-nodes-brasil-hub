@@ -39,7 +39,7 @@ export const cepDescription: INodeProperties[] = [
 		required: true,
 		displayOptions: { show: showForCep },
 		default: '',
-		placeholder: '01001-000',
+		placeholder: 'e.g. 01001-000',
 		description: 'The CEP number to query or validate (with or without formatting)',
 	},
 	{

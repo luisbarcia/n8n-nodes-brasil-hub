@@ -6,7 +6,7 @@
 	"subcategories": {
 		"Data & Storage": ["Request Making"]
 	},
-	"alias": ["brazil", "brasil", "cnpj", "cep", "receita", "empresa", "endereco", "address", "company"],
+	"alias": ["brazil", "cnpj", "cep", "tax-id", "zip-code", "address", "company"],
 	"resources": {
 		"primaryDocumentation": [
 			{

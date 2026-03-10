@@ -38,7 +38,7 @@ export class BrasilHub implements INodeType {
 		displayName: 'Brasil Hub',
 		name: 'brasilHub',
 		icon: 'file:brasilHub.svg',
-		group: ['transform'],
+		group: [],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Query Brazilian public data (CNPJ, CEP) with multi-provider fallback',

@@ -1,7 +1,4 @@
 import { cnpjQuery, cnpjValidate } from '../nodes/BrasilHub/resources/cnpj/cnpj.execute';
-import { runWithTimers } from './helpers';
-
-jest.useFakeTimers();
 
 function createMockContext(overrides: Record<string, unknown> = {}) {
 	const params: Record<string, unknown> = {
@@ -42,12 +39,10 @@ function createMockContext(overrides: Record<string, unknown> = {}) {
 	} as unknown as Parameters<typeof cnpjQuery>[0];
 }
 
-afterAll(() => jest.useRealTimers());
-
 describe('cnpjQuery', () => {
 	it('should return normalized data with _meta', async () => {
 		const ctx = createMockContext();
-		const result = await runWithTimers(cnpjQuery(ctx, 0));
+		const result = await cnpjQuery(ctx, 0);
 		expect(result.json).toHaveProperty('cnpj', '11222333000181');
 		expect(result.json).toHaveProperty('_meta');
 		expect(result.json._meta).toHaveProperty('provider', 'brasilapi');
@@ -64,7 +59,7 @@ describe('cnpjQuery', () => {
 describe('cnpjQuery with includeRaw', () => {
 	it('should include raw response when includeRaw is true', async () => {
 		const ctx = createMockContext({ includeRaw: true });
-		const result = await runWithTimers(cnpjQuery(ctx, 0));
+		const result = await cnpjQuery(ctx, 0);
 		expect(result.json).toHaveProperty('_raw');
 	});
 });

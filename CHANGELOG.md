@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-03-10
+
+### Fixed
+- Remove `setTimeout` from fallback logic to pass `@n8n/scan-community-package` ESLint check
+- Replace Portuguese aliases in codex file with English equivalents (`tax-id`, `zip-code`)
+
+### Changed
+- Remove inter-provider delay from fallback strategy (providers are queried immediately on failure)
+- Simplify test infrastructure: remove fake timers and `runWithTimers` helper
+
 ## [0.1.0] - 2026-03-10
 
 ### Added

@@ -1,11 +1,6 @@
 import { BrasilHub } from '../nodes/BrasilHub/BrasilHub.node';
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { runWithTimers } from './helpers';
-
-jest.useFakeTimers();
-
-afterAll(() => jest.useRealTimers());
 
 function createExecuteContext(overrides: {
 	resource?: string;
@@ -72,7 +67,7 @@ describe('BrasilHub.execute()', () => {
 
 	it('should dispatch cnpj/validate and return result', async () => {
 		const ctx = createExecuteContext({ resource: 'cnpj', operation: 'validate' });
-		const [[result]] = await runWithTimers(node.execute.call(ctx));
+		const [[result]] = await node.execute.call(ctx);
 		expect(result.json).toEqual({
 			valid: true,
 			formatted: '11.222.333/0001-81',
@@ -82,7 +77,7 @@ describe('BrasilHub.execute()', () => {
 
 	it('should dispatch cep/validate and return result', async () => {
 		const ctx = createExecuteContext({ resource: 'cep', operation: 'validate' });
-		const [[result]] = await runWithTimers(node.execute.call(ctx));
+		const [[result]] = await node.execute.call(ctx);
 		expect(result.json).toEqual({
 			valid: true,
 			formatted: '01001-000',
@@ -92,14 +87,14 @@ describe('BrasilHub.execute()', () => {
 
 	it('should dispatch cnpj/query and return normalized data', async () => {
 		const ctx = createExecuteContext({ resource: 'cnpj', operation: 'query' });
-		const [[result]] = await runWithTimers(node.execute.call(ctx));
+		const [[result]] = await node.execute.call(ctx);
 		expect(result.json).toHaveProperty('razao_social', 'TESTE');
 		expect(result.json).toHaveProperty('_meta');
 	});
 
 	it('should throw NodeOperationError for unknown resource/operation', async () => {
 		const ctx = createExecuteContext({ resource: 'pix', operation: 'query' });
-		await expect(runWithTimers(node.execute.call(ctx))).rejects.toThrow(
+		await expect(node.execute.call(ctx)).rejects.toThrow(
 			'Unknown resource/operation: pix/query',
 		);
 	});
@@ -111,7 +106,7 @@ describe('BrasilHub.execute()', () => {
 			cnpj: '123',
 			continueOnFail: true,
 		});
-		const [[result]] = await runWithTimers(node.execute.call(ctx));
+		const [[result]] = await node.execute.call(ctx);
 		expect(result.json).toHaveProperty('error', 'CNPJ must have 14 digits');
 		expect(result.error).toBeInstanceOf(NodeOperationError);
 		expect(result.pairedItem).toEqual({ item: 0 });
@@ -124,7 +119,7 @@ describe('BrasilHub.execute()', () => {
 			continueOnFail: true,
 			httpError: new Error('Network timeout'),
 		});
-		const [[result]] = await runWithTimers(node.execute.call(ctx));
+		const [[result]] = await node.execute.call(ctx);
 		expect(result.json.error).toContain('All providers failed');
 		expect(result.error).toBeInstanceOf(NodeOperationError);
 	});
@@ -146,7 +141,7 @@ describe('BrasilHub.execute()', () => {
 		});
 		(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(errorWithContext);
 
-		await expect(runWithTimers(node.execute.call(ctx))).rejects.toHaveProperty(
+		await expect(node.execute.call(ctx)).rejects.toHaveProperty(
 			'context.itemIndex',
 			0,
 		);
@@ -158,7 +153,7 @@ describe('BrasilHub.execute()', () => {
 			operation: 'validate',
 			items: [{ json: {} }, { json: {} }],
 		});
-		const [results] = await runWithTimers(node.execute.call(ctx));
+		const [results] = await node.execute.call(ctx);
 		expect(results).toHaveLength(2);
 		expect(results[0].pairedItem).toEqual({ item: 0 });
 		expect(results[1].pairedItem).toEqual({ item: 1 });

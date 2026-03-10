@@ -39,7 +39,7 @@ export const cnpjDescription: INodeProperties[] = [
 		required: true,
 		displayOptions: { show: showForCnpj },
 		default: '',
-		placeholder: '11.222.333/0001-81',
+		placeholder: 'e.g. 11.222.333/0001-81',
 		description: 'The CNPJ number to query or validate (with or without formatting)',
 	},
 	{
