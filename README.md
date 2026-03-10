@@ -2,6 +2,9 @@
 
 [![npm version](https://img.shields.io/npm/v/n8n-nodes-brasil-hub)](https://www.npmjs.com/package/n8n-nodes-brasil-hub)
 [![CI](https://github.com/luisbarcia/n8n-nodes-brasil-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/luisbarcia/n8n-nodes-brasil-hub/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/luisbarcia/n8n-nodes-brasil-hub/graph/badge.svg)](https://codecov.io/gh/luisbarcia/n8n-nodes-brasil-hub)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=luisbarcia_n8n-nodes-brasil-hub&metric=alert_status)](https://sonarcloud.io/dashboard?id=luisbarcia_n8n-nodes-brasil-hub)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/luisbarcia/n8n-nodes-brasil-hub/badge)](https://scorecard.dev/viewer/?uri=github.com/luisbarcia/n8n-nodes-brasil-hub)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Community n8n node for querying Brazilian public data with multi-provider fallback.

@@ -4,7 +4,7 @@
 Implementar o community node n8n "Brasil Hub" que consulta dados públicos brasileiros (CNPJ e CEP) com fallback multi-provider, seguindo todos os padrões oficiais n8n.
 
 ## Current Phase
-Phase 9 (in_progress) — Verification & Creator Portal Submission
+Phase 10 (in_progress) — Quality Badges (Codecov + SonarCloud + OpenSSF Scorecard)
 
 ## Phases
 
@@ -119,6 +119,14 @@ Phase 9 (in_progress) — Verification & Creator Portal Submission
 - [ ] Rodar `npx @n8n/scan-community-package n8n-nodes-brasil-hub` contra npm — deve passar
 - [ ] Limpar /tmp/n8n-nodes-starter
 - [ ] Submeter no n8n Creator Portal (https://creators.n8n.io/)
+- **Status:** in_progress
+
+### Phase 10: Quality Badges (Codecov + SonarCloud + OpenSSF Scorecard)
+- [ ] Pesquisar requisitos de cada plataforma
+- [ ] Codecov: adicionar upload step no CI, badge no README
+- [ ] SonarCloud: criar projeto, workflow, sonar-project.properties, badge no README
+- [ ] OpenSSF Scorecard: adicionar workflow oficial, badge no README
+- [ ] Push + CI verde
 - **Status:** in_progress
 
 ## Pending

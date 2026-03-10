@@ -177,6 +177,35 @@
 - **Extra nosso (ok):** `main: "index.js"`, keywords adicionais, scripts `test`/`test:watch`
 - **Starter tem, nós não (ok):** `credentials` array (não temos credentials), `prettier`, `release-it`
 
+## Quality Badges Research
+
+### Codecov
+- Action: `codecov/codecov-action@v5` — token opcional para repos públicos
+- Upload: `coverage/lcov.info` (Jest já gera com `--coverage`)
+- Badge: `[![codecov](https://codecov.io/gh/luisbarcia/n8n-nodes-brasil-hub/graph/badge.svg)](https://codecov.io/gh/luisbarcia/n8n-nodes-brasil-hub)`
+- Config file (`codecov.yml`): opcional
+
+### SonarCloud
+- Action: `SonarSource/sonarqube-scan-action@v7` (antiga `sonarcloud-github-action` deprecated)
+- **Requer SONAR_TOKEN** — criar em sonarcloud.io > My Account > Security
+- **Requer setup manual**: criar projeto em sonarcloud.io primeiro
+- Config: `sonar-project.properties` no root
+- `sonar.sources` deve apontar para `nodes/` (não `src/`)
+- Badge: `[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=KEY&metric=alert_status)](https://sonarcloud.io/dashboard?id=KEY)`
+
+### OpenSSF Scorecard
+- Action: `ossf/scorecard-action@v2.4.3` — sem token extra (usa GITHUB_TOKEN)
+- Permissions: `contents: read`, `security-events: write`, `id-token: write`
+- `publish_results: true` publica automaticamente na API OpenSSF
+- Recomenda schedule semanal + push on main
+- Upload SARIF para GitHub Code Scanning via `github/codeql-action/upload-sarif@v3`
+- Badge: `[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/luisbarcia/n8n-nodes-brasil-hub/badge)](https://scorecard.dev/viewer/?uri=github.com/luisbarcia/n8n-nodes-brasil-hub)`
+
+### Decisão: SonarCloud requer setup manual externo
+- Codecov e OpenSSF: podem ser configurados 100% via código
+- SonarCloud: usuário precisa criar conta + projeto + gerar token
+- **Plano:** configurar os 3 workflows, marcar SonarCloud como pendente de setup manual
+
 ## Resources
 - Spec: `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
 - Plano: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`

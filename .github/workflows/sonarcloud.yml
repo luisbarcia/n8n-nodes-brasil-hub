@@ -1,0 +1,40 @@
+# SonarCloud — code quality and security analysis
+# Requires SONAR_TOKEN secret (create at sonarcloud.io > My Account > Security)
+
+name: SonarCloud
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run tests with coverage
+        run: npx jest --coverage
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@0303d6b62a76a1e1bfad29fa9a7810fb16fd498e # v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

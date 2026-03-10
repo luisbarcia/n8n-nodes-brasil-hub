@@ -74,13 +74,12 @@ jobs:
       - name: Run tests
         run: npm test -- --coverage
 
-      - name: Upload coverage
+      - name: Upload coverage to Codecov
         if: matrix.node == 20
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67ab1fd00d0d27f # v5
         with:
-          name: coverage
-          path: coverage/
-          retention-days: 7
+          files: ./coverage/lcov.info
+          flags: unittests
 
   build:
     name: Build

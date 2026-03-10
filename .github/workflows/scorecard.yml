@@ -1,0 +1,37 @@
+# OpenSSF Scorecard — security health metrics
+# Publishes results to scorecard.dev and GitHub Code Scanning
+
+name: OpenSSF Scorecard
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 0' # Weekly Sunday 06:00 UTC
+
+permissions: read-all
+
+jobs:
+  scorecard:
+    name: Scorecard Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - uses: ossf/scorecard-action@05b42c624433fc40578a4093d4eb18e4b0f73953 # v2.4.3
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - name: Upload SARIF to Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
