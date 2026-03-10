@@ -41,6 +41,28 @@ describe('cepQuery', () => {
 	});
 });
 
+describe('cepQuery with fallback', () => {
+	it('should set strategy to fallback when first provider fails', async () => {
+		let callCount = 0;
+		const ctx = {
+			...createMockContext(),
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callCount++;
+					if (callCount === 1) throw new Error('Timeout');
+					return {
+						cep: '01001000', state: 'SP', city: 'São Paulo',
+						neighborhood: 'Sé', street: 'Praça da Sé',
+					};
+				}),
+			},
+		} as unknown as Parameters<typeof cepQuery>[0];
+		const result = await cepQuery(ctx, 0);
+		expect(result.json._meta).toHaveProperty('strategy', 'fallback');
+		expect(result.json._meta).toHaveProperty('errors');
+	});
+});
+
 describe('cepQuery with includeRaw', () => {
 	it('should include raw response when includeRaw is true', async () => {
 		const ctx = createMockContext({ includeRaw: true });

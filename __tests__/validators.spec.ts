@@ -38,6 +38,11 @@ describe('validateCnpj', () => {
 		expect(validateCnpj('').valid).toBe(false);
 	});
 
+	it('should reject CNPJ with valid first check digit but invalid second', () => {
+		// 11222333000181 is valid; change last digit to break only check2
+		expect(validateCnpj('11222333000182').valid).toBe(false);
+	});
+
 	it('should validate known real CNPJs', () => {
 		// Banco do Brasil
 		expect(validateCnpj('00000000000191').valid).toBe(true);

@@ -56,6 +56,32 @@ describe('cnpjQuery', () => {
 	});
 });
 
+describe('cnpjQuery with fallback', () => {
+	it('should set strategy to fallback when first provider fails', async () => {
+		let callCount = 0;
+		const ctx = {
+			...createMockContext(),
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callCount++;
+					if (callCount === 1) throw new Error('Timeout');
+					return {
+						cnpj: '11222333000181', razao_social: 'TESTE', nome_fantasia: '',
+						descricao_situacao_cadastral: 'ATIVA', data_inicio_atividade: '',
+						descricao_porte: '', natureza_juridica: '', capital_social: 0,
+						cnae_fiscal: 0, cnae_fiscal_descricao: '', logradouro: '', numero: '',
+						complemento: '', bairro: '', cep: '', municipio: '', uf: '',
+						ddd_telefone_1: '', ddd_telefone_2: '', email: '', qsa: [],
+					};
+				}),
+			},
+		} as unknown as Parameters<typeof cnpjQuery>[0];
+		const result = await cnpjQuery(ctx, 0);
+		expect(result.json._meta).toHaveProperty('strategy', 'fallback');
+		expect(result.json._meta).toHaveProperty('errors');
+	});
+});
+
 describe('cnpjQuery with includeRaw', () => {
 	it('should include raw response when includeRaw is true', async () => {
 		const ctx = createMockContext({ includeRaw: true });
