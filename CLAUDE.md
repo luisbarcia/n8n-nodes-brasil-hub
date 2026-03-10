@@ -183,6 +183,84 @@ gh run list --workflow=release.yml --limit 1
 - Se falhar: diagnosticar e corrigir imediatamente, antes de seguir para próxima tarefa
 - Nunca lançar release sem CI passando
 
+## Pre-Release Workflow — Checklist Obrigatório
+
+Executar **antes de cada release**, na ordem abaixo. Cada fase usa skills específicas.
+
+### Fase 1: Compliance & Segurança (bloqueia release)
+
+| # | Skill | O que faz | Comando referência |
+|---|-------|-----------|--------------------|
+| 1 | `n8n-node-dev` | Audita compliance com requisitos de community node (17 checks: package.json, codex, icons, descriptions, ESLint) | `/n8n-node-dev` → checklist |
+| 2 | `n8n-validation` | Valida configuração do node (params, types, displayConditions) | `/n8n-validation` |
+| 3 | `security-reviewer` | Audit de segurança: input sanitization, SSRF, secrets exposure, deps | `/security-reviewer` |
+
+**Gate:** Todos os findings Critical/High devem ser corrigidos antes de prosseguir.
+
+### Fase 2: Qualidade de Código (bloqueia release)
+
+| # | Skill | O que faz | Target |
+|---|-------|-----------|--------------------|
+| 4 | `test-master` | Cobertura de testes ≥ 90% branches, edge cases | `/test-master` |
+| 5 | `simplify` | Code review: reuso, duplicação, eficiência | `/simplify` |
+| 6 | `code-documenter` | JSDoc 100% em funções/classes exportadas | `/code-documenter` |
+
+**Gate:** Coverage ≥ 90%, zero findings HIGH do simplify sem justificativa.
+
+### Fase 3: Build & CI (bloqueia release)
+
+```bash
+# 7. Build limpo
+npx n8n-node build
+
+# 8. Lint limpo
+npx n8n-node lint
+
+# 9. Testes passando
+npx jest --coverage
+
+# 10. npm audit
+npm audit --audit-level=critical
+
+# 11. Push e verificar CI verde
+git push
+gh run list --limit 3
+```
+
+**Gate:** Tudo verde, zero erros.
+
+### Fase 4: Release (executar)
+
+| # | Skill | O que faz |
+|---|-------|-----------|
+| 12 | `git-workflow-manager` | Conventional commits, CHANGELOG.md, tag semver |
+| 13 | `project-release` | Versioning, tag, gh release create |
+| 14 | `verification-before-completion` | Verificação final pós-release: CI verde, npm publicado, scan passou |
+
+### Fase 5: Pós-Release (verificar)
+
+```bash
+# 15. CI do release workflow passou
+gh run list --workflow=release.yml --limit 1
+
+# 16. Scan de community package passou (roda no release workflow)
+# Se falhar: corrigir e re-release
+
+# 17. Pacote no npm
+npm view n8n-nodes-brasil-hub version
+```
+
+### Resumo Rápido (copiar e colar)
+
+```
+PRE-RELEASE CHECKLIST:
+□ Fase 1: /n8n-node-dev → /n8n-validation → /security-reviewer
+□ Fase 2: /test-master → /simplify → /code-documenter
+□ Fase 3: build → lint → test → audit → push → CI verde
+□ Fase 4: changelog → tag → release
+□ Fase 5: CI release verde → npm publicado
+```
+
 ## Spec & Plan
 
 - **Design spec:** `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
