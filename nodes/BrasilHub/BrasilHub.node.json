@@ -1,0 +1,13 @@
+{
+	"node": "n8n-nodes-brasil-hub",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Data & Storage"],
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/luisbarcia/n8n-nodes-brasil-hub"
+			}
+		]
+	}
+}

@@ -5,14 +5,18 @@ const DELAY_BETWEEN_RETRIES_MS = 1000;
 const REQUEST_TIMEOUT_MS = 10000;
 
 function delay(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
+	return new Promise((resolve) => {
+		// eslint-disable-next-line @n8n/community-nodes/no-restricted-globals
+		setTimeout(resolve, ms);
+	});
 }
 
 export async function queryWithFallback(
 	context: IExecuteFunctions,
 	providers: IProvider[],
-	_itemIndex: number,
+	itemIndex: number,
 ): Promise<IFallbackResult> {
+	void itemIndex;
 	const errors: string[] = [];
 
 	for (let i = 0; i < providers.length; i++) {
