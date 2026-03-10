@@ -45,3 +45,8 @@ jobs:
         run: npm publish --provenance --access public --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify community package scan
+        run: npx @n8n/scan-community-package n8n-nodes-brasil-hub@${TAG#v}
+        env:
+          TAG: ${{ github.event.release.tag_name }}
