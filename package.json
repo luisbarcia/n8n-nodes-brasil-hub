@@ -1,0 +1,50 @@
+{
+  "name": "n8n-nodes-brasil-hub",
+  "version": "0.1.0",
+  "description": "n8n community node for querying Brazilian public data (CNPJ, CEP) with multi-provider fallback",
+  "license": "MIT",
+  "homepage": "https://github.com/luisbarcia/n8n-nodes-brasil-hub",
+  "main": "index.js",
+  "keywords": [
+    "n8n-community-node-package"
+  ],
+  "author": {
+    "name": "Luis Barcia"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luisbarcia/n8n-nodes-brasil-hub.git"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "nodes": [
+      "dist/nodes/BrasilHub/BrasilHub.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "*",
+    "@types/jest": "^29.5.0",
+    "eslint": "^9.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.9.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
