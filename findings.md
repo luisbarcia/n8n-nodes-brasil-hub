@@ -206,6 +206,51 @@
 - SonarCloud: usuário precisa criar conta + projeto + gerar token
 - **Plano:** configurar os 3 workflows, marcar SonarCloud como pendente de setup manual
 
+## OpenSSF Scorecard Hardening Research
+
+### Score atual: 5.6/10 (18 checks)
+- 7 checks com nota 10 (já perfeitos)
+- 4 checks com nota 0 (acionáveis: Branch-Protection, SAST, CII-Best-Practices, Code-Review)
+- 2 checks inconclusivos (-1: CI-Tests, Signed-Releases)
+- Vulnerabilities: 5/10 (5 vulns conhecidas)
+
+### Branch-Protection (0→10)
+- Scorecard verifica: require PR reviews, status checks, up-to-date, admin enforcement
+- API: `gh api repos/{owner}/{repo}/branches/main/protection -X PUT`
+- Solo dev: pode configurar self-review (PR required mas pode aprovar próprio)
+- Alternativa: Settings → Branches → Add rule no GitHub UI
+
+### SAST (0→10)
+- Scorecard procura especificamente: CodeQL, Semgrep, Snyk, SonarCloud (via SARIF)
+- SonarCloud já roda mas **não faz upload de SARIF para Code Scanning** → Scorecard não detecta
+- CodeQL é o mais simples de adicionar (GitHub nativo, gratuito para public repos)
+- Action: `github/codeql-action/init`, `analyze` — suporta TypeScript via `javascript`
+
+### Vulnerabilities (5→10)
+- Scorecard usa OSV (Open Source Vulnerabilities database)
+- As 5 vulns provavelmente são de devDependencies transitivas (n8n-workflow → langchain chain)
+- Resolver via `npm audit fix` ou atualizar deps
+- Se são apenas devDeps, o Scorecard ainda pode contá-las
+
+### CII-Best-Practices (0→?)
+- URL: https://www.bestpractices.dev/en/projects
+- Questionário: ~60 perguntas sobre qualidade, segurança, documentação
+- Muitas já atendemos (MIT license, CI, tests, security policy, etc.)
+- Badge "passing" requer ~67% das perguntas respondidas positivamente
+- Ação manual do usuário (precisa cadastrar e preencher)
+
+### Signed-Releases (-1→10)
+- Scorecard verifica se releases têm assinaturas (cosign, GPG, Sigstore)
+- npm publish com `--provenance` gera attestation OIDC (Sigstore-based)
+- v0.1.1 já publicou com provenance — o Scorecard pode não ter re-avaliado ainda
+- Alternativa: `gh attestation verify` para confirmar
+
+### Codecov → Coveralls Migration
+- Codecov Project Coverage requer Pro plan ($12/user/mês) — badge ficava "unknown"
+- Coveralls é gratuito para repos públicos, badge mostra 97%
+- Codecov Test Analytics mantido (funciona no free tier)
+- Coveralls action: `coverallsapp/github-action@v2.3.6` com `github-token` automático
+
 ## Resources
 - Spec: `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
 - Plano: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`

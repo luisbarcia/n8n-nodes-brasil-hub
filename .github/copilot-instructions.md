@@ -49,7 +49,6 @@ nodes/BrasilHub/
 ## Testing
 
 - TDD: write failing test first, then implement
-- Use `jest.useFakeTimers()` for tests with delays
 - Test normalizers with real API response fixtures per provider
 - Mock `IExecuteFunctions` context for execute handler tests
 

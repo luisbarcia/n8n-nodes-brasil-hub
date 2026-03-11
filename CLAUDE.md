@@ -157,10 +157,13 @@ This project uses **Manus-style file-based planning** (skill: `planning-with-fil
 ### n8n-node prerelease guard
 - `package.json` tem `"prepublishOnly": "n8n-node prerelease"` (gerado pelo starter template)
 - Este script **bloqueia** `npm publish` direto — exige usar `npm run release` (que faz versioning interno)
-- **Solução CI:** `npm publish --provenance --access public --ignore-scripts` no release workflow
+- **Solução CI:** `npm publish *.tgz --provenance --access public --ignore-scripts` no release workflow
 - O workflow já roda tests + build antes do publish, então pular lifecycle scripts é seguro
 
-### Workflow de release usa código do tag
+### Release pipeline (3 jobs)
+- **Build & Pack** → testa, builda, cria tarball (`npm pack`), gera hash SHA256
+- **SLSA Provenance** → chama `slsa-github-generator` generic generator, anexa `.intoto.jsonl` ao GitHub Release
+- **Publish** → baixa tarball, publica no npm com `--provenance`
 - O `release.yml` roda no ref do tag, não no `main`
 - Se corrigir workflows após criar o tag, precisa **deletar tag + release e recriar** no commit corrigido
 - Ordem correta: CI verde → tag → release (nunca tagar com CI falhando)
@@ -260,6 +263,32 @@ PRE-RELEASE CHECKLIST:
 □ Fase 4: changelog → tag → release
 □ Fase 5: CI release verde → npm publicado
 ```
+
+## Living Docs — Atualizar em Mudanças Estruturais
+
+Estes arquivos contêm informações que ficam desatualizadas quando o projeto muda (Node version, test infra, CI pipeline, arquitetura). **Após qualquer mudança estrutural**, fazer grep pelos termos afetados e propagar para todos.
+
+| Arquivo | O que contém de volátil |
+|---------|------------------------|
+| `README.md` | Badges, Node.js versions, features list |
+| `CLAUDE.md` | Arquitetura, CI/CD pipeline, armadilhas |
+| `.github/CONTRIBUTING.md` | Node.js version, project structure, test guidelines |
+| `.github/copilot-instructions.md` | Arquitetura, test guidelines, code style |
+| `.github/SECURITY.md` | Supported versions |
+| `CHANGELOG.md` | Detalhes técnicos nas entries (test matrix, fallback behavior) |
+| `package.json` | Keywords, engines, scripts |
+| `sonar-project.properties` | Source/test paths, exclusions |
+| `.github/workflows/*.yml` | Node versions, action pins, job structure |
+| `task_plan.md` | Fases, status, erros |
+| `progress.md` | Log de sessão, 5-Question Reboot Check |
+| `findings.md` | Descobertas técnicas |
+
+**Termos para grep após mudanças comuns:**
+- Mudou Node version → grep `Node 18`, `Node 20`, `node-version`, `node:`
+- Mudou test infra → grep `useFakeTimers`, `runWithTimers`, `jest.config`
+- Mudou CI pipeline → grep `coveralls`, `codecov`, `coverage`, workflow names
+- Adicionou arquivo em `shared/` → grep tree structures nos .md
+- Mudou release flow → grep `npm publish`, `provenance`, `release.yml`
 
 ## Spec & Plan
 

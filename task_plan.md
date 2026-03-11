@@ -4,7 +4,7 @@
 Implementar o community node n8n "Brasil Hub" que consulta dados públicos brasileiros (CNPJ e CEP) com fallback multi-provider, seguindo todos os padrões oficiais n8n.
 
 ## Current Phase
-Phase 10 (in_progress) — Quality Badges (Codecov + SonarCloud + OpenSSF Scorecard)
+Phase 11 (in_progress) — OpenSSF Scorecard Hardening (5.6 → 8+)
 
 ## Phases
 
@@ -122,11 +122,59 @@ Phase 10 (in_progress) — Quality Badges (Codecov + SonarCloud + OpenSSF Scorec
 - **Status:** in_progress
 
 ### Phase 10: Quality Badges (Codecov + SonarCloud + OpenSSF Scorecard)
-- [ ] Pesquisar requisitos de cada plataforma
-- [ ] Codecov: adicionar upload step no CI, badge no README
-- [ ] SonarCloud: criar projeto, workflow, sonar-project.properties, badge no README
-- [ ] OpenSSF Scorecard: adicionar workflow oficial, badge no README
-- [ ] Push + CI verde
+- [x] Pesquisar requisitos de cada plataforma
+- [x] Codecov: upload step no CI (codecov-action v5), badge no README
+- [x] SonarCloud: workflow + sonar-project.properties, badge no README
+- [x] OpenSSF Scorecard: workflow oficial (v2.4.3), badge no README
+- [x] Fix SonarCloud findings: safeStr(), Number.parseInt, permissions job-level
+- [x] Todos os 3 workflows verdes
+- **Status:** complete
+
+### Phase 11: OpenSSF Scorecard Hardening (5.6 → 8+)
+**Goal:** Subir score de 5.6 para 8+ atacando os checks acionáveis.
+
+**Scorecard atual (5.6/10):**
+| Check | Score | Acionável? |
+|-------|-------|-----------|
+| Binary-Artifacts | 10 | -- |
+| Dangerous-Workflow | 10 | -- |
+| Dependency-Update-Tool | 10 | -- |
+| License | 10 | -- |
+| Packaging | 10 | -- |
+| Pinned-Dependencies | 10 | -- |
+| Security-Policy | 10 | -- |
+| Token-Permissions | 9 | Minor |
+| Vulnerabilities | 5 | **Sim** |
+| Branch-Protection | 0 | **Sim** |
+| Code-Review | 0 | Parcial (solo dev) |
+| SAST | 0 | **Sim** |
+| CII-Best-Practices | 0 | **Sim** |
+| Fuzzing | 0 | Difícil |
+| Maintained | 0 | Tempo (repo < 90 dias) |
+| Contributors | 0 | Não (solo dev) |
+| CI-Tests | -1 | Precisa de PRs |
+| Signed-Releases | -1 | Timing |
+
+**Tarefas (ordem de impacto):**
+- [ ] **T1: Branch-Protection (0→10)** — Ativar branch protection rules no `main` via `gh api`
+  - Require PR reviews (≥1)
+  - Require status checks (CI, SonarCloud)
+  - Require up-to-date branches
+  - Enforce for admins
+- [ ] **T2: SAST (0→10)** — Adicionar CodeQL Analysis workflow
+  - SonarCloud já roda, mas Scorecard procura CodeQL/Semgrep especificamente
+  - Criar `.github/workflows/codeql.yml`
+- [ ] **T3: Vulnerabilities (5→10)** — Resolver 5 vulnerabilidades conhecidas
+  - Identificar quais são (npm audit, Dependabot alerts)
+  - Atualizar deps ou marcar como devDependency-only
+- [ ] **T4: CII-Best-Practices (0→?)** — Cadastrar no OpenSSF Best Practices
+  - URL: https://www.bestpractices.dev/
+  - Preencher questionário do projeto
+- [ ] **T5: Signed-Releases (-1→10)** — Verificar se v0.1.1 com provenance satisfaz
+  - Se não, criar release com signing explícito
+- [ ] **T6: Token-Permissions (9→10)** — Auditar permissions em todos os workflows
+- [ ] **T7: CI-Tests (-1→?)** — Criar PR de teste para que Scorecard detecte CI checks
+- [ ] Verificar score atualizado no Scorecard
 - **Status:** in_progress
 
 ## Pending
