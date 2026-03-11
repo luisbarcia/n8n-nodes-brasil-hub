@@ -1,6 +1,6 @@
 # n8n-nodes-brasil-hub Release Pipeline
-# Build → SLSA Provenance → Publish to npm
-# Provenance (.intoto.jsonl) is attached to GitHub Release for OpenSSF Scorecard
+# Build & Attest → Publish to npm
+# Provenance attestation stored in GitHub for OpenSSF Scorecard Signed-Releases
 
 name: Release
 
@@ -18,8 +18,10 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
+      id-token: write
+      attestations: write
     outputs:
-      hashes: ${{ steps.hash.outputs.hashes }}
+      tarball: ${{ steps.pack.outputs.tarball }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -46,13 +48,15 @@ jobs:
           echo "Build artifacts verified"
 
       - name: Pack tarball
-        run: npm pack
-
-      - name: Generate hashes
-        id: hash
-        shell: bash
+        id: pack
         run: |
-          echo "hashes=$(sha256sum *.tgz | base64 -w0)" >> "$GITHUB_OUTPUT"
+          npm pack
+          echo "tarball=$(ls *.tgz)" >> "$GITHUB_OUTPUT"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@96b4a1ef7235a096b17240c259729fdd70c83d45 # v2
+        with:
+          subject-path: '*.tgz'
 
       - name: Upload tarball
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
@@ -62,22 +66,9 @@ jobs:
           if-no-files-found: error
           retention-days: 5
 
-  provenance:
-    name: SLSA Provenance
-    needs: [build]
-    permissions:
-      actions: read
-      id-token: write
-      contents: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
-    with:
-      base64-subjects: "${{ needs.build.outputs.hashes }}"
-      upload-assets: true
-      private-repository: true
-
   publish:
     name: Publish to npm
-    needs: [build, provenance]
+    needs: [build]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
