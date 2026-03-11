@@ -15,13 +15,6 @@ on:
       - '!.github/workflows/**'
   pull_request:
     branches: [main]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'LICENSE'
-      - '.github/*.md'
-      - '.github/*.yml'
-      - '!.github/workflows/**'
 
 permissions:
   contents: read

@@ -167,9 +167,9 @@ Phase 11 (in_progress) — OpenSSF Scorecard Hardening (5.6 → 8+)
 - [ ] **T3: Vulnerabilities (5→10)** — Resolver 5 vulnerabilidades conhecidas
   - Identificar quais são (npm audit, Dependabot alerts)
   - Atualizar deps ou marcar como devDependency-only
-- [ ] **T4: CII-Best-Practices (0→?)** — Cadastrar no OpenSSF Best Practices
-  - URL: https://www.bestpractices.dev/
-  - Preencher questionário do projeto
+- [x] **T4: CII-Best-Practices (0→10)** — Cadastrado no OpenSSF Best Practices
+  - URL: https://www.bestpractices.dev/en/projects/12137
+  - Badge passing: 54/54 critérios (100%)
 - [ ] **T5: Signed-Releases (-1→10)** — Verificar se v0.1.1 com provenance satisfaz
   - Se não, criar release com signing explícito
 - [ ] **T6: Token-Permissions (9→10)** — Auditar permissions em todos os workflows
