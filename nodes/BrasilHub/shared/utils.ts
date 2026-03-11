@@ -8,6 +8,7 @@
  * @returns The value as a string, or `''` if null/undefined/object.
  */
 export function safeStr(value: unknown): string {
+	if (typeof value === 'string') return value;
 	if (value == null || typeof value === 'object') return '';
 	return String(value);
 }
@@ -19,5 +20,5 @@ export function safeStr(value: unknown): string {
  * @returns Digits-only string (e.g. `"11222333000181"`).
  */
 export function stripNonDigits(value: string): string {
-	return value.replace(/\D/g, ''); // regex with /g flag = replaceAll
+	return value.replace(/\D/g, ''); // NOSONAR: replaceAll requires es2021 lib, project targets es2019
 }
