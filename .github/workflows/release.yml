@@ -1,5 +1,6 @@
 # n8n-nodes-brasil-hub Release Pipeline
-# Publishes to npm when a GitHub release is created
+# Build → SLSA Provenance → Publish to npm
+# Provenance (.intoto.jsonl) is attached to GitHub Release for OpenSSF Scorecard
 
 name: Release
 
@@ -11,13 +12,14 @@ permissions:
   contents: read
 
 jobs:
-  publish:
-    name: Publish to npm
+  build:
+    name: Build & Pack
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: read
-      id-token: write
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -43,8 +45,60 @@ jobs:
           test -f dist/nodes/BrasilHub/BrasilHub.node.json
           echo "Build artifacts verified"
 
+      - name: Pack tarball
+        run: npm pack
+
+      - name: Generate hashes
+        id: hash
+        shell: bash
+        run: |
+          echo "hashes=$(sha256sum *.tgz | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: npm-package
+          path: '*.tgz'
+          if-no-files-found: error
+          retention-days: 5
+
+  provenance:
+    name: SLSA Provenance
+    needs: [build]
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
+    with:
+      base64-subjects: "${{ needs.build.outputs.hashes }}"
+      upload-assets: true
+
+  publish:
+    name: Publish to npm
+    needs: [build, provenance]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 22
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Download tarball
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: npm-package
+
       - name: Publish to npm
-        run: npm publish --provenance --access public --ignore-scripts
+        run: npm publish *.tgz --provenance --access public --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

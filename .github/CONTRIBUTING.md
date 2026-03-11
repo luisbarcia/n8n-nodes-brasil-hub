@@ -6,7 +6,7 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 ### Prerequisites
 
-- Node.js 18+ (20 recommended)
+- Node.js 20+ (22 recommended)
 - npm 9+
 - An n8n instance for testing (local or Docker)
 
@@ -55,7 +55,8 @@ nodes/BrasilHub/
 ├── types.ts                    # TypeScript interfaces
 ├── shared/
 │   ├── validators.ts           # CNPJ/CEP validation (local, no API)
-│   └── fallback.ts             # Multi-provider fallback logic
+│   ├── fallback.ts             # Multi-provider fallback logic
+│   └── utils.ts                # Shared utilities (stripNonDigits, safeStr)
 └── resources/
     ├── cnpj/                   # CNPJ resource (description, execute, normalize)
     └── cep/                    # CEP resource (description, execute, normalize)
@@ -93,7 +94,6 @@ nodes/BrasilHub/
 
 - TDD approach: write failing test first, then implement
 - Jest + ts-jest
-- Use `jest.useFakeTimers()` for tests involving delays
 - Test normalizers with real API response fixtures per provider
 
 ## Commit Messages

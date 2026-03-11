@@ -175,14 +175,54 @@
 - Errors:
   - scan-community-package: `setTimeout` restricted global no dist/ (eslint-disable do .ts não persiste no .js)
 
+### Phase 10: Quality Badges
+- **Status:** complete
+- **Started:** 2026-03-10
+- Actions taken:
+  - SonarCloud: workflow + sonar-project.properties + badge → Quality Gate Passed
+  - OpenSSF Scorecard: workflow scorecard.yml + badge → 5.6/10
+  - Codecov tentado → Project Coverage requer Pro plan → migrado para Coveralls → removido (SonarCloud já cobre coverage)
+  - Fix SonarCloud findings: safeStr(), Number.parseInt, permissions job-level
+  - Todos os workflows verdes
+- Files created/modified:
+  - `.github/workflows/sonarcloud.yml` (created)
+  - `.github/workflows/scorecard.yml` (created)
+  - `.github/workflows/ci.yml` (modified — coverage removido, SonarCloud cobre)
+  - `sonar-project.properties` (created)
+  - `nodes/BrasilHub/shared/utils.ts` (modified — safeStr())
+  - `nodes/BrasilHub/shared/validators.ts` (modified — Number.parseInt)
+  - `README.md` (modified — badges SonarCloud, OpenSSF)
+- Commits: `c65c8e0`, `9471487`, `2e1fec2`, `6ae3de0`, `14b1dba`, `c16ec7d`, `25ef770`, `31ce1dc`
+
+### Phase 11: OpenSSF Scorecard Hardening (in_progress)
+- **Status:** in_progress
+- **Started:** 2026-03-10
+- **Goal:** Subir score de 5.6 para 8+
+- Actions taken:
+  - Diagnóstico completo: 18 checks, 7 perfeitos, 4 zerados acionáveis
+  - **T2: SAST** — CodeQL workflow criado → SAST 0→10 ✅
+  - **T6: Token-Permissions** — top-level permissions em todos workflows → 9→10 ✅
+  - **T7: CI-Tests** — PRs merged para Scorecard detectar CI → -1→10 ✅
+  - **T1: Branch-Protection** — Migrado de Branch Protection Rules para Repository Rulesets (público via API) → 0→3 (Tier 1: solo dev, sem PR reviews)
+  - **Coveralls removido** — SonarCloud já cobre coverage, badge redundante removido
+  - **T5: Signed-Releases** — SLSA provenance via `slsa-github-generator` generic generator, `.intoto.jsonl` anexado ao GitHub Release → -1→10 (pendente teste)
+  - **Docs atualizados** — README (Node.js 20/22, sem Coveralls badge), CLAUDE.md (release pipeline 3 jobs)
+  - Score subiu de 5.6 → 6.8 (verificado)
+- Files modified nesta sessão:
+  - `.github/workflows/release.yml` (reescrito — 3 jobs: build → provenance → publish)
+  - `.github/workflows/ci.yml` (removido Coveralls step)
+  - `.github/workflows/codeql.yml` (criado na sessão anterior)
+  - `README.md` (removido Coveralls badge, Node.js 20/22)
+  - `CLAUDE.md` (release pipeline 3 jobs com SLSA)
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 9 in_progress — fixing scan failures for Creator Portal |
-| Where am I going? | Fix setTimeout + aliases → republish → scan pass → Creator Portal |
-| What's the goal? | Node n8n "Brasil Hub" verificado e aceito no Creator Portal |
-| What have I learned? | Ver findings.md — scan tool roda ESLint contra dist/, não honra eslint-disable |
-| What have I done? | 49 tests, 99.46% coverage, v0.1.0 publicado, 2 issues para fix |
+| Where am I? | Phase 11 in_progress — SLSA provenance configurado, falta commit+push+verificar |
+| Where am I going? | Commit → push → verificar CI → próximo release testar provenance |
+| What's the goal? | Subir OpenSSF Scorecard de 5.6 para 8+ (atualmente 6.8) |
+| What have I learned? | SLSA generic generator mantém build próprio + gera .intoto.jsonl; Scorecard checa release assets; solo dev limita Branch-Protection a Tier 1 |
+| What have I done? | CodeQL (SAST 10), Rulesets (Branch 3), Token-Perms (10), CI-Tests (10), SLSA provenance (pendente teste), Coveralls removido |
 
 ---
 *Update after completing each phase or encountering errors*
