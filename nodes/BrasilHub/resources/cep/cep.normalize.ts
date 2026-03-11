@@ -1,15 +1,15 @@
 import type { ICepResult } from '../../types';
-import { stripNonDigits } from '../../shared/utils';
+import { safeStr, stripNonDigits } from '../../shared/utils';
 
 /** Maps BrasilAPI response (street/neighborhood/city/state) to {@link ICepResult}. */
 function normalizeBrasilApi(data: Record<string, unknown>): ICepResult {
 	return {
-		cep: stripNonDigits(String(data.cep ?? '')),
-		logradouro: String(data.street ?? ''),
+		cep: stripNonDigits(safeStr(data.cep)),
+		logradouro: safeStr(data.street),
 		complemento: '',
-		bairro: String(data.neighborhood ?? ''),
-		cidade: String(data.city ?? ''),
-		uf: String(data.state ?? ''),
+		bairro: safeStr(data.neighborhood),
+		cidade: safeStr(data.city),
+		uf: safeStr(data.state),
 		ibge: '',
 		ddd: '',
 	};
@@ -18,14 +18,14 @@ function normalizeBrasilApi(data: Record<string, unknown>): ICepResult {
 /** Shared normalizer for ViaCEP and OpenCEP (identical field mapping). */
 function normalizeViaCepFormat(data: Record<string, unknown>): ICepResult {
 	return {
-		cep: stripNonDigits(String(data.cep ?? '')),
-		logradouro: String(data.logradouro ?? ''),
-		complemento: String(data.complemento ?? ''),
-		bairro: String(data.bairro ?? ''),
-		cidade: String(data.localidade ?? ''),
-		uf: String(data.uf ?? ''),
-		ibge: String(data.ibge ?? ''),
-		ddd: String(data.ddd ?? ''),
+		cep: stripNonDigits(safeStr(data.cep)),
+		logradouro: safeStr(data.logradouro),
+		complemento: safeStr(data.complemento),
+		bairro: safeStr(data.bairro),
+		cidade: safeStr(data.localidade),
+		uf: safeStr(data.uf),
+		ibge: safeStr(data.ibge),
+		ddd: safeStr(data.ddd),
 	};
 }
 

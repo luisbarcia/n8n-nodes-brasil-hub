@@ -37,7 +37,7 @@ export function validateCnpj(cnpj: string): IValidationResult {
 
 	let sum = 0;
 	for (let i = 0; i < 12; i++) {
-		sum += parseInt(digits[i], 10) * weights1[i];
+		sum += Number.parseInt(digits[i], 10) * weights1[i];
 	}
 	let remainder = sum % 11;
 	const check1 = remainder < 2 ? 0 : 11 - remainder;
@@ -48,7 +48,7 @@ export function validateCnpj(cnpj: string): IValidationResult {
 
 	sum = 0;
 	for (let i = 0; i < 13; i++) {
-		sum += parseInt(digits[i], 10) * weights2[i];
+		sum += Number.parseInt(digits[i], 10) * weights2[i];
 	}
 	remainder = sum % 11;
 	const check2 = remainder < 2 ? 0 : 11 - remainder;

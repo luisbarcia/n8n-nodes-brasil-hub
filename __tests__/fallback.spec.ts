@@ -7,7 +7,7 @@ function createMockContext(responses: Array<{ success: boolean; data?: unknown; 
 		helpers: {
 			httpRequest: jest.fn().mockImplementation(async () => {
 				const response = responses[callIndex++];
-				if (!response || !response.success) {
+				if (!response?.success) {
 					throw new Error(response?.error ?? 'Request failed');
 				}
 				return response.data;
@@ -77,7 +77,7 @@ describe('queryWithFallback', () => {
 			helpers: {
 				httpRequest: jest.fn().mockImplementation(async () => {
 					callIndex++;
-					if (callIndex === 1) throw 'string error';
+					if (callIndex === 1) throw 'string error'; // NOSONAR: intentionally testing non-Error thrown values
 					return { ok: true };
 				}),
 			},
