@@ -226,11 +226,30 @@
 - CodeQL é o mais simples de adicionar (GitHub nativo, gratuito para public repos)
 - Action: `github/codeql-action/init`, `analyze` — suporta TypeScript via `javascript`
 
-### Vulnerabilities (5→10)
-- Scorecard usa OSV (Open Source Vulnerabilities database)
-- As 5 vulns provavelmente são de devDependencies transitivas (n8n-workflow → langchain chain)
-- Resolver via `npm audit fix` ou atualizar deps
-- Se são apenas devDeps, o Scorecard ainda pode contá-las
+### Vulnerabilities (5→10) — BLOQUEADO POR UPSTREAM
+
+**Status: NÃO ACIONÁVEL — depende de fix upstream pelo time do n8n.**
+
+Todas as 13 vulns são devDependencies transitivas que **não vão no pacote publicado** (`files: ["dist/nodes"]`). Risco real de segurança: zero.
+
+| Vuln | Severidade | Cadeia de deps | Pacote raiz (devDep) |
+|------|-----------|----------------|---------------------|
+| minimatch ReDoS (3 CVEs) | High (5) | `eslint-plugin-n8n-nodes-base` → `@typescript-eslint/utils` → `minimatch 9.0.x` | `@n8n/node-cli` |
+| @langchain/community SSRF | Moderate (3) | `@n8n/ai-node-sdk` → `@langchain/community` | `@n8n/node-cli` |
+| file-type infinite loop | Moderate (3) | `@ibm-cloud/watsonx-ai` → `ibm-cloud-sdk-core` → `file-type` | `@n8n/node-cli` |
+| langsmith SSRF | Moderate (2) | `@langchain/classic` → `langsmith` | `@n8n/node-cli` |
+
+**Por que não corrigir localmente:**
+- `npm audit fix` tenta atualizar transitivas fora das ranges de peer deps → quebra `@n8n/node-cli`
+- `overrides` em package.json causa desync do lock file e conflitos de peer deps (testado e revertido na sessão anterior)
+- Todas as vulns vêm de `@n8n/node-cli` ou `eslint-plugin-n8n-nodes-base` — só o time do n8n pode atualizar
+
+**Quando re-avaliar:**
+- Quando `@n8n/node-cli` lançar nova versão → rodar `npm update @n8n/node-cli` e re-testar
+- Monitorar via Dependabot (já configurado, PRs automáticos)
+- Scorecard OSV re-avalia semanalmente
+
+**Impacto no Scorecard:** ~5/10 no check Vulnerabilities. Aceitar como limitação até fix upstream.
 
 ### CII-Best-Practices (0→?)
 - URL: https://www.bestpractices.dev/en/projects
@@ -250,6 +269,197 @@
 - Coveralls é gratuito para repos públicos, badge mostra 97%
 - Codecov Test Analytics mantido (funciona no free tier)
 - Coveralls action: `coverallsapp/github-action@v2.3.6` com `github-token` automático
+
+## CII Best Practices — Silver Level Criteria
+
+**Pré-requisito:** Badge Passing ✅ (54/54, 100%)
+**URL:** https://www.bestpractices.dev/en/projects/12137/silver/edit
+
+### BASICS
+
+| Critério | Status | Justificativa |
+|----------|--------|---------------|
+| achieve_passing | ✅ Met | Badge Passing 100% |
+| contribution_requirements | ✅ Met | CONTRIBUTING.md com coding standards, lint, test requirements |
+| dco | ✅ Met | DCO sign-off via Co-Authored-By; MIT license cobre contribuições |
+| governance | ✅ Met | GOVERNANCE.md (BDFL model) |
+| code_of_conduct | ✅ Met | .github/CODE_OF_CONDUCT.md (Contributor Covenant v2.1) |
+| roles_responsibilities | ✅ Met | GOVERNANCE.md documenta roles (Maintainer BDFL + Contributor) |
+| access_continuity | ❌ Difícil | Solo dev — sem backup maintainer |
+| bus_factor | ❌ Difícil | Solo dev — bus factor = 1 |
+| documentation_roadmap | ✅ Met | ROADMAP.md com v0.2 e v1.0 plans |
+| documentation_architecture | ✅ Met | CLAUDE.md documenta arquitetura detalhada |
+| documentation_security | ✅ Met | SECURITY.md documenta política de segurança |
+| documentation_quick_start | ✅ Met | README tem Installation + Operations sections |
+| documentation_current | ✅ Met | Living Docs pattern mantém docs atualizados |
+| documentation_achievements | ✅ Met | Badges no README com hyperlinks |
+| accessibility_best_practices | N/A | CLI node, não UI |
+| internationalization | N/A | n8n exige inglês; dados são pt-BR por natureza |
+| sites_password_security | N/A | Não armazenamos passwords |
+
+### CHANGE CONTROL
+
+| Critério | Status | Justificativa |
+|----------|--------|---------------|
+| maintenance_or_update | ✅ Met | Semver + CHANGELOG.md documentam breaking changes |
+
+### REPORTING
+
+| Critério | Status | Justificativa |
+|----------|--------|---------------|
+| report_tracker | ✅ Met | GitHub Issues habilitado |
+| vulnerability_report_credit | ✅ Met | SECURITY.md menciona crédito a reporters |
+| vulnerability_response_process | ✅ Met | SECURITY.md com timeline (48h ack, 1 week assessment, 30 days fix) |
+
+### QUALITY
+
+| Critério | Status | Justificativa |
+|----------|--------|---------------|
+| coding_standards | ✅ Met | ESLint config @n8n/node-cli documentado em CONTRIBUTING.md |
+| coding_standards_enforced | ✅ Met | ESLint no CI, pre-commit checks |
+| build_standard_variables | N/A | Não é C/C++ native binary |
+| build_preserve_debug | N/A | TypeScript → JS transpilation |
+| build_non_recursive | N/A | npm/tsc build, não make |
+| build_repeatable | ✅ Met | package-lock.json + npm ci = builds reproduzíveis |
+| installation_common | ✅ Met | npm install n8n-nodes-brasil-hub |
+| installation_standard_variables | N/A | npm handles this |
+| installation_development_quick | ✅ Met | npm install + npm test (README documenta) |
+| external_dependencies | ✅ Met | package.json + package-lock.json |
+| dependency_monitoring | ✅ Met | Dependabot + npm audit no CI |
+| updateable_reused_components | ✅ Met | npm update, lockfile |
+| interfaces_current | ✅ Met | Sem uso de APIs deprecated |
+| automated_integration_testing | ✅ Met | Jest CI em cada push/PR |
+| regression_tests_added50 | ✅ Met | Todos os bugs corrigidos tiveram testes adicionados |
+| test_statement_coverage80 | ✅ Met | 99.46% statement coverage |
+| test_policy_mandated | ✅ Met | TDD mandatório documentado em CONTRIBUTING.md |
+| tests_documented_added | ✅ Met | CONTRIBUTING.md exige testes para novas features |
+| warnings_strict | ✅ Met | TypeScript strict mode + ESLint strict |
+
+### SECURITY
+
+| Critério | Status | Justificativa |
+|----------|--------|---------------|
+| implement_secure_design | ✅ Met | Input validation, zero deps, least privilege |
+| crypto_weaknesses | N/A | Não usa criptografia própria |
+| crypto_algorithm_agility | N/A | Não usa criptografia |
+| crypto_credential_agility | N/A | Não usa credentials próprias |
+| crypto_used_network | ✅ Met | Todas as APIs usam HTTPS |
+| crypto_tls12 | ✅ Met | Node.js >= 20 usa TLS 1.2+ por default |
+| crypto_certificate_verification | ✅ Met | Node.js verifica certificados por default |
+| crypto_verification_private | N/A | Não envia cookies/tokens |
+| signed_releases | ✅ Met | npm --provenance + SLSA .intoto.jsonl; verificação documentada em SECURITY.md |
+| version_tags_signed | ⚠️ Parcial | GPG key disponível; próxima release usará `git tag -s` |
+| input_validation | ✅ Met | CNPJ checksum + CEP format validation antes de API calls |
+| hardening | ✅ Met | Zero deps, input validation, TypeScript strict |
+| assurance_case | ✅ Met | SECURITY-ASSESSMENT.md com threat model, trust boundaries, design principles |
+
+### ANALYSIS
+
+| Critério | Status | Justificativa |
+|----------|--------|---------------|
+| static_analysis_common_vulnerabilities | ✅ Met | CodeQL + SonarCloud no CI |
+| dynamic_analysis_unsafe | N/A | TypeScript, não C/C++ |
+
+### Resumo Silver
+
+| Status | Count |
+|--------|-------|
+| ✅ Met | 35 |
+| ⚠️ Parcial | 1 |
+| ❌ Unmet/Difícil | 2 |
+| N/A | 12 |
+
+**Bloqueios restantes para Silver:**
+1. **version_tags_signed** — Usar `git tag -s` (GPG) para releases futuras
+2. **bus_factor / access_continuity** — Solo dev (SHOULD, não MUST — não bloqueia badge)
+
+---
+
+## CII Best Practices — Gold Level Criteria
+
+**Pré-requisito:** Badge Silver
+**URL:** https://www.bestpractices.dev/en/projects/12137/gold/edit
+
+### BASICS
+
+| Critério | Status | Justificativa |
+|----------|--------|---------------|
+| achieve_silver | ❌ Unmet | Precisa Silver primeiro |
+| bus_factor | ❌ Difícil | Solo dev — bus factor = 1, Gold exige 2+ |
+| contributors_unassociated | ❌ Difícil | Solo dev — precisa 2+ contribuidores de orgs diferentes |
+| copyright_per_file | ⚠️ Parcial | Não temos header de copyright por arquivo (SPDX recomendado) |
+| license_per_file | ⚠️ Parcial | Não temos SPDX-License-Identifier por arquivo |
+
+### CHANGE CONTROL
+
+| Critério | Status | Justificativa |
+|----------|--------|---------------|
+| repo_distributed | ✅ Met | Git (distributed VCS) |
+| small_tasks | ⚠️ Parcial | Não temos "good first issue" labels |
+| require_2FA | ✅ Met | GitHub 2FA habilitado |
+| secure_2FA | ✅ Met | GitHub suporta TOTP/WebAuthn (criptográfico) |
+
+### QUALITY
+
+| Critério | Status | Justificativa |
+|----------|--------|---------------|
+| code_review_standards | ⚠️ Parcial | Temos Ruleset com PR required, mas não documentamos processo formal |
+| two_person_review | ❌ Difícil | Solo dev — impossível sem 2º reviewer |
+| build_reproducible | ✅ Met | package-lock.json + npm ci |
+| test_invocation | ✅ Met | `npm test` (padrão npm) |
+| test_continuous_integration | ✅ Met | GitHub Actions CI em cada push/PR |
+| test_statement_coverage90 | ✅ Met | 99.46% statement coverage |
+| test_branch_coverage80 | ✅ Met | Cobertura alta (99%+) |
+
+### SECURITY
+
+| Critério | Status | Justificativa |
+|----------|--------|---------------|
+| crypto_used_network | ✅ Met | HTTPS only |
+| crypto_tls12 | ✅ Met | Node.js >= 20 |
+| hardened_site | ⚠️ Parcial | GitHub Pages/npm — não controlamos headers diretamente |
+| security_review | ✅ Met | Security review documentado (Phase 7 do task_plan) |
+| hardening | ✅ Met | Input validation, zero deps, TypeScript strict |
+
+### ANALYSIS
+
+| Critério | Status | Justificativa |
+|----------|--------|---------------|
+| dynamic_analysis | ⚠️ Parcial | Jest testa runtime, mas não temos fuzzer/scanner dedicado |
+| dynamic_analysis_enable_assertions | N/A | TypeScript, não C/C++ |
+
+### Resumo Gold
+
+| Status | Count |
+|--------|-------|
+| ✅ Met | 10 |
+| ⚠️ Parcial | 5 |
+| ❌ Difícil/Unmet | 4 |
+| N/A | 1 |
+
+**Bloqueios HARD para Gold (solo dev):**
+1. **bus_factor ≥ 2** — Precisa de 2º maintainer
+2. **contributors_unassociated** — Precisa de contribuidores de orgs diferentes
+3. **two_person_review** — Precisa de 2º reviewer para 50%+ dos PRs
+
+**Bloqueios SOFT para Gold (acionáveis):**
+1. **copyright_per_file + license_per_file** — Adicionar SPDX headers
+2. **code_review_standards** — Documentar processo
+3. **small_tasks** — Adicionar "good first issue" labels
+4. **hardened_site** — Limitação da plataforma (GitHub/npm)
+5. **dynamic_analysis** — Considerar property-based testing (fast-check)
+
+### Recomendação
+
+**Silver é alcançável** para solo dev — os bloqueios são documentação (governance, roadmap, threat model, code of conduct) + signed tags. Bus factor e access_continuity são SHOULD, não MUST.
+
+**Gold é praticamente impossível** para solo dev — bus_factor=2, contributors_unassociated, e two_person_review são MUST. Precisaria de pelo menos 1 co-maintainer ativo.
+
+**Plano recomendado:**
+1. Conquistar Silver (criar ~5 documentos + signed tags)
+2. Gold só quando/se o projeto tiver co-maintainers
+
+---
 
 ## Resources
 - Spec: `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`

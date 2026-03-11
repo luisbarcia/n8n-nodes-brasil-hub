@@ -145,6 +145,14 @@ npm run lint
 
 See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for details.
 
+## Project
+
+- [Roadmap](ROADMAP.md) — Planned features and direction
+- [Governance](GOVERNANCE.md) — Decision-making process
+- [Security Policy](.github/SECURITY.md) — Reporting vulnerabilities
+- [Security Assessment](SECURITY-ASSESSMENT.md) — Threat model and assurance case
+- [Code of Conduct](.github/CODE_OF_CONDUCT.md) — Community standards
+
 ## License
 
 [MIT](LICENSE)
