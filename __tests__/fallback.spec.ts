@@ -67,7 +67,7 @@ describe('queryWithFallback', () => {
 		]);
 
 		await expect(queryWithFallback(ctx, providers)).rejects.toThrow(
-			'All providers failed',
+			'No provider could fulfill the request',
 		);
 	});
 

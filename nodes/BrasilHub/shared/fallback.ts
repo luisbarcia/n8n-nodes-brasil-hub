@@ -41,5 +41,5 @@ export async function queryWithFallback(
 		}
 	}
 
-	throw new Error(`All providers failed: ${errors.join('; ')}`);
+	throw new Error(`No provider could fulfill the request: ${errors.join('; ')}`);
 }
