@@ -39,6 +39,12 @@ describe('cepQuery', () => {
 		const ctx = createMockContext({ cep: '123' });
 		await expect(cepQuery(ctx, 0)).rejects.toThrow('CEP must have 8 digits');
 	});
+
+	it('should throw on all-zeros CEP before making HTTP calls', async () => {
+		const ctx = createMockContext({ cep: '00000000' });
+		await expect(cepQuery(ctx, 0)).rejects.toThrow('Invalid CEP');
+		expect(ctx.helpers.httpRequest).not.toHaveBeenCalled();
+	});
 });
 
 describe('cepQuery with fallback', () => {

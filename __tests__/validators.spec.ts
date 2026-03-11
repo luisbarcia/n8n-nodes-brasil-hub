@@ -49,6 +49,11 @@ describe('validateCnpj', () => {
 		// Petrobras
 		expect(validateCnpj('33000167000101').valid).toBe(true);
 	});
+
+	it('should validate CNPJ where second check digit remainder < 2', () => {
+		// 80000000000040 — sum2 % 11 = 1 (< 2), so check2 = 0
+		expect(validateCnpj('80000000000040').valid).toBe(true);
+	});
 });
 
 describe('validateCep', () => {

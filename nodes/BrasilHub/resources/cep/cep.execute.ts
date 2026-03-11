@@ -22,13 +22,14 @@ function buildProviders(cep: string): IProvider[] {
 /**
  * Executes a CEP query against public APIs with multi-provider fallback.
  *
- * Sanitizes input, validates length, queries providers in order (BrasilAPI → ViaCEP → OpenCEP),
- * normalizes the response, and attaches metadata. Optionally includes the raw provider response.
+ * Sanitizes input, validates length and format, queries providers in order
+ * (BrasilAPI → ViaCEP → OpenCEP), normalizes the response, and attaches metadata.
+ * Optionally includes the raw provider response.
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns n8n execution data with normalized CEP result as JSON.
- * @throws {NodeOperationError} If the CEP doesn't have 8 digits or all providers fail.
+ * @throws {NodeOperationError} If the CEP is invalid (wrong length or all zeros) or all providers fail.
  */
 export async function cepQuery(
 	context: IExecuteFunctions,
@@ -40,6 +41,10 @@ export async function cepQuery(
 
 	if (cep.length !== 8) {
 		throw new NodeOperationError(context.getNode(), 'CEP must have 8 digits', { itemIndex });
+	}
+
+	if (!validateCep(cep).valid) {
+		throw new NodeOperationError(context.getNode(), 'Invalid CEP', { itemIndex });
 	}
 
 	const providers = buildProviders(cep);

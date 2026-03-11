@@ -19,13 +19,14 @@ function buildProviders(cnpj: string): IProvider[] {
 /**
  * Executes a CNPJ query against public APIs with multi-provider fallback.
  *
- * Sanitizes input, validates length, queries providers in order (BrasilAPI → CNPJ.ws → ReceitaWS),
- * normalizes the response, and attaches metadata. Optionally includes the raw provider response.
+ * Sanitizes input, validates length and checksum, queries providers in order
+ * (BrasilAPI → CNPJ.ws → ReceitaWS), normalizes the response, and attaches metadata.
+ * Optionally includes the raw provider response.
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns n8n execution data with normalized CNPJ result as JSON.
- * @throws {NodeOperationError} If the CNPJ doesn't have 14 digits or all providers fail.
+ * @throws {NodeOperationError} If the CNPJ is invalid (wrong length or checksum) or all providers fail.
  */
 export async function cnpjQuery(
 	context: IExecuteFunctions,
@@ -37,6 +38,10 @@ export async function cnpjQuery(
 
 	if (cnpj.length !== 14) {
 		throw new NodeOperationError(context.getNode(), 'CNPJ must have 14 digits', { itemIndex });
+	}
+
+	if (!validateCnpj(cnpj).valid) {
+		throw new NodeOperationError(context.getNode(), 'Invalid CNPJ checksum', { itemIndex });
 	}
 
 	const providers = buildProviders(cnpj);
