@@ -26,11 +26,29 @@ All contributions are welcome via pull requests. The maintainer reviews and merg
 
 All participants must follow our [Code of Conduct](.github/CODE_OF_CONDUCT.md).
 
-## Succession
+## Continuity & Succession
 
-If the maintainer becomes unavailable:
+This project can continue with minimal interruption if the maintainer becomes unavailable. The following measures ensure that issues can be created/closed, changes accepted, and releases published within one week:
 
-- The repository is public under MIT license — anyone can fork
-- npm package ownership can be transferred via `npm owner add`
-- GitHub repository can be transferred via Settings > Transfer
-- Interested parties should open an Issue requesting maintainer access
+### No keys or passwords required
+
+- **Source code**: Public repository under MIT license — anyone can fork and continue immediately
+- **Issues & PRs**: GitHub allows issues and discussions on public repos without maintainer action
+- **Releases**: Any fork can publish releases; npm package can be republished under a new name instantly
+
+### Ownership transfer (if maintainer cooperates or via estate)
+
+- **npm package**: Transfer via `npm owner add <new-maintainer>` (requires current owner or npm support)
+- **GitHub repository**: Transfer via Settings > Transfer (requires current owner or GitHub support with legal documentation)
+- **Domain/DNS**: No custom domain — project uses github.com and npmjs.com only
+
+### How to claim maintainership
+
+1. Open an Issue on this repository (or a fork) stating intent to maintain
+2. If the maintainer does not respond within 2 weeks, fork the repository
+3. Publish the fork to npm (under a new package name or request npm support for transfer)
+4. Update the n8n community to point to the new package
+
+### Legal
+
+The MIT license grants perpetual, irrevocable rights to use, modify, and distribute the software. No additional legal rights are needed to continue the project.
