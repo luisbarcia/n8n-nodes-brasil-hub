@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-03-11
+
+### Added
+- CNPJ checksum validation before HTTP queries (prevents wasted API calls on invalid CNPJs)
+- CEP format validation before HTTP queries (rejects all-zeros CEP early)
+- 8 new tests covering pre-query validation and normalizer edge cases
+- GitHub repository topics, homepage URL, and Discussions for discoverability
+
 ### Changed
 - Simplify CI/CD: remove OpenSSF Scorecard workflow and CodeQL (SonarCloud covers SAST + quality gate)
 - Remove OpenSSF Scorecard and CII Best Practices badges from README
+- README redesigned with centered hero, "Why Brasil Hub?" section, collapsible examples, fallback diagram
+- Icon SVG improved with `{}` data symbol
+- 100% test coverage across all metrics (statements, branches, functions, lines)
 
 ## [0.1.2] - 2026-03-11
 
@@ -68,7 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/releases/tag/v0.1.0
