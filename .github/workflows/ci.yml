@@ -73,7 +73,9 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run tests
-        run: npm test -- --coverage
+        run: npx jest --coverage --ci --reporters=default --reporters=jest-junit
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ./reports
 
       - name: Upload coverage to Codecov
         if: matrix.node == 20
@@ -81,6 +83,12 @@ jobs:
         with:
           files: ./coverage/lcov.info
           flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && matrix.node == 20 }}
+        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1
+        with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   build:
