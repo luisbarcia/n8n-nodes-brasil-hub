@@ -1,10 +1,9 @@
 {
   "name": "n8n-nodes-brasil-hub",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "n8n community node for querying Brazilian public data (CNPJ, CEP) with multi-provider fallback",
   "license": "MIT",
   "homepage": "https://github.com/luisbarcia/n8n-nodes-brasil-hub",
-  "main": "index.js",
   "keywords": [
     "n8n-community-node-package",
     "n8n",
@@ -43,7 +42,7 @@
     "test:watch": "jest --watch"
   },
   "files": [
-    "dist/nodes"
+    "dist"
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,
