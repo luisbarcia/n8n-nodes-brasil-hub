@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-03-11
+
+### Fixed
+- Align package.json with n8n-nodes-starter template to fix Creator Portal vetting
+- Remove unused `main` field and `index.js` entry point (not present in starter template)
+- Change `files` from `["dist/nodes"]` to `["dist"]` to match starter convention
+
 ## [0.1.4] - 2026-03-11
 
 ### Fixed
@@ -84,7 +91,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.1...v0.1.2
