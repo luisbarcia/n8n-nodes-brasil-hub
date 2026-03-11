@@ -4,7 +4,7 @@
 Implementar o community node n8n "Brasil Hub" que consulta dados públicos brasileiros (CNPJ e CEP) com fallback multi-provider, seguindo todos os padrões oficiais n8n.
 
 ## Current Phase
-Phase 11 (in_progress) — OpenSSF Scorecard Hardening (5.6 → 8+)
+Phase 12 (pending) — CI/CD simplification complete, ready for Creator Portal submission
 
 ## Phases
 
@@ -121,75 +121,62 @@ Phase 11 (in_progress) — OpenSSF Scorecard Hardening (5.6 → 8+)
 - [ ] Submeter no n8n Creator Portal (https://creators.n8n.io/)
 - **Status:** in_progress
 
-### Phase 10: Quality Badges (Codecov + SonarCloud + OpenSSF Scorecard)
-- [x] Pesquisar requisitos de cada plataforma
-- [x] Codecov: upload step no CI (codecov-action v5), badge no README
+### Phase 10: Quality Badges + Hardening
 - [x] SonarCloud: workflow + sonar-project.properties, badge no README
-- [x] OpenSSF Scorecard: workflow oficial (v2.4.3), badge no README
-- [x] Fix SonarCloud findings: safeStr(), Number.parseInt, permissions job-level
-- [x] Todos os 3 workflows verdes
+- [x] OpenSSF Scorecard: workflow + badge (score subiu 5.6→6.7)
+- [x] CII Best Practices: Passing badge (54/54 critérios)
+- [x] Branch protection: Ruleset com PR required + status checks
+- [x] v0.1.2 publicada com `attest-build-provenance` + npm provenance + GPG tag
+- [x] Docs: GOVERNANCE.md, ROADMAP.md, SECURITY-ASSESSMENT.md
 - **Status:** complete
 
-### Phase 11: OpenSSF Scorecard Hardening (5.6 → 8+)
-**Goal:** Subir score de 5.6 para 8+ atacando os checks acionáveis.
+### Phase 11: CI/CD Simplification
+- [x] Removido Scorecard workflow + badges (over-engineering para o tamanho do projeto)
+- [x] Removido CodeQL (SonarCloud já cobre SAST + quality gate)
+- [x] Atualizado referências SLSA → attest-build-provenance em todos os docs
+- [x] Adicionado `.claude/` e `reports/` ao .gitignore
+- **Workflows finais:** ci.yml, sonarcloud.yml, release.yml (3 workflows)
+- **Status:** complete
 
-**Scorecard atual (5.6/10):**
-| Check | Score | Acionável? |
-|-------|-------|-----------|
-| Binary-Artifacts | 10 | -- |
-| Dangerous-Workflow | 10 | -- |
-| Dependency-Update-Tool | 10 | -- |
-| License | 10 | -- |
-| Packaging | 10 | -- |
-| Pinned-Dependencies | 10 | -- |
-| Security-Policy | 10 | -- |
-| Token-Permissions | 9 | Minor |
-| Vulnerabilities | 5 | **Sim** |
-| Branch-Protection | 0 | **Sim** |
-| Code-Review | 0 | Parcial (solo dev) |
-| SAST | 0 | **Sim** |
-| CII-Best-Practices | 0 | **Sim** |
-| Fuzzing | 0 | Difícil |
-| Maintained | 0 | Tempo (repo < 90 dias) |
-| Contributors | 0 | Não (solo dev) |
-| CI-Tests | -1 | Precisa de PRs |
-| Signed-Releases | -1 | Timing |
+### Phase 12: Auditoria Completa Pré-Submissão
+**Goal:** Validar tudo antes de submeter no Creator Portal.
 
-**Tarefas (ordem de impacto):**
-- [x] **T1: Branch-Protection (0→10)** — Ruleset com PR required + status checks
-  - Pull request rule adicionada (0 approvals — solo dev)
-  - Required status checks: Lint, Test (Node 20), Test (Node 22), Build
-  - Linear history, no deletion, no force push
-- [x] **T2: SAST (0→10)** — CodeQL workflow já existia
-  - Fix: removido paths-ignore do PR trigger (PR #15)
-- [ ] **T3: Vulnerabilities (5→10)** — Resolver 5 vulnerabilidades conhecidas
-  - Identificar quais são (npm audit, Dependabot alerts)
-  - Atualizar deps ou marcar como devDependency-only
-- [x] **T4: CII-Best-Practices (0→10)** — Cadastrado no OpenSSF Best Practices
-  - URL: https://www.bestpractices.dev/en/projects/12137
-  - Badge passing: 54/54 critérios (100%)
-- [x] **T5: Signed-Releases (-1→10)** — v0.1.2 publicada com attestation
-  - SLSA generator falhou 2x ("Repository is private" + go.sum not found)
-  - Fix: substituído por `actions/attest-build-provenance@v2` (PR #18)
-  - v0.1.2 publicada com npm provenance + GitHub attestation — verificável via `npm audit signatures`
-  - Tag v0.1.2 assinada com GPG
-- [x] **T6: Token-Permissions (9→10)** — Auditado: todos os workflows com permissions mínimas
-- [ ] **T7: CI-Tests (-1→?)** — Criar PR de teste para que Scorecard detecte CI checks
-- [x] **T8: CII Silver Prep** — Criar documentos necessários para badge Silver
-  - [x] CODE_OF_CONDUCT.md (já existia — Contributor Covenant v2.1)
-  - [x] GOVERNANCE.md (BDFL model, roles, succession plan)
-  - [x] ROADMAP.md (v0.2, v1.0, not planned)
-  - [x] SECURITY-ASSESSMENT.md (threat model, trust boundaries, 8 threats)
-  - [x] SECURITY.md — Seção "Verifying Releases" (npm provenance + SLSA)
-  - [x] README.md — Links para novos documentos (Project section)
-  - [x] version_tags_signed — v0.1.2 assinada com GPG via `.envrc` config
-- [ ] Verificar score atualizado no Scorecard
-- **Status:** in_progress
+#### Fase 1: Compliance & Segurança (bloqueia release)
+- [ ] **1.1 n8n Node Compliance** — 17 checks (package.json, codex, icon, descriptions, ESLint)
+  - [ ] name `n8n-nodes-*`, keyword `n8n-community-node-package`, MIT
+  - [ ] n8n section com nodes paths corretos
+  - [ ] Class name = filename, codex name match
+  - [ ] SVG icon (não PNG)
+  - [ ] resource/operation: `noDataExpression: true`, `action` em cada option
+  - [ ] DisplayNames em Title Case
+  - [ ] `constructExecutionMetaData` + `continueOnFail()`
+  - [ ] Zero runtime dependencies
+  - [ ] UI text em inglês
+  - [ ] Sem globals restritos no dist/ (setTimeout, setInterval)
+- [ ] **1.2 Security Review** — Input sanitization, SSRF, secrets, HTTP safety
+- [ ] **Gate:** Zero findings Critical/High
+
+#### Fase 2: Qualidade de Código (bloqueia release)
+- [ ] **2.1 Testes** — Coverage ≥ 90% branches, edge cases
+- [ ] **2.2 Build + Lint** — Limpos
+- [ ] **2.3 JSDoc** — 100% funções/classes exportadas
+- [ ] **Gate:** Coverage ≥ 90%, build + lint verdes
+
+#### Fase 3: Build & CI
+- [ ] `npm run build` — limpo
+- [ ] `npm run lint` — limpo
+- [ ] `npx jest --coverage` — verde
+- [ ] `npm audit --audit-level=critical` — limpo
+- [ ] Push + CI verde
+
+#### Fase 4: Scan & Submissão
+- [ ] `npx @n8n/scan-community-package n8n-nodes-brasil-hub@0.1.2` — passa
+- [ ] Submeter no n8n Creator Portal (https://creators.n8n.io/)
+
+**Status:** in_progress (3 agentes rodando em paralelo: compliance, security, quality)
 
 ## Pending
-- [x] npm publish via release workflow — publicado com provenance
-- [ ] Submeter no n8n Creator Portal para verificação
-- [x] Actions atualizadas (checkout v6, setup-node v6, upload-artifact v7) — PRs #1-3 fechados
+- [ ] Creator Portal submission (após auditoria)
 
 ## Notes
 - Plano detalhado: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`

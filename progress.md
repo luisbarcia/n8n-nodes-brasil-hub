@@ -194,35 +194,33 @@
   - `README.md` (modified — badges SonarCloud, OpenSSF)
 - Commits: `c65c8e0`, `9471487`, `2e1fec2`, `6ae3de0`, `14b1dba`, `c16ec7d`, `25ef770`, `31ce1dc`
 
-### Phase 11: OpenSSF Scorecard Hardening (in_progress)
-- **Status:** in_progress
-- **Started:** 2026-03-10
-- **Goal:** Subir score de 5.6 para 8+
+### Phase 11: CI/CD Simplification
+- **Status:** complete
+- **Started:** 2026-03-11
 - Actions taken:
-  - Diagnóstico completo: 18 checks, 7 perfeitos, 4 zerados acionáveis
-  - **T2: SAST** — CodeQL workflow criado → SAST 0→10 ✅
-  - **T6: Token-Permissions** — top-level permissions em todos workflows → 9→10 ✅
-  - **T7: CI-Tests** — PRs merged para Scorecard detectar CI → -1→10 ✅
-  - **T1: Branch-Protection** — Migrado de Branch Protection Rules para Repository Rulesets (público via API) → 0→3 (Tier 1: solo dev, sem PR reviews)
-  - **Coveralls removido** — SonarCloud já cobre coverage, badge redundante removido
-  - **T5: Signed-Releases** — SLSA provenance via `slsa-github-generator` generic generator, `.intoto.jsonl` anexado ao GitHub Release → -1→10 (pendente teste)
-  - **Docs atualizados** — README (Node.js 20/22, sem Coveralls badge), CLAUDE.md (release pipeline 3 jobs)
-  - Score subiu de 5.6 → 6.8 (verificado)
-- Files modified nesta sessão:
-  - `.github/workflows/release.yml` (reescrito — 3 jobs: build → provenance → publish)
-  - `.github/workflows/ci.yml` (removido Coveralls step)
-  - `.github/workflows/codeql.yml` (criado na sessão anterior)
-  - `README.md` (removido Coveralls badge, Node.js 20/22)
-  - `CLAUDE.md` (release pipeline 3 jobs com SLSA)
+  - v0.1.2 publicada: `attest-build-provenance` + npm provenance + GPG tag ✅
+  - Removido `scorecard.yml` e badges Scorecard/CII do README (PR #19)
+  - Removido `codeql.yml` — SonarCloud cobre SAST + quality (PR #20)
+  - Atualizado todas referências SLSA → attest-build-provenance
+  - Adicionado `.claude/` e `reports/` ao .gitignore
+  - **Workflows finais:** ci.yml, sonarcloud.yml, release.yml
+- Files modified:
+  - `.github/workflows/scorecard.yml` (deleted)
+  - `.github/workflows/codeql.yml` (deleted)
+  - `.github/workflows/release.yml` (comment fix)
+  - `.gitignore` (added .claude/, reports/)
+  - `README.md`, `CHANGELOG.md`, `SECURITY-ASSESSMENT.md`, `ROADMAP.md`, `.github/SECURITY.md` (ref cleanup)
+  - `CLAUDE.md` (pipeline 2 jobs, grep terms)
+- PRs: #19, #20 (merged, CI verde)
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 11 in_progress — SLSA provenance configurado, falta commit+push+verificar |
-| Where am I going? | Commit → push → verificar CI → próximo release testar provenance |
-| What's the goal? | Subir OpenSSF Scorecard de 5.6 para 8+ (atualmente 6.8) |
-| What have I learned? | SLSA generic generator mantém build próprio + gera .intoto.jsonl; Scorecard checa release assets; solo dev limita Branch-Protection a Tier 1 |
-| What have I done? | CodeQL (SAST 10), Rulesets (Branch 3), Token-Perms (10), CI-Tests (10), SLSA provenance (pendente teste), Coveralls removido |
+| Where am I? | Phase 11 complete — CI/CD simplificado, v0.1.2 publicada |
+| Where am I going? | Auditoria completa → Creator Portal submission |
+| What's the goal? | Publicar community node verificado no n8n Creator Portal |
+| What have I learned? | SonarCloud basta como quality gate; Scorecard/CII são over-engineering para projeto pequeno; `attest-build-provenance` substitui SLSA generator |
+| What have I done? | v0.1.2 no npm, 3 workflows limpos, docs consistentes |
 
 ---
 *Update after completing each phase or encountering errors*
