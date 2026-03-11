@@ -2,7 +2,7 @@
 
 ## Project
 
-n8n community node (`n8n-nodes-brasil-hub`) for querying Brazilian public data. Single "Brasil Hub" node with resource/operation routing pattern. v1.0 ships CNPJ and CEP resources.
+n8n community node (`n8n-nodes-brasil-hub`) for querying Brazilian public data. Single "Brasil Hub" node with resource/operation routing pattern. Currently ships CNPJ and CEP resources (v0.1.x), with CPF, Banks, DDD, FIPE, and Feriados planned as incremental MINOR releases (v0.2.0–v0.7.0).
 
 ## Tech Stack
 

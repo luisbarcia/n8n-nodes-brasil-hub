@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v1.0 ships with CNPJ and CEP lookups.
+Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.1.x ships CNPJ and CEP. New resources ship as incremental MINOR releases (v0.2.0 CPF → v0.3.0 Banks → v0.4.0 DDD → v0.5.0 FIPE → v0.6.0 Feriados → v0.7.0 additional providers).
 
 - **License:** MIT
 - **Tech Stack:** TypeScript, n8n-workflow, Jest + ts-jest
@@ -291,5 +291,7 @@ Estes arquivos contêm informações que ficam desatualizadas quando o projeto m
 
 ## Spec & Plan
 
-- **Design spec:** `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
-- **Implementation plan:** `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`
+- **Design spec (v0.1):** `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
+- **Design spec (v0.2–v0.7):** `docs/superpowers/specs/2026-03-11-brasil-hub-v0.2.0-design.md`
+- **Implementation plan (v0.1):** `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`
+- **Implementation plan (v0.2–v0.7):** `docs/superpowers/plans/2026-03-11-brasil-hub-v0.2.0.md`
