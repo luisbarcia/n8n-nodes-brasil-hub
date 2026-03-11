@@ -42,7 +42,7 @@ export function validateCnpj(cnpj: string): IValidationResult {
 	let remainder = sum % 11;
 	const check1 = remainder < 2 ? 0 : 11 - remainder;
 
-	if (parseInt(digits[12], 10) !== check1) {
+	if (Number.parseInt(digits[12], 10) !== check1) {
 		return { valid: false, formatted: '', input };
 	}
 
@@ -53,7 +53,7 @@ export function validateCnpj(cnpj: string): IValidationResult {
 	remainder = sum % 11;
 	const check2 = remainder < 2 ? 0 : 11 - remainder;
 
-	if (parseInt(digits[13], 10) !== check2) {
+	if (Number.parseInt(digits[13], 10) !== check2) {
 		return { valid: false, formatted: '', input };
 	}
 
