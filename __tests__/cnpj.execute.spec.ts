@@ -54,6 +54,18 @@ describe('cnpjQuery', () => {
 		const ctx = createMockContext({ cnpj: '123' });
 		await expect(cnpjQuery(ctx, 0)).rejects.toThrow('CNPJ must have 14 digits');
 	});
+
+	it('should throw on invalid CNPJ checksum before making HTTP calls', async () => {
+		const ctx = createMockContext({ cnpj: '11222333000199' }); // valid length, invalid checksum
+		await expect(cnpjQuery(ctx, 0)).rejects.toThrow('Invalid CNPJ checksum');
+		expect(ctx.helpers.httpRequest).not.toHaveBeenCalled();
+	});
+
+	it('should throw on all-same-digit CNPJ before making HTTP calls', async () => {
+		const ctx = createMockContext({ cnpj: '11111111111111' });
+		await expect(cnpjQuery(ctx, 0)).rejects.toThrow('Invalid CNPJ checksum');
+		expect(ctx.helpers.httpRequest).not.toHaveBeenCalled();
+	});
 });
 
 describe('cnpjQuery with fallback', () => {

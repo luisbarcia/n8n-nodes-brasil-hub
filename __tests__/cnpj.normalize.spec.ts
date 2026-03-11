@@ -149,6 +149,43 @@ describe('normalizeCnpj', () => {
 		expect(() => normalizeCnpj({}, 'unknown')).toThrow('Unknown CNPJ provider: unknown');
 	});
 
+	it('should handle CNPJ.ws response with all nested fields null', () => {
+		const minimal = { razao_social: 'TESTE' };
+		const result = normalizeCnpj(minimal, 'cnpjws');
+		expect(result.razao_social).toBe('TESTE');
+		expect(result.cnpj).toBe('');
+		expect(result.porte).toBe('');
+		expect(result.natureza_juridica).toBe('');
+		expect(result.capital_social).toBe(0);
+		expect(result.atividade_principal.codigo).toBe('');
+		expect(result.endereco.municipio).toBe('');
+		expect(result.contato.telefone).toBe('');
+		expect(result.socios).toEqual([]);
+	});
+
+	it('should handle ReceitaWS response with atividade_principal not an array', () => {
+		const data = { cnpj: '00000000000191', atividade_principal: 'invalid' };
+		const result = normalizeCnpj(data, 'receitaws');
+		expect(result.atividade_principal.codigo).toBe('');
+		expect(result.atividade_principal.descricao).toBe('');
+	});
+
+	it('should handle ReceitaWS response with empty atividade_principal array', () => {
+		const data = { cnpj: '00000000000191', atividade_principal: [] };
+		const result = normalizeCnpj(data, 'receitaws');
+		expect(result.atividade_principal.codigo).toBe('');
+	});
+
+	it('should handle CNPJ.ws socio with null qualificacao_socio', () => {
+		const data = {
+			...cnpjWsResponse,
+			socios: [{ nome: 'TESTE', cpf_cnpj_socio: '***', qualificacao_socio: null, data_entrada: '2020-01-01' }],
+		};
+		const result = normalizeCnpj(data, 'cnpjws');
+		expect(result.socios[0].qualificacao).toBe('');
+		expect(result.socios[0].nome).toBe('TESTE');
+	});
+
 	it('should never produce "undefined" strings in phone field', () => {
 		const withPartialPhone = {
 			...cnpjWsResponse,
