@@ -20,9 +20,15 @@
     "name": "Luis Barcia",
     "url": "https://github.com/luisbarcia"
   },
+  "bugs": {
+    "url": "https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/luisbarcia/n8n-nodes-brasil-hub.git"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "scripts": {
     "build": "n8n-node build",
