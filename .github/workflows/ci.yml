@@ -81,6 +81,7 @@ jobs:
         with:
           files: ./coverage/lcov.info
           flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   build:
     name: Build
