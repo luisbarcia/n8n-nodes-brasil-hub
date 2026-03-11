@@ -79,5 +79,4 @@ Threat model and security assurance case for n8n-nodes-brasil-hub.
 - **Static analysis**: CodeQL + SonarCloud run on every push/PR
 - **Dependency audit**: `npm audit` in CI (critical level gate)
 - **Security policy**: [SECURITY.md](.github/SECURITY.md) with responsible disclosure process
-- **Provenance**: npm publish with `--provenance` (Sigstore OIDC attestation)
-- **SLSA**: Level 3 provenance via `slsa-github-generator` attached to GitHub Releases
+- **Provenance**: npm publish with `--provenance` + GitHub build attestation (Sigstore OIDC)

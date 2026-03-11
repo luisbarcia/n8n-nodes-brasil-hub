@@ -1,4 +1,4 @@
-# CodeQL static analysis for OpenSSF Scorecard SAST check
+# CodeQL static analysis
 name: CodeQL
 
 on:

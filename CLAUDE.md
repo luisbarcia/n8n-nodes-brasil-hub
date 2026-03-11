@@ -160,9 +160,8 @@ This project uses **Manus-style file-based planning** (skill: `planning-with-fil
 - **Solução CI:** `npm publish *.tgz --provenance --access public --ignore-scripts` no release workflow
 - O workflow já roda tests + build antes do publish, então pular lifecycle scripts é seguro
 
-### Release pipeline (3 jobs)
-- **Build & Pack** → testa, builda, cria tarball (`npm pack`), gera hash SHA256
-- **SLSA Provenance** → chama `slsa-github-generator` generic generator, anexa `.intoto.jsonl` ao GitHub Release
+### Release pipeline (2 jobs)
+- **Build & Pack** → testa, builda, cria tarball (`npm pack`), gera attestation via `actions/attest-build-provenance@v2`
 - **Publish** → baixa tarball, publica no npm com `--provenance`
 - O `release.yml` roda no ref do tag, não no `main`
 - Se corrigir workflows após criar o tag, precisa **deletar tag + release e recriar** no commit corrigido
@@ -286,7 +285,7 @@ Estes arquivos contêm informações que ficam desatualizadas quando o projeto m
 **Termos para grep após mudanças comuns:**
 - Mudou Node version → grep `Node 18`, `Node 20`, `node-version`, `node:`
 - Mudou test infra → grep `useFakeTimers`, `runWithTimers`, `jest.config`
-- Mudou CI pipeline → grep `coveralls`, `codecov`, `coverage`, workflow names
+- Mudou CI pipeline → grep `sonarcloud`, `coverage`, workflow names
 - Adicionou arquivo em `shared/` → grep tree structures nos .md
 - Mudou release flow → grep `npm publish`, `provenance`, `release.yml`
 

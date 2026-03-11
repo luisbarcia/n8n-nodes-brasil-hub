@@ -156,23 +156,24 @@ Phase 11 (in_progress) — OpenSSF Scorecard Hardening (5.6 → 8+)
 | Signed-Releases | -1 | Timing |
 
 **Tarefas (ordem de impacto):**
-- [ ] **T1: Branch-Protection (0→10)** — Ativar branch protection rules no `main` via `gh api`
-  - Require PR reviews (≥1)
-  - Require status checks (CI, SonarCloud)
-  - Require up-to-date branches
-  - Enforce for admins
-- [ ] **T2: SAST (0→10)** — Adicionar CodeQL Analysis workflow
-  - SonarCloud já roda, mas Scorecard procura CodeQL/Semgrep especificamente
-  - Criar `.github/workflows/codeql.yml`
+- [x] **T1: Branch-Protection (0→10)** — Ruleset com PR required + status checks
+  - Pull request rule adicionada (0 approvals — solo dev)
+  - Required status checks: Lint, Test (Node 20), Test (Node 22), Build
+  - Linear history, no deletion, no force push
+- [x] **T2: SAST (0→10)** — CodeQL workflow já existia
+  - Fix: removido paths-ignore do PR trigger (PR #15)
 - [ ] **T3: Vulnerabilities (5→10)** — Resolver 5 vulnerabilidades conhecidas
   - Identificar quais são (npm audit, Dependabot alerts)
   - Atualizar deps ou marcar como devDependency-only
 - [x] **T4: CII-Best-Practices (0→10)** — Cadastrado no OpenSSF Best Practices
   - URL: https://www.bestpractices.dev/en/projects/12137
   - Badge passing: 54/54 critérios (100%)
-- [ ] **T5: Signed-Releases (-1→10)** — Verificar se v0.1.1 com provenance satisfaz
-  - Se não, criar release com signing explícito
-- [ ] **T6: Token-Permissions (9→10)** — Auditar permissions em todos os workflows
+- [x] **T5: Signed-Releases (-1→10)** — v0.1.2 publicada com attestation
+  - SLSA generator falhou 2x ("Repository is private" + go.sum not found)
+  - Fix: substituído por `actions/attest-build-provenance@v2` (PR #18)
+  - v0.1.2 publicada com npm provenance + GitHub attestation — verificável via `npm audit signatures`
+  - Tag v0.1.2 assinada com GPG
+- [x] **T6: Token-Permissions (9→10)** — Auditado: todos os workflows com permissions mínimas
 - [ ] **T7: CI-Tests (-1→?)** — Criar PR de teste para que Scorecard detecte CI checks
 - [x] **T8: CII Silver Prep** — Criar documentos necessários para badge Silver
   - [x] CODE_OF_CONDUCT.md (já existia — Contributor Covenant v2.1)
@@ -181,7 +182,7 @@ Phase 11 (in_progress) — OpenSSF Scorecard Hardening (5.6 → 8+)
   - [x] SECURITY-ASSESSMENT.md (threat model, trust boundaries, 8 threats)
   - [x] SECURITY.md — Seção "Verifying Releases" (npm provenance + SLSA)
   - [x] README.md — Links para novos documentos (Project section)
-  - [ ] version_tags_signed — Próxima release usará `git tag -s` (GPG)
+  - [x] version_tags_signed — v0.1.2 assinada com GPG via `.envrc` config
 - [ ] Verificar score atualizado no Scorecard
 - **Status:** in_progress
 

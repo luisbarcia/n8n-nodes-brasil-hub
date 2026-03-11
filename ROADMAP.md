@@ -10,7 +10,7 @@ This document describes the planned direction for n8n-nodes-brasil-hub.
 - [x] Normalized output + optional raw response
 - [x] AI Agent ready (`usableAsTool: true`)
 - [x] 99%+ test coverage
-- [x] npm provenance + SLSA attestation
+- [x] npm provenance + build attestation
 
 ## Next (v0.2.0)
 

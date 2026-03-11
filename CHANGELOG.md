@@ -13,13 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GOVERNANCE.md with BDFL model, roles, and continuity/succession plan
 - ROADMAP.md with planned features for v0.2 and v1.0
 - SECURITY-ASSESSMENT.md with threat model (8 threats), trust boundaries, and secure design principles
-- Release verification instructions in SECURITY.md (npm provenance + SLSA)
-- OpenSSF Best Practices badge (Passing level, 54/54 criteria)
-- SLSA Level 3 provenance via `slsa-github-generator` attached to GitHub Releases
+- Release verification instructions in SECURITY.md (npm provenance + build attestation)
+- Build provenance attestation via `actions/attest-build-provenance`
 - GPG signing for commits and tags
 
 ### Changed
-- Release pipeline refactored to 3 jobs: Build & Pack → SLSA Provenance → Publish
+- Release pipeline: Build & Pack (with attestation) → Publish
 - Branch protection enhanced with pull request requirement and required status checks
 
 ### Fixed
@@ -28,7 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - CodeQL static analysis added to CI pipeline
 - SonarCloud quality gate integrated
-- OpenSSF Scorecard monitoring (weekly + on push)
 - All GitHub Actions pinned to SHA for supply chain security
 
 ## [0.1.1] - 2026-03-10
