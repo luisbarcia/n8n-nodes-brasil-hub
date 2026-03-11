@@ -258,8 +258,8 @@
 - PRs: #25 (author email → v0.1.4), #26 (starter alignment → v0.1.5)
 - Commits: `fdd7e91`, `7fc6c93`
 
-### Phase 14: UX Guidelines Compliance (in_progress)
-- **Status:** in_progress
+### Phase 14: UX Guidelines Compliance
+- **Status:** complete
 - **Started:** 2026-03-11
 - Actions taken:
   - Auditoria completa contra n8n UX guidelines
@@ -267,18 +267,21 @@
     1. ✅ Error message usa "failed" → corrigido para "No provider could fulfill the request"
     2. ✅ Resource options sem description → adicionadas descriptions descritivas
     3. ⏳ Simplify/Output param para CNPJ (>10 campos) → deferred para v0.2
-  - 4 arquivos modificados (fallback.ts, BrasilHub.node.ts, 2 test files)
-  - Testes atualizados para refletir nova mensagem de erro
-- Pendente: commit → PR → merge → release v0.1.6 → resubmeter Creator Portal
+  - PR #27: UX fixes (merged, CI verde)
+  - PR #28: Version bump v0.1.6 (merged, CI verde)
+  - v0.1.6 publicada no npm com provenance ✅
+  - Release workflow verde — scan community package passed ✅
+- PRs: #27, #28
+- Tag: `v0.1.6`
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 14 in_progress — UX fixes feitos, falta commit/release |
-| Where am I going? | Commit → PR → merge → release v0.1.6 → resubmeter Creator Portal |
+| Where am I? | Phase 14 complete — v0.1.6 publicada, scan passed |
+| Where am I going? | Resubmeter no Creator Portal (https://creators.n8n.io/) |
 | What's the goal? | Publicar community node verificado no n8n Creator Portal |
-| What have I learned? | Creator Portal backend é closed-source; scan local passando não garante aprovação; UX guidelines têm regras específicas sobre wording de erros |
-| What have I done? | v0.1.5 no npm, UX fixes uncommitted em 4 arquivos |
+| What have I learned? | Creator Portal backend é closed-source; scan local passando não garante aprovação; UX guidelines têm regras específicas sobre wording de erros; branch protection exige PRs para tudo |
+| What have I done? | v0.1.6 no npm, 60 testes 100% coverage, UX compliant, scan passed |
 
 ---
 *Update after completing each phase or encountering errors*

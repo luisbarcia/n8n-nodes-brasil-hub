@@ -195,14 +195,14 @@ Phase 14 (in_progress) — UX guidelines compliance + Creator Portal resubmissio
 - [x] **Fix 1:** Error message em fallback.ts — "All providers failed" → "No provider could fulfill the request" (evita palavras "error/failure")
 - [x] **Fix 2:** Resource options sem description → adicionadas descriptions descritivas
 - [ ] **Deferred:** Simplify/Output parameter para CNPJ query (>10 campos) — feature change maior, avaliar para v0.2
-- [ ] Commitar fixes
-- [ ] PR + merge + CI verde
-- [ ] Release v0.1.6
+- [x] Commitar fixes → PR #27 (merged)
+- [x] PR + merge + CI verde ✅
+- [x] Release v0.1.6 → PR #28 (merged), tag v0.1.6, npm published ✅
 - [ ] Resubmeter no Creator Portal
-- **Status:** in_progress
+- **Status:** complete (release done, resubmission pending)
 
 ## Pending
-- [ ] Creator Portal resubmission (após v0.1.6)
+- [ ] Creator Portal resubmission com v0.1.6
 
 ## Notes
 - Plano detalhado: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`
