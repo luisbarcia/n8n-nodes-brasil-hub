@@ -84,6 +84,9 @@ jobs:
           files: ./coverage/lcov.info
           flags: unittests
           token: ${{ secrets.CODECOV_TOKEN }}
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: true
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() && matrix.node == 20 }}
