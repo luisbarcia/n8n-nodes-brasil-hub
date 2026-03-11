@@ -17,6 +17,7 @@ This document describes the planned direction for n8n-nodes-brasil-hub.
 - [ ] **CPF resource** — Validate CPF numbers (local checksum, no API)
 - [ ] **Banks resource** — Query bank info by code (BrasilAPI provider)
 - [ ] **DDD resource** — Query area codes by state/city (BrasilAPI provider)
+- [ ] **Additional CNPJ providers** — Add CNPJA, MinhaReceita, OpenCNPJ (3 extra fallback sources)
 - [ ] Improve error messages with provider-specific context
 
 ## Future (v1.0)

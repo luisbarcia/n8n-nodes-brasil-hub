@@ -496,6 +496,235 @@ Todas as 13 vulns são devDependencies transitivas que **não vão no pacote pub
 
 ---
 
+## Competitive Analysis: n8n-nodes-cnpj-hub (dssiqueira)
+
+**Repo:** https://github.com/dssiqueira/n8n-nodes-cnpj-hub
+**npm:** n8n-nodes-cnpj-hub@0.1.0 (única release, ago/2025)
+**Autor:** Douglas Siqueira (doug@dsiqueira.com)
+
+### Metadata
+
+| | **cnpj-hub** | **brasil-hub** (nosso) |
+|---|---|---|
+| Versão npm | 0.1.0 (1 release) | 0.1.6 (7 releases) |
+| Tooling | tsc + gulp + rimraf + prettier | `@n8n/node-cli` (oficial) |
+| ESLint | `eslint-plugin-n8n-nodes-base` (legacy) | `@n8n/node-cli` config (atual) |
+| `n8n.strict` | Ausente | `true` |
+| `main` | `"index.js"` | Removido (starter template) |
+| Testes | Zero | 60 testes, 100% coverage |
+| CI/CD | Nenhum | GitHub Actions (CI + SonarCloud + Release) |
+
+### Arquitetura
+
+| | **cnpj-hub** | **brasil-hub** |
+|---|---|---|
+| Estrutura | 1 arquivo monolítico (591 linhas) | Modular: router + resources/ + shared/ |
+| Resources | Apenas CNPJ | CNPJ + CEP |
+| Operations | `consultarCnpj` (1 op) | `query` + `validate` (2 ops × 2 resources) |
+| Providers CNPJ | 6 (cnpjws, cnpja, minhareceita, brasilapi, receitaws, opencnpj) | 3 (brasilapi, cnpjws, receitaws) |
+| Fallback | Inline no execute, com `setTimeout` | Módulo separado (`shared/fallback.ts`) |
+| Normalização | Switch/case monolítico (~240 linhas) | Funções por provider em arquivo separado |
+| Validação local | Apenas length check (14 dígitos) | Checksum CNPJ + format CEP (local, sem API) |
+| `usableAsTool` | Ausente | `true` |
+| Type safety | ~10 `any` types | Zero `any` (`unknown` + narrowing) |
+
+### UX / Compliance
+
+| | **cnpj-hub** | **brasil-hub** |
+|---|---|---|
+| `setTimeout` | Usa (delay entre requests) | Não usa (proibido pelo scan) |
+| Error handling | `ApplicationError` genérico | `NodeOperationError` + `itemIndex` |
+| `continueOnFail` | Parcial (sem `pairedItem`) | Completo (`pairedItem` + typed `error`) |
+| `_meta` fields | Português (`api_utilizada`) | Inglês (`provider`, `strategy`) |
+| Rate limit delay | Exposto ao usuário | Nenhum (APIs públicas gratuitas) |
+| Node description | Português | Inglês (n8n Cloud requirement) |
+| `group` | `['transform']` | `[]` (correto) |
+
+### Problemas de compliance no cnpj-hub (que o scan pegaria)
+
+1. `setTimeout` — global restrito, scan falha imediatamente
+2. `error.message` sem type guard — `error` é `unknown` em strict mode
+3. Sem `usableAsTool` — falha regra `node-usable-as-tool`
+4. `main: "index.js"` — diverge do starter template
+5. Codex `node: "n8n-nodes-base.CNPJHUB"` — deveria ser o package name
+
+### Providers que cnpj-hub tem e nós não
+
+| Provider | URL pattern | Notas |
+|----------|------------|-------|
+| CNPJA | `https://open.cnpja.com/office/{cnpj}` | API com rate limit agressivo |
+| MinhaReceita | `https://minhareceita.org/{cnpj}` | Open source, self-hosted ou público |
+| OpenCNPJ | `https://api.opencnpj.org/{cnpj}` | Dados de bases abertas |
+
+**Oportunidade futura (v0.2):** Adicionar esses 3 providers ao CNPJ — a arquitetura aceita sem tocar código existente (1 normalizer + 1 entry no array de providers).
+
+## Competitive Analysis: n8n-nodes-cnpj (Integreme)
+
+**Repo:** https://github.com/Integreme/integreme-cnpj
+**npm:** n8n-nodes-cnpj@1.0.0 (única release, fev/2024)
+**Autor:** Integre.me (dev@integre.me)
+**Downloads último mês:** 5.701 (líder do segmento)
+
+### Análise Técnica
+
+| | **n8n-nodes-cnpj** | **brasil-hub** (nosso) |
+|---|---|---|
+| Versão | 1.0.0 (1 release, fev 2024) | 0.1.6 (7 releases) |
+| Resources | Apenas CNPJ | CNPJ + CEP |
+| Operations | Query (1 op) | Query + Validate (2 ops × 2 resources) |
+| Providers | 1 (cnpj.ws) | 3 + fallback automático |
+| Fallback | Nenhum | Automático com retry |
+| Validação | Nenhuma (envia direto à API) | Checksum local + format check |
+| HTTP client | `this.helpers.request()` (OBSOLETO — removido n8n v1) | `httpRequest()` (moderno) |
+| Import | `request-promise-native` (deprecated) | Nenhum import externo |
+| `usableAsTool` | Ausente | `true` |
+| `constructExecutionMetaData` | Ausente | Presente (paired items) |
+| Testes | Zero | 60+ testes, 100% coverage |
+| CI/CD | Nenhum | GitHub Actions completo |
+| Tooling | tsc + gulp + prettier | `@n8n/node-cli` (oficial) |
+| TypeScript | 5.8 | 5.8 |
+
+### Problemas Críticos
+
+1. **`this.helpers.request()`** — API removida no n8n v1. O node **quebra** em n8n v1+
+2. **`request-promise-native`** — Pacote deprecated desde 2020
+3. **`returnData.push({ json: responseData })` → `returnJsonArray(returnData)`** — Double-wrapping: `returnJsonArray` já cria `{json}` wrappers, mas `returnData` já contém objetos `{json}`. Output é `{json: {json: data}}`
+4. **Sem `continueOnFail` robusto** — Não inclui `pairedItem` no output de erro
+5. **Sem fallback** — Se cnpj.ws cair, não retorna dados
+6. **Sem validação** — CNPJ inválido gasta request desnecessariamente
+
+### Por que tem mais downloads
+
+- Publicado há 2+ anos (fev 2024) — first mover advantage
+- Nome simples "cnpj" — aparece em buscas genéricas
+- Integre.me é empresa brasileira de automação, possível base de usuários própria
+
+---
+
+## Competitive Analysis: n8n-nodes-brasilapi-dv (diversao)
+
+**Repo:** https://github.com/diversao/n8n-nodes-brasilapi
+**npm:** n8n-nodes-brasilapi-dv@1.1.4 (6 releases, jul/2025)
+**Autor:** Gabryel Goncalves (diversao)
+**Downloads último mês:** 74
+
+### Análise Técnica
+
+| | **brasilapi-dv** | **brasil-hub** (nosso) |
+|---|---|---|
+| Versão | 1.1.4 (6 releases) | 0.1.6 (7 releases) |
+| Arquitetura | 6 nodes separados (1 por endpoint) | 1 node unificado com resources |
+| Endpoints | CEP v1, CEP v2, DDD, CNPJ, FIPE, Feriados | CNPJ, CEP (v0.1); DDD, Banks planejados (v0.2) |
+| Providers | 1 (BrasilAPI) | 3 por resource + fallback |
+| Fallback | Nenhum | Automático |
+| Validação | Nenhuma | Checksum + format local |
+| HTTP client | `httpRequest()` (moderno) | `httpRequest()` (moderno) |
+| `usableAsTool` | Ausente | `true` |
+| `constructExecutionMetaData` | Ausente | Presente |
+| Error handling | `catch → push {error}` (silencia erros) | `NodeOperationError` + `itemIndex` + `continueOnFail` |
+| `continueOnFail` | Não implementado | Completo |
+| Testes | Zero | 60+ testes, 100% coverage |
+| CI/CD | Nenhum | GitHub Actions completo |
+| Runtime deps | `n8n-core` + `n8n-workflow` como dependencies (errado) | Zero (`n8n-workflow` como peerDep) |
+| Descriptions | Português | Inglês (n8n Cloud) |
+| `noDataExpression` | Ausente em todos os params | `true` em resource/operation |
+| Options descriptions | Ausente | Presente |
+| Codex file | Nenhum | `.node.json` com categories e aliases |
+
+### Problemas Críticos
+
+1. **6 nodes separados** — Anti-pattern n8n. Um node por endpoint polui o canvas (Google Sheets, Notion, Slack usam resource/operation pattern)
+2. **`n8n-core` como dependency** — Deve ser peerDependency. Bundling n8n-core no dist é desnecessário e arriscado
+3. **Sem codex files** — Nodes não têm metadata, não aparecem em categorias/buscas
+4. **`export default`** — n8n espera named exports (class name = filename)
+5. **Descriptions em português** — Bloqueia uso no n8n Cloud
+6. **Sem `continueOnFail`** — Erros silenciados em vez de reportados ao workflow
+7. **`'main' as NodeConnectionType`** — Cast desnecessário, poderia usar `NodeConnectionTypes.Main`
+8. **Fipe.node.ts** — Parâmetros condicionais (marca/modelo/ano) sem `displayOptions`, sempre visíveis
+
+### Pontos Positivos
+
+- Cobertura mais ampla de endpoints BrasilAPI (6 endpoints)
+- FIPE é um recurso útil que poucos oferecem
+- Feriados com output item-per-item (Array → multiple items) — boa prática UX
+- Usa `httpRequest()` moderno (ao contrário do Integreme)
+
+---
+
+## Competitive Analysis: @gustavojosemelo/n8n-nodes-cnpj-biz-api
+
+**npm:** @gustavojosemelo/n8n-nodes-cnpj-biz-api@0.0.3 (mar/2026)
+**Repo:** Não encontrado (privado ou inexistente)
+**Downloads último mês:** Não disponível (scoped package)
+
+### O que sabemos
+
+- Wrapper para CNPJ.biz API v2
+- **Requer credentials/API key** (não é público)
+- Scoped package (`@gustavojosemelo/`) — fora da convenção `n8n-nodes-*`
+- Versão 0.0.3 — muito early stage
+- Sem repo público para análise de código
+
+### Diferença Fundamental
+
+CNPJ.biz é API paga/com autenticação — nosso foco são APIs públicas sem credenciais. Não é concorrente direto.
+
+---
+
+## Competitive Landscape Summary
+
+### Downloads (último mês, fev-mar 2026)
+
+| Package | Downloads/mês | Releases | Primeiro release |
+|---------|--------------|----------|-----------------|
+| n8n-nodes-cnpj (Integreme) | 5.701 | 1 | Fev 2024 |
+| n8n-nodes-cnpj-hub (dssiqueira) | 257 | 1 | Ago 2025 |
+| n8n-nodes-brasilapi-dv (diversao) | 74 | 6 | Jul 2025 |
+| n8n-nodes-brasil-hub (nosso) | — | 7 | Mar 2026 |
+| @gustavojosemelo/cnpj-biz-api | — | 3 | Mar 2026 |
+
+### Feature Matrix
+
+| Feature | brasil-hub | cnpj (Integreme) | cnpj-hub (dssiqueira) | brasilapi-dv |
+|---------|-----------|-------------------|----------------------|-------------|
+| CNPJ Query | ✅ | ✅ | ✅ | ✅ |
+| CNPJ Validate | ✅ | ❌ | ❌ | ❌ |
+| CEP Query | ✅ | ❌ | ❌ | ✅ |
+| CEP Validate | ✅ | ❌ | ❌ | ❌ |
+| DDD Query | 🔜 v0.2 | ❌ | ❌ | ✅ |
+| FIPE Query | 🔜 v1.0 | ❌ | ❌ | ✅ |
+| Feriados | — | ❌ | ❌ | ✅ |
+| Banks | 🔜 v0.2 | ❌ | ❌ | ❌ |
+| Multi-provider fallback | ✅ (3) | ❌ (1) | ✅ (6) | ❌ (1) |
+| Local validation | ✅ | ❌ | Parcial | ❌ |
+| AI Agent ready | ✅ | ❌ | ❌ | ❌ |
+| Tests | 60+ (100%) | 0 | 0 | 0 |
+| CI/CD | ✅ | ❌ | ❌ | ❌ |
+| SonarCloud | ✅ | ❌ | ❌ | ❌ |
+| npm provenance | ✅ | ❌ | ❌ | ❌ |
+| n8n Cloud ready | ✅ | ❌ | ❌ | ❌ |
+| Modern HTTP API | ✅ | ❌ | ✅ | ✅ |
+| Normalized output | ✅ | ❌ | ✅ | ❌ |
+
+### Vantagens Competitivas do brasil-hub
+
+1. **Único com testes e CI/CD** — nenhum concorrente tem sequer 1 teste
+2. **Único AI Agent ready** (`usableAsTool: true`)
+3. **Único com multi-resource** (CNPJ + CEP no mesmo node, extensível)
+4. **Único com validação local** (economiza API calls)
+5. **Único com npm provenance** e attestation (supply chain security)
+6. **Único com SonarCloud** e análise estática
+7. **Único pronto para n8n Cloud** (inglês, compliance, scan passa)
+
+### Oportunidades Identificadas
+
+1. **Adicionar 3 CNPJ providers** (CNPJA, MinhaReceita, OpenCNPJ) — equalizar com cnpj-hub nos fallbacks (v0.2)
+2. **DDD + Banks** — endpoints simples que brasilapi-dv já cobre (v0.2)
+3. **FIPE** — recurso diferencial, alto valor (v1.0)
+4. **Feriados** — possível adição futura (baixa prioridade)
+
+---
+
 ## Resources
 - Spec: `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
 - Plano: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`
