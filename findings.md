@@ -347,8 +347,8 @@ Todas as 13 vulns são devDependencies transitivas que **não vão no pacote pub
 | crypto_tls12 | ✅ Met | Node.js >= 20 usa TLS 1.2+ por default |
 | crypto_certificate_verification | ✅ Met | Node.js verifica certificados por default |
 | crypto_verification_private | N/A | Não envia cookies/tokens |
-| signed_releases | ✅ Met | npm --provenance + SLSA .intoto.jsonl; verificação documentada em SECURITY.md |
-| version_tags_signed | ⚠️ Parcial | GPG key disponível; próxima release usará `git tag -s` |
+| signed_releases | ✅ Met | npm --provenance + GitHub attestation (`attest-build-provenance`); verificação documentada em SECURITY.md |
+| version_tags_signed | ✅ Met | v0.1.2 assinada com GPG via `.envrc` config |
 | input_validation | ✅ Met | CNPJ checksum + CEP format validation antes de API calls |
 | hardening | ✅ Met | Zero deps, input validation, TypeScript strict |
 | assurance_case | ✅ Met | SECURITY-ASSESSMENT.md com threat model, trust boundaries, design principles |
@@ -357,7 +357,7 @@ Todas as 13 vulns são devDependencies transitivas que **não vão no pacote pub
 
 | Critério | Status | Justificativa |
 |----------|--------|---------------|
-| static_analysis_common_vulnerabilities | ✅ Met | CodeQL + SonarCloud no CI |
+| static_analysis_common_vulnerabilities | ✅ Met | SonarCloud no CI |
 | dynamic_analysis_unsafe | N/A | TypeScript, não C/C++ |
 
 ### Resumo Silver
