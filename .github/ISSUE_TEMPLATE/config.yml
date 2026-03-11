@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Questions & Discussions
+    url: https://github.com/luisbarcia/n8n-nodes-brasil-hub/discussions
+    about: Ask questions, share ideas, or get help from the community.
   - name: n8n Community Forum
     url: https://community.n8n.io/
     about: Ask questions and get help from the n8n community.

@@ -22,6 +22,7 @@ nodes/BrasilHub/
 ├── types.ts                     # Output interfaces
 ├── shared/validators.ts         # CNPJ checksum, CEP format (local, no API)
 ├── shared/fallback.ts           # Generic multi-provider fallback
+├── shared/utils.ts              # Shared utilities (stripNonDigits, safeStr)
 └── resources/{cnpj,cep}/        # description, execute, normalize per resource
 ```
 
