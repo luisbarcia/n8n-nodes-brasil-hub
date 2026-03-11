@@ -22,10 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Branch protection enhanced with pull request requirement and required status checks
 
 ### Fixed
-- Remove `paths-ignore` from `pull_request` triggers in CI and CodeQL workflows to prevent docs-only PRs from being blocked by required status checks
+- Remove `paths-ignore` from `pull_request` triggers in CI workflow to prevent docs-only PRs from being blocked by required status checks
 
 ### Security
-- CodeQL static analysis added to CI pipeline
 - SonarCloud quality gate integrated
 - All GitHub Actions pinned to SHA for supply chain security
 

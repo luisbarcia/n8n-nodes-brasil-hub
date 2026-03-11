@@ -1,5 +1,4 @@
 # n8n-nodes-brasil-hub Release Pipeline
-# Build & Attest → Publish to npm
 # Build, attest provenance, and publish to npm
 
 name: Release
