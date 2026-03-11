@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-03-11
+
+### Added
+- GOVERNANCE.md with BDFL model, roles, and continuity/succession plan
+- ROADMAP.md with planned features for v0.2 and v1.0
+- SECURITY-ASSESSMENT.md with threat model (8 threats), trust boundaries, and secure design principles
+- Release verification instructions in SECURITY.md (npm provenance + SLSA)
+- OpenSSF Best Practices badge (Passing level, 54/54 criteria)
+- SLSA Level 3 provenance via `slsa-github-generator` attached to GitHub Releases
+- GPG signing for commits and tags
+
+### Changed
+- Release pipeline refactored to 3 jobs: Build & Pack → SLSA Provenance → Publish
+- Branch protection enhanced with pull request requirement and required status checks
+
+### Fixed
+- Remove `paths-ignore` from `pull_request` triggers in CI and CodeQL workflows to prevent docs-only PRs from being blocked by required status checks
+
+### Security
+- CodeQL static analysis added to CI pipeline
+- SonarCloud quality gate integrated
+- OpenSSF Scorecard monitoring (weekly + on push)
+- All GitHub Actions pinned to SHA for supply chain security
+
 ## [0.1.1] - 2026-03-10
 
 ### Fixed
@@ -43,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/releases/tag/v0.1.0
