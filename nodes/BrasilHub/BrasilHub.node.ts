@@ -55,8 +55,8 @@ export class BrasilHub implements INodeType {
 				type: 'options',
 				noDataExpression: true,
 				options: [
-					{ name: 'CNPJ', value: 'cnpj' },
-					{ name: 'CEP', value: 'cep' },
+					{ name: 'CNPJ', value: 'cnpj', description: 'Query or validate Brazilian company tax IDs' },
+					{ name: 'CEP', value: 'cep', description: 'Query or validate Brazilian postal codes' },
 				],
 				default: 'cnpj',
 			},

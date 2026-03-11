@@ -4,7 +4,7 @@
 Implementar o community node n8n "Brasil Hub" que consulta dados públicos brasileiros (CNPJ e CEP) com fallback multi-provider, seguindo todos os padrões oficiais n8n.
 
 ## Current Phase
-Phase 12 (pending) — CI/CD simplification complete, ready for Creator Portal submission
+Phase 14 (in_progress) — UX guidelines compliance + Creator Portal resubmission
 
 ## Phases
 
@@ -173,10 +173,36 @@ Phase 12 (pending) — CI/CD simplification complete, ready for Creator Portal s
 - [ ] `npx @n8n/scan-community-package n8n-nodes-brasil-hub@0.1.2` — passa
 - [ ] Submeter no n8n Creator Portal (https://creators.n8n.io/)
 
-**Status:** in_progress (3 agentes rodando em paralelo: compliance, security, quality)
+**Status:** complete (v0.1.3 publicada, scan passed, submetida ao Creator Portal)
+
+### Phase 13: Creator Portal Submission + Starter Template Alignment
+- [x] Submetida v0.1.4 no Creator Portal → **REJEITADA** ("Some tests have failed")
+- [x] Pesquisado `@n8n/scan-community-package` source code (13 ESLint rules, `allowInlineConfig: false`)
+- [x] Pesquisado Creator Portal backend — closed-source (Strapi em api.n8n.io), pode ter checks adicionais
+- [x] Comparado package.json com n8n-nodes-starter template — encontradas 3 diferenças:
+  - `"main": "index.js"` (não existe no starter) → removido
+  - `"files": ["dist/nodes"]` (starter usa `["dist"]`) → corrigido
+  - `index.js` (não existe no starter) → deletado
+- [x] Adicionado author email ao package.json (v0.1.4)
+- [x] Alinhado package.json com starter template (v0.1.5)
+- [x] `npx @n8n/scan-community-package n8n-nodes-brasil-hub@0.1.5` → **PASSED** ✅
+- **Status:** complete
+- **PRs:** #25 (author email), #26 (starter alignment)
+
+### Phase 14: UX Guidelines Compliance
+**Goal:** Corrigir violações das UX guidelines do n8n encontradas na auditoria.
+- [x] Auditoria completa contra UX guidelines (3 violações encontradas)
+- [x] **Fix 1:** Error message em fallback.ts — "All providers failed" → "No provider could fulfill the request" (evita palavras "error/failure")
+- [x] **Fix 2:** Resource options sem description → adicionadas descriptions descritivas
+- [ ] **Deferred:** Simplify/Output parameter para CNPJ query (>10 campos) — feature change maior, avaliar para v0.2
+- [ ] Commitar fixes
+- [ ] PR + merge + CI verde
+- [ ] Release v0.1.6
+- [ ] Resubmeter no Creator Portal
+- **Status:** in_progress
 
 ## Pending
-- [ ] Creator Portal submission (após auditoria)
+- [ ] Creator Portal resubmission (após v0.1.6)
 
 ## Notes
 - Plano detalhado: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`

@@ -142,9 +142,11 @@
 - [x] Title Case para displayName, Sentence case para descriptions
 - [x] Placeholders com "e.g." — FIXED: adicionado `e.g.` prefix
 - [x] Boolean descriptions começam com "Whether..." ✅ já seguia
-- [x] Error messages seguem pattern: what happened + how to fix
+- [x] Error messages seguem pattern: what happened + how to fix ✅ FIXED v0.1.6: "All providers failed" → "No provider could fulfill the request"
+- [x] Error messages NÃO usam "error", "failure", "problem", "mistake" ✅ FIXED v0.1.6
 - [ ] Delete operations retornam `{deleted: true}` — N/A (não temos delete)
-- [x] Simplify parameter (>10 campos) — N/A: nosso output JÁ É normalizado (13 top-level, vários objects). O Simplify existe para APIs raw com 30+ campos. Nosso normalizer É o simplify.
+- [x] Resource options têm description sub-text ✅ FIXED v0.1.6: adicionadas descriptions em CNPJ e CEP options
+- [ ] Simplify parameter (>10 campos) — **DEFERRED para v0.2**: CNPJ query retorna ~15 campos top-level. UX guidelines recomendam Simplify para nodes normais ou Output para AI tool nodes. Avaliar na próxima minor.
 
 ### Code Standards Checklist (docs/reference/code-standards.md)
 - [x] TypeScript strict mode
@@ -174,8 +176,41 @@
 
 ### Comparação package.json com Starter Template
 - **Match:** `n8n.n8nNodesApiVersion: 1`, `n8n.strict: true`, `files: ["dist"]`, `peerDependencies`, scripts core
-- **Extra nosso (ok):** `main: "index.js"`, keywords adicionais, scripts `test`/`test:watch`
+- **Divergências corrigidas (v0.1.5):**
+  - `"main": "index.js"` — NÃO existe no starter → removido
+  - `"files": ["dist/nodes"]` — starter usa `["dist"]` → corrigido
+  - `index.js` na raiz — NÃO existe no starter → deletado
+- **Extra nosso (ok):** keywords adicionais, scripts `test`/`test:watch`
 - **Starter tem, nós não (ok):** `credentials` array (não temos credentials), `prettier`, `release-it`
+
+### @n8n/scan-community-package — Análise Detalhada (v0.11.0)
+**Como funciona:** Faz `npm pack --dry-run` para listar arquivos → roda ESLint contra todos `.js` com `allowInlineConfig: false`.
+
+**13 regras ESLint (@n8n/community-nodes):**
+1. `no-restricted-globals` — Bloqueia `setTimeout`, `setInterval`, `eval`, etc.
+2. `no-restricted-imports` — Bloqueia `child_process`, `fs`, `net`, etc.
+3. `credential-password-field` — Password fields devem ter `typeOptions: { password: true }`
+4. `credential-test-required` — Credentials devem ter `test` property
+5. `no-credential-reuse` — Cada node deve ter credentials próprias
+6. `credential-documentation-url` — Credentials devem ter `documentationUrl`
+7. `icon-validation` — SVG icon deve existir e ser válido
+8. `node-usable-as-tool` — `usableAsTool: true` deve estar presente
+9. `package-name-convention` — Package name deve começar com `n8n-nodes-`
+10. `no-deprecated-workflow-functions` — Não usar helpers deprecated
+11. `no-http-request-with-manual-auth` — Não fazer HTTP manual com credentials
+12. `ai-node-package-json` — Validação do n8n section no package.json
+13. `resource-operation-pattern` — Resource/operation devem seguir padrão
+
+Também roda: `no-console: error` em todos os arquivos.
+
+**Importante:** `allowInlineConfig: false` significa que `eslint-disable` comments no source NÃO funcionam — o código compilado não pode ter globals restritos.
+
+### Creator Portal Backend
+- **Closed-source** — Strapi backend em `api.n8n.io`
+- Roda `@n8n/scan-community-package` + possivelmente checks adicionais
+- Pode verificar: package source, provenance, author matching, npm metadata
+- **Sem documentação pública** sobre checks adicionais além do scan tool
+- **Canal de suporte:** Discord `#community-nodes`
 
 ## Quality Badges Research
 

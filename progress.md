@@ -213,14 +213,72 @@
   - `CLAUDE.md` (pipeline 2 jobs, grep terms)
 - PRs: #19, #20 (merged, CI verde)
 
+### Phase 12: Pre-Query Validation + Professionalization + Release v0.1.3
+- **Status:** complete
+- **Started:** 2026-03-11
+- Actions taken:
+  - CNPJ checksum validation before HTTP query calls (TDD: RED→GREEN)
+  - CEP all-zeros rejection before HTTP query calls (TDD: RED→GREEN)
+  - 8 novos testes + coverage 100% (statements, branches, functions, lines)
+  - README redesenhado: hero centralizado, "Why Brasil Hub?", collapsibles, diagrama fallback
+  - Icon SVG melhorado com `{}` data symbol
+  - GitHub repo: 10 topics, homepage URL, Discussions habilitado, Wiki desabilitado
+  - package.json: engines >=20, bugs URL
+  - copilot-instructions: adicionado shared/utils.ts
+  - Issue template: link para Discussions
+  - v0.1.3 publicada no npm com provenance + build attestation
+  - `npx @n8n/scan-community-package n8n-nodes-brasil-hub@0.1.3` — **PASSED** ✅
+- PRs: #22 (professionalize), #23 (pre-query validation), #24 (release v0.1.3)
+- Commits: `32e4378`, `b08f0d5`, `e0bf506`, tag `v0.1.3`
+
+## Test Results (Current)
+| Suite | Tests | Status |
+|-------|-------|--------|
+| validators.spec.ts | 13 | PASS |
+| fallback.spec.ts | 7 | PASS |
+| cnpj.normalize.spec.ts | 10 | PASS |
+| cep.normalize.spec.ts | 6 | PASS |
+| cnpj.execute.spec.ts | 6 | PASS |
+| cep.execute.spec.ts | 5 | PASS |
+| BrasilHub.node.spec.ts | 4 | PASS |
+| BrasilHub.execute.spec.ts | 8 | PASS |
+| **Total** | **60** | **ALL PASS (100% coverage)** |
+
+### Phase 13: Creator Portal + Starter Template Alignment
+- **Status:** complete
+- **Started:** 2026-03-11
+- Actions taken:
+  - Submetida v0.1.3 no Creator Portal → aceita, publicada como v0.1.4
+  - v0.1.4 **REJEITADA** pelo Creator Portal: "Some of the tests have failed"
+  - Pesquisado @n8n/scan-community-package source (13 ESLint rules, `allowInlineConfig: false`)
+  - Pesquisado Creator Portal backend — closed-source (Strapi), pode ter checks adicionais
+  - Comparado package.json com n8n-nodes-starter: 3 divergências encontradas
+  - Fix: removido `main: "index.js"`, corrigido `files: ["dist"]`, deletado `index.js`
+  - v0.1.5 publicada — scan passed ✅
+- PRs: #25 (author email → v0.1.4), #26 (starter alignment → v0.1.5)
+- Commits: `fdd7e91`, `7fc6c93`
+
+### Phase 14: UX Guidelines Compliance (in_progress)
+- **Status:** in_progress
+- **Started:** 2026-03-11
+- Actions taken:
+  - Auditoria completa contra n8n UX guidelines
+  - 3 violações encontradas:
+    1. ✅ Error message usa "failed" → corrigido para "No provider could fulfill the request"
+    2. ✅ Resource options sem description → adicionadas descriptions descritivas
+    3. ⏳ Simplify/Output param para CNPJ (>10 campos) → deferred para v0.2
+  - 4 arquivos modificados (fallback.ts, BrasilHub.node.ts, 2 test files)
+  - Testes atualizados para refletir nova mensagem de erro
+- Pendente: commit → PR → merge → release v0.1.6 → resubmeter Creator Portal
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 11 complete — CI/CD simplificado, v0.1.2 publicada |
-| Where am I going? | Auditoria completa → Creator Portal submission |
+| Where am I? | Phase 14 in_progress — UX fixes feitos, falta commit/release |
+| Where am I going? | Commit → PR → merge → release v0.1.6 → resubmeter Creator Portal |
 | What's the goal? | Publicar community node verificado no n8n Creator Portal |
-| What have I learned? | SonarCloud basta como quality gate; Scorecard/CII são over-engineering para projeto pequeno; `attest-build-provenance` substitui SLSA generator |
-| What have I done? | v0.1.2 no npm, 3 workflows limpos, docs consistentes |
+| What have I learned? | Creator Portal backend é closed-source; scan local passando não garante aprovação; UX guidelines têm regras específicas sobre wording de erros |
+| What have I done? | v0.1.5 no npm, UX fixes uncommitted em 4 arquivos |
 
 ---
 *Update after completing each phase or encountering errors*

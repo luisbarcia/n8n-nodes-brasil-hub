@@ -120,7 +120,7 @@ describe('BrasilHub.execute()', () => {
 			httpError: new Error('Network timeout'),
 		});
 		const [[result]] = await node.execute.call(ctx);
-		expect(result.json.error).toContain('All providers failed');
+		expect(result.json.error).toContain('No provider could fulfill the request');
 		expect(result.error).toBeInstanceOf(NodeOperationError);
 	});
 
