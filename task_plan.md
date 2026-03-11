@@ -174,6 +174,14 @@ Phase 11 (in_progress) — OpenSSF Scorecard Hardening (5.6 → 8+)
   - Se não, criar release com signing explícito
 - [ ] **T6: Token-Permissions (9→10)** — Auditar permissions em todos os workflows
 - [ ] **T7: CI-Tests (-1→?)** — Criar PR de teste para que Scorecard detecte CI checks
+- [x] **T8: CII Silver Prep** — Criar documentos necessários para badge Silver
+  - [x] CODE_OF_CONDUCT.md (já existia — Contributor Covenant v2.1)
+  - [x] GOVERNANCE.md (BDFL model, roles, succession plan)
+  - [x] ROADMAP.md (v0.2, v1.0, not planned)
+  - [x] SECURITY-ASSESSMENT.md (threat model, trust boundaries, 8 threats)
+  - [x] SECURITY.md — Seção "Verifying Releases" (npm provenance + SLSA)
+  - [x] README.md — Links para novos documentos (Project section)
+  - [ ] version_tags_signed — Próxima release usará `git tag -s` (GPG)
 - [ ] Verificar score atualizado no Scorecard
 - **Status:** in_progress
 
