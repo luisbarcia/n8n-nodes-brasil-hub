@@ -725,8 +725,45 @@ CNPJ.biz é API paga/com autenticação — nosso foco são APIs públicas sem c
 
 ---
 
+## API Provider Research (v0.2 preparation)
+
+### Providers por recurso — resultado da pesquisa
+
+| Recurso | Providers viáveis (sem auth, gratuitos) |
+|---------|----------------------------------------|
+| CNPJ | BrasilAPI, CNPJ.ws, ReceitaWS, MinhaReceita, OpenCNPJ.org, OpenCNPJ.com (kitana), CNPJA — **7 total** |
+| CEP | BrasilAPI, ViaCEP, OpenCEP, ApiCEP (cdn.apicep.com) — **4 total** |
+| FIPE | parallelum.com.br (hierarquia completa), BrasilAPI (price por código) — **2 total** |
+| Feriados | BrasilAPI, Nager.Date (date.nager.at) — **2 total** |
+| Banks | BrasilAPI, BancosBrasileiros (raw JSON GitHub, guibranco) — **2 total** |
+| DDD | BrasilAPI — **1 total** (único público) |
+| CPF | Nenhum (validação local only) |
+| IBGE (v1.0) | IBGE API Oficial (servicodados.ibge.gov.br), BrasilAPI (wrapper) — **2 total** |
+
+### Achados notáveis
+
+- **parallelum.com.br** — Resolve gap da BrasilAPI no FIPE: tem endpoint de Years + navegação hierárquica completa (marca→modelo→ano→preço). 500 req/dia free
+- **BancosBrasileiros** (GitHub guibranco) — 20+ campos por banco vs 4 da BrasilAPI. Atualizado diariamente por automação
+- **Nager.Date** — Open source, 100+ países, campos extras (fixed/moveable, counties, types)
+- **ApiCEP** — CEP precisa de hífen (XXXXX-XXX). Campos em inglês (state, city, district)
+- **OpenCNPJ.com** — Diferente do .org! Host `kitana.opencnpj.com`, camelCase, wrapped response, 100 req/min
+- **IBGE API Oficial** — Mais rica que wrapper BrasilAPI (hierarquia completa: município→microrregião→mesorregião→estado→região)
+
+### APIs descartadas (requerem auth ou pagas)
+
+CEP: Correios (contrato), CEP Aberto (token), Webmania (app_key), AutoCEP (chave)
+CNPJ: SERPRO (contrato), CPF.CNPJ (pago), Brasil Aberto (401)
+CEP instáveis: Postmon (503 no teste), República Virtual (legado 2005, schema estranho), CEP.rest (POST only, muito recente)
+
+### Socket.dev Alerts (v0.1.6)
+
+- **URL strings** (nosso código): URLs dos providers — esperado, inofensivo
+- Todos os outros alertas (malware, eval, native code, etc.): dependências transitivas de `n8n-workflow`/`@n8n/node-cli` que **não vão no dist** (`files: ["dist"]`)
+- Nenhuma ação necessária — alertas são de devDependencies
+
 ## Resources
-- Spec: `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
+- Spec v0.1: `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
+- **Spec v0.2: `docs/superpowers/specs/2026-03-11-brasil-hub-v0.2.0-design.md`**
 - Plano: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`
 - BrasilAPI docs: `https://brasilapi.com.br/docs`
 - n8n community nodes guide: `https://docs.n8n.io/integrations/community-nodes/`

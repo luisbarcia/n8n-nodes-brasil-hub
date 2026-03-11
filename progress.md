@@ -274,14 +274,33 @@
 - PRs: #27, #28
 - Tag: `v0.1.6`
 
+### Phase 15: SonarCloud Code Smells + Competitive Analysis
+- **Status:** complete
+- **Started:** 2026-03-11
+- Actions taken:
+  - Corrigido 4 SonarCloud code smells:
+    1. Removed redundant `as string` assertions in BrasilHub.node.ts
+    2. Fixed S6551 (no-base-to-string) in `safeStr()` — explicit typeof narrowing
+    3. `replaceAll` → `replace(/\D/g, '')` com NOSONAR (tsconfig target es2019)
+  - SonarCloud: zero issues ✅
+  - Análise competitiva completa de 4 concorrentes:
+    - n8n-nodes-cnpj (Integreme) — líder downloads, usa API removida no n8n v1
+    - n8n-nodes-cnpj-hub (dssiqueira) — 6 providers, bloqueado por setTimeout no scan
+    - n8n-nodes-brasilapi-dv (diversao) — 6 endpoints, arquitetura anti-pattern
+    - @gustavojosemelo/cnpj-biz-api — API paga, não concorrente direto
+  - Feature matrix + download metrics salvos em findings.md
+  - ROADMAP atualizado com 3 novos providers CNPJ para v0.2
+- PRs: #30, #31 (SonarCloud fixes)
+- Commit: `f7f2771` (competitive analysis)
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 14 complete — v0.1.6 publicada, scan passed |
-| Where am I going? | Resubmeter no Creator Portal (https://creators.n8n.io/) |
-| What's the goal? | Publicar community node verificado no n8n Creator Portal |
-| What have I learned? | Creator Portal backend é closed-source; scan local passando não garante aprovação; UX guidelines têm regras específicas sobre wording de erros; branch protection exige PRs para tudo |
-| What have I done? | v0.1.6 no npm, 60 testes 100% coverage, UX compliant, scan passed |
+| Where am I? | Phase 15 complete — planejamento v0.2 feito |
+| Where am I going? | Phase 16: v0.2.0 — 5 novos resources (CPF, Banks, DDD, FIPE, Feriados) + 3 CNPJ providers + Simplify |
+| What's the goal? | Suplantar todos os concorrentes: cobrir tudo que qualquer um oferece + manter exclusividades (testes, AI, provenance) |
+| What have I learned? | Integreme (líder) usa API removida no n8n v1; brasilapi-dv tem FIPE/Feriados mas arquitetura ruim; ninguém tem testes |
+| What have I done? | v0.1.6 no npm, SonarCloud zero issues, análise competitiva, plano v0.2 definido com 9 sub-fases |
 
 ---
 *Update after completing each phase or encountering errors*

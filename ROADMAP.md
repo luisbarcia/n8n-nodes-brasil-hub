@@ -12,19 +12,22 @@ This document describes the planned direction for n8n-nodes-brasil-hub.
 - [x] 99%+ test coverage
 - [x] npm provenance + build attestation
 
-## Next (v0.2.0)
+## Next (v0.2.0) — Feature parity + beyond all competitors
 
 - [ ] **CPF resource** — Validate CPF numbers (local checksum, no API)
-- [ ] **Banks resource** — Query bank info by code (BrasilAPI provider)
-- [ ] **DDD resource** — Query area codes by state/city (BrasilAPI provider)
-- [ ] **Additional CNPJ providers** — Add CNPJA, MinhaReceita, OpenCNPJ (3 extra fallback sources)
+- [ ] **Banks resource** — Query/list bank info (BrasilAPI + BancosBrasileiros fallback)
+- [ ] **DDD resource** — Query area codes by state/city (BrasilAPI)
+- [ ] **FIPE resource** — Query vehicle brands/models/years/prices (parallelum + BrasilAPI)
+- [ ] **Feriados resource** — Query national holidays by year (BrasilAPI + Nager.Date fallback)
+- [ ] **Additional CNPJ providers** — Add MinhaReceita, OpenCNPJ.org, OpenCNPJ.com, CNPJA (7 total)
+- [ ] **Additional CEP provider** — Add ApiCEP (4 total)
+- [ ] Simplify/Output parameter for CNPJ query (>10 fields)
 - [ ] Improve error messages with provider-specific context
 
-## Future (v1.0)
+## Future (v1.0) — Features no competitor offers
 
 - [ ] **IBGE resource** — Query cities, states, and regions
 - [ ] **NCM resource** — Query tax classification codes
-- [ ] **FIPE resource** — Query vehicle prices
 - [ ] Configurable provider order (user chooses primary)
 - [ ] Configurable timeout per provider
 - [ ] Rate limiting awareness (respect 429 responses)

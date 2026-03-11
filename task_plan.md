@@ -4,7 +4,7 @@
 Implementar o community node n8n "Brasil Hub" que consulta dados públicos brasileiros (CNPJ e CEP) com fallback multi-provider, seguindo todos os padrões oficiais n8n.
 
 ## Current Phase
-Phase 14 (in_progress) — UX guidelines compliance + Creator Portal resubmission
+Phase 16 (pending) — v0.2.0: Feature parity + beyond all competitors
 
 ## Phases
 
@@ -203,6 +203,121 @@ Phase 14 (in_progress) — UX guidelines compliance + Creator Portal resubmissio
 
 ## Pending
 - [ ] Creator Portal resubmission com v0.1.6
+
+---
+
+### Phase 16: v0.2.0 — Feature Parity + Beyond All Competitors
+**Goal:** Oferecer tudo que qualquer concorrente oferece + features exclusivas. Após v0.2, nenhum outro node cobre mais endpoints ou tem mais qualidade.
+
+**Competitive gap analysis:**
+- cnpj-hub tem 6 CNPJ providers → nós teremos 6
+- brasilapi-dv tem DDD, FIPE, Feriados → nós teremos todos
+- ninguém tem CPF validate, Banks, testes, AI ready → continuamos únicos
+
+#### 16.1 CPF Resource (local, sem API)
+- [ ] RED: testes para `validateCpf()` (checksum, edge cases: 000.000.000-00, etc.)
+- [ ] GREEN: implementar `validators.ts` + `cpf.description.ts` + `cpf.execute.ts`
+- [ ] Registrar no router em `BrasilHub.node.ts`
+- [ ] Adicionar types em `types.ts`
+- **Providers:** nenhum (validação 100% local)
+- **Operations:** validate
+
+#### 16.2 Banks Resource (BrasilAPI + BancosBrasileiros)
+- [ ] RED: testes para normalizers (2 providers) + execute
+- [ ] GREEN: `banks.description.ts` + `banks.execute.ts` + `banks.normalize.ts`
+- [ ] Registrar no router
+- **Providers:** BrasilAPI (`/api/banks/v1/{code}`, `/api/banks/v1`) → BancosBrasileiros (raw JSON GitHub, 20+ campos)
+- **Operations:** query (por código), list (todos os bancos, 1 item/banco)
+- **Validação:** bank code deve ser inteiro positivo
+
+#### 16.3 DDD Resource (BrasilAPI)
+- [ ] RED: testes para normalizer + execute
+- [ ] GREEN: `ddd.description.ts` + `ddd.execute.ts` + `ddd.normalize.ts`
+- [ ] Registrar no router
+- **Provider:** BrasilAPI (`/api/ddd/v1/{ddd}`) — único provider público disponível
+- **Operations:** query
+- **Validação:** 2 dígitos, range 11–99
+
+#### 16.4 FIPE Resource (parallelum + BrasilAPI)
+- [ ] RED: testes para normalizers (2 providers) + execute (4 operações)
+- [ ] GREEN: `fipe.description.ts` + `fipe.execute.ts` + `fipe.normalize.ts`
+- [ ] Registrar no router
+- **Provider primário:** parallelum (`/fipe/api/v1/{tipo}/marcas/...`) — hierarquia completa
+- **Provider fallback:** BrasilAPI (`/fipe/preco/v1/{codigoFipe}`) — lookup direto por código
+- **Operations:** brands, models, years, price — 4 operações com displayOptions condicionais
+- **Params:** vehicleType (Cars→carros, Motorcycles→motos, Trucks→caminhoes), brandCode, modelCode, yearCode
+- **Validação:** brandCode/modelCode/yearCode non-empty conforme operação
+- **Nota:** parallelum tem 500 req/dia free; BrasilAPI preenche gap para price por código direto
+
+#### 16.5 Feriados Resource (BrasilAPI + Nager.Date)
+- [ ] RED: testes para normalizers (2 providers) + execute
+- [ ] GREEN: `feriados.description.ts` + `feriados.execute.ts` + `feriados.normalize.ts`
+- [ ] Registrar no router
+- **Providers:** BrasilAPI (`/api/feriados/v1/{ano}`) → Nager.Date (`date.nager.at/api/v3/PublicHolidays/{year}/BR`)
+- **Operations:** query
+- **Output:** Array → multiple items (1 item por feriado)
+- **Validação:** ano 4 dígitos, range 1900–2199
+
+#### 16.6 Additional CNPJ Providers (+4)
+- [ ] RED: testes para normalizers dos 4 novos providers
+- [ ] GREEN: adicionar normalizers em `cnpj.normalize.ts`
+- [ ] Adicionar providers ao array em `cnpj.execute.ts`
+- **Providers novos (appended após os 3 originais):**
+  - MinhaReceita: `https://minhareceita.org/{cnpj}` (flat, snake_case)
+  - OpenCNPJ.org: `https://api.opencnpj.org/{cnpj}` (flat, snake_case, 50 req/s)
+  - OpenCNPJ.com: `https://kitana.opencnpj.com/cnpj/{cnpj}` (wrapped, camelCase, 100 req/min)
+  - CNPJA: `https://open.cnpja.com/office/{cnpj}` (nested, camelCase, rate limit agressivo)
+- **Resultado:** 7 providers total (mais que qualquer concorrente)
+
+#### 16.6b Additional CEP Provider (+1)
+- [ ] RED: testes para normalizer ApiCEP
+- [ ] GREEN: adicionar normalizer em `cep.normalize.ts`
+- [ ] Adicionar provider ao array em `cep.execute.ts`
+- **Provider novo:** ApiCEP: `https://cdn.apicep.com/file/apicep/{XXXXX-XXX}.json`
+- **Atenção:** CEP precisa de hífen (format XXXXX-XXX) — normalizer deve formatar
+- **Resultado:** 4 providers CEP total
+
+#### 16.7 Simplify Parameter para CNPJ
+- [ ] Adicionar checkbox "Simplify" ao CNPJ query
+- [ ] Quando ativo: retornar top-level flat (razao_social, situacao, cnpj)
+- [ ] Quando desativo: retornar output completo (endereço, sócios, atividades)
+- **Ref:** UX guidelines recomendam Simplify para >10 campos
+
+#### 16.8 Error Messages com Contexto por Provider
+- [ ] Incluir qual provider falhou e HTTP status no erro
+- [ ] Melhorar mensagem final de fallback exhausted com lista de tentativas
+
+#### 16.9 Release v0.2.0
+- [ ] Atualizar CHANGELOG.md
+- [ ] Bump version para 0.2.0
+- [ ] Pre-release checklist (compliance, security, tests, build, lint)
+- [ ] Tag + GitHub release + npm publish
+- [ ] Verificar CI verde + scan passed
+
+**Status:** pending
+
+---
+
+### Phase 17: v1.0 — Features Exclusivas (nenhum concorrente tem)
+**Goal:** Consolidar liderança com features que ninguém mais oferece.
+
+#### 17.1 IBGE Resource
+- [ ] Cities, states, regions via BrasilAPI (`/api/ibge/municipios/v1/{siglaUF}`, `/uf/v1`)
+- [ ] Operations: states (listar UFs), cities (listar municípios por UF)
+
+#### 17.2 NCM Resource
+- [ ] Tax classification codes via BrasilAPI (`/api/ncm/v1/{code}`, `/api/ncm/v1?search=`)
+- [ ] Operations: query (por código), search (por descrição)
+
+#### 17.3 Configurable Provider Order
+- [ ] Param para usuário escolher provider primário
+- [ ] Fallback segue ordem custom
+
+#### 17.4 Configurable Timeout + Rate Limiting
+- [ ] Timeout customizável por provider
+- [ ] Respeitar HTTP 429 com backoff
+
+**Status:** future
 
 ## Notes
 - Plano detalhado: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`
