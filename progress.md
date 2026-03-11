@@ -293,14 +293,63 @@
 - PRs: #30, #31 (SonarCloud fixes)
 - Commit: `f7f2771` (competitive analysis)
 
+### Phase 16 Prep: v0.2.0 Design + Issues
+- **Status:** complete
+- **Started:** 2026-03-11
+- Actions taken:
+  - Design spec v0.2.0 aprovado via brainstorming skill (7 decisões de design)
+  - Pesquisa completa de API providers para todos os resources (não apenas BrasilAPI)
+  - Encontrado parallelum.com.br para FIPE (hierarquia completa), Nager.Date para Feriados, BancosBrasileiros, etc.
+  - 4 novos CNPJ providers mapeados (MinhaReceita, OpenCNPJ.org, OpenCNPJ.com, CNPJA) — total 7
+  - 1 novo CEP provider (ApiCEP) — total 4
+  - Spec reviewado por subagent (6 issues corrigidos: FIPE endpoints, vehicleType values, simplify snake_case)
+  - Milestone v0.2.0 criado no GitHub (#1)
+  - Labels criados: `new-resource`, `new-provider`, `v0.2.0`
+  - 12 issues criadas no milestone:
+    - #5: CPF resource (Validate)
+    - #32: Banks resource (Query + List)
+    - #33: DDD resource (Query)
+    - #34: FIPE resource (Brands, Models, Years, Price)
+    - #35: Feriados resource (Query)
+    - #36: +4 CNPJ providers
+    - #37: +1 CEP provider (ApiCEP)
+    - #38: CNPJ Simplify parameter
+    - #39: Enhanced error messages
+    - #40: Router refactor (multi-item returns)
+    - #41: Package metadata update
+    - #42: Release v0.2.0
+  - Vulnerability alerts analisados — todos devDeps, zero impacto no pacote publicado, nenhuma ação necessária
+- Files created/modified:
+  - `docs/superpowers/specs/2026-03-11-brasil-hub-v0.2.0-design.md` (created)
+  - `ROADMAP.md` (updated)
+  - `task_plan.md`, `findings.md`, `progress.md` (updated)
+- Commits: `e9af0f7` (spec), `f7f2771` (findings)
+
+### Documentation Update: Per-Resource Release Strategy
+- **Status:** complete
+- **Started:** 2026-03-11
+- Actions taken:
+  - Reorganizou milestones no GitHub: v0.2.0 (CPF) → v0.3.0 (Banks) → v0.4.0 (DDD) → v0.5.0 (FIPE) → v0.6.0 (Feriados) → v0.7.0 (providers+polish)
+  - Issues redistribuídas entre 6 milestones
+  - Fechou issues genéricas obsoletas (#41, #42) e criou per-version release issues (#43-#48)
+  - Atualizou todos os docs do repositório para refletir nova estratégia:
+    - `ROADMAP.md`: seções por versão com links para issues
+    - `task_plan.md`: Phase 16 (v0.2.0) → Phase 21 (v0.7.0), numeração corrigida
+    - `progress.md`: 5-Question Reboot Check atualizado
+    - `README.md`: referência ao roadmap corrigida
+    - `CLAUDE.md`: overview e refs de spec/plan atualizados
+    - `.github/copilot-instructions.md`: versão e scope corrigidos
+    - `.github/SECURITY.md`: supported versions expandida
+- Files modified: ROADMAP.md, task_plan.md, progress.md, README.md, CLAUDE.md, .github/copilot-instructions.md, .github/SECURITY.md
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 15 complete — planejamento v0.2 feito |
-| Where am I going? | Phase 16: v0.2.0 — 5 novos resources (CPF, Banks, DDD, FIPE, Feriados) + 3 CNPJ providers + Simplify |
-| What's the goal? | Suplantar todos os concorrentes: cobrir tudo que qualquer um oferece + manter exclusividades (testes, AI, provenance) |
-| What have I learned? | Integreme (líder) usa API removida no n8n v1; brasilapi-dv tem FIPE/Feriados mas arquitetura ruim; ninguém tem testes |
-| What have I done? | v0.1.6 no npm, SonarCloud zero issues, análise competitiva, plano v0.2 definido com 9 sub-fases |
+| Where am I? | Docs atualizados para per-resource releases — pronto para implementar Phase 16 (v0.2.0) |
+| Where am I going? | Phase 16: Router refactor (#40) + CPF validate (#5) → release v0.2.0 |
+| What's the goal? | Cada recurso é um release MINOR: v0.2.0 CPF → v0.3.0 Banks → ... → v0.7.0 providers+polish |
+| What have I learned? | parallelum é o provider certo pra FIPE; per-resource releases dão rollback granular |
+| What have I done? | Spec aprovado, 6 milestones, issues distribuídas, todos os docs atualizados |
 
 ---
 *Update after completing each phase or encountering errors*

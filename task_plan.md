@@ -4,7 +4,16 @@
 Implementar o community node n8n "Brasil Hub" que consulta dados públicos brasileiros (CNPJ e CEP) com fallback multi-provider, seguindo todos os padrões oficiais n8n.
 
 ## Current Phase
-Phase 16 (pending) — v0.2.0: Feature parity + beyond all competitors
+Phase 16 (pending) — v0.2.0: Router refactor + CPF Validate
+
+## Release Strategy
+Each new resource ships as its own MINOR release:
+- v0.2.0: Router refactor + CPF (#40, #5, #43)
+- v0.3.0: Banks (#32, #44)
+- v0.4.0: DDD (#33, #45)
+- v0.5.0: FIPE (#34, #46)
+- v0.6.0: Feriados (#35, #47)
+- v0.7.0: Additional providers + Simplify + Error messages (#36-#39, #48)
 
 ## Phases
 
@@ -206,50 +215,101 @@ Phase 16 (pending) — v0.2.0: Feature parity + beyond all competitors
 
 ---
 
-### Phase 16: v0.2.0 — Feature Parity + Beyond All Competitors
-**Goal:** Oferecer tudo que qualquer concorrente oferece + features exclusivas. Após v0.2, nenhum outro node cobre mais endpoints ou tem mais qualidade.
+### Phase 16: v0.2.0 — Router Refactor + CPF Validate
+**Goal:** Refatorar ExecuteFunction para multi-item returns e adicionar CPF validate.
+**Spec:** `docs/superpowers/specs/2026-03-11-brasil-hub-v0.2.0-design.md`
+**Milestone:** https://github.com/luisbarcia/n8n-nodes-brasil-hub/milestone/1
+**Issues:** #40, #5, #43
 
-**Competitive gap analysis:**
-- cnpj-hub tem 6 CNPJ providers → nós teremos 6
-- brasilapi-dv tem DDD, FIPE, Feriados → nós teremos todos
-- ninguém tem CPF validate, Banks, testes, AI ready → continuamos únicos
+#### 16.0 Router Refactor (#40)
+- [ ] Mudar `ExecuteFunction` para retornar `INodeExecutionData[]`
+- [ ] Atualizar execute loop: `returnData.push(...results)`
+- [ ] Atualizar todos os handlers existentes: wrap single result em `[result]`
+- [ ] Todos os testes existentes devem passar sem mudanças
+- **Status:** pending
 
-#### 16.1 CPF Resource (local, sem API)
+#### 16.1 CPF Resource (#5)
 - [ ] RED: testes para `validateCpf()` (checksum, edge cases: 000.000.000-00, etc.)
 - [ ] GREEN: implementar `validators.ts` + `cpf.description.ts` + `cpf.execute.ts`
 - [ ] Registrar no router em `BrasilHub.node.ts`
-- [ ] Adicionar types em `types.ts`
 - **Providers:** nenhum (validação 100% local)
 - **Operations:** validate
+- **Status:** pending
 
-#### 16.2 Banks Resource (BrasilAPI + BancosBrasileiros)
+#### 16.2 Release v0.2.0 (#43)
+- [ ] Atualizar CHANGELOG.md, bump version, pre-release checklist
+- [ ] Tag + GitHub release + npm publish + CI verde
+- **Status:** pending
+
+---
+
+### Phase 17: v0.3.0 — Banks (Query + List)
+**Goal:** Adicionar recurso Banks com consulta por código e listagem completa.
+**Milestone:** https://github.com/luisbarcia/n8n-nodes-brasil-hub/milestone/2
+**Issues:** #32, #44
+
+#### 17.1 Banks Resource (#32)
 - [ ] RED: testes para normalizers (2 providers) + execute
 - [ ] GREEN: `banks.description.ts` + `banks.execute.ts` + `banks.normalize.ts`
 - [ ] Registrar no router
 - **Providers:** BrasilAPI (`/api/banks/v1/{code}`, `/api/banks/v1`) → BancosBrasileiros (raw JSON GitHub, 20+ campos)
 - **Operations:** query (por código), list (todos os bancos, 1 item/banco)
 - **Validação:** bank code deve ser inteiro positivo
+- **Status:** pending
 
-#### 16.3 DDD Resource (BrasilAPI)
+#### 17.2 Release v0.3.0 (#44)
+- [ ] CHANGELOG + bump + release + CI verde
+- **Status:** pending
+
+---
+
+### Phase 18: v0.4.0 — DDD (Query)
+**Goal:** Adicionar recurso DDD com consulta por código de área.
+**Milestone:** https://github.com/luisbarcia/n8n-nodes-brasil-hub/milestone/3
+**Issues:** #33, #45
+
+#### 18.1 DDD Resource (#33)
 - [ ] RED: testes para normalizer + execute
 - [ ] GREEN: `ddd.description.ts` + `ddd.execute.ts` + `ddd.normalize.ts`
 - [ ] Registrar no router
 - **Provider:** BrasilAPI (`/api/ddd/v1/{ddd}`) — único provider público disponível
 - **Operations:** query
 - **Validação:** 2 dígitos, range 11–99
+- **Status:** pending
 
-#### 16.4 FIPE Resource (parallelum + BrasilAPI)
-- [ ] RED: testes para normalizers (2 providers) + execute (4 operações)
+#### 18.2 Release v0.4.0 (#45)
+- [ ] CHANGELOG + bump + release + CI verde
+- **Status:** pending
+
+---
+
+### Phase 19: v0.5.0 — FIPE (Brands, Models, Years, Price)
+**Goal:** Adicionar recurso FIPE com hierarquia completa de veículos.
+**Milestone:** https://github.com/luisbarcia/n8n-nodes-brasil-hub/milestone/4
+**Issues:** #34, #46
+
+#### 19.1 FIPE Resource (#34)
+- [ ] RED: testes para normalizers + execute (4 operações)
 - [ ] GREEN: `fipe.description.ts` + `fipe.execute.ts` + `fipe.normalize.ts`
-- [ ] Registrar no router
+- [ ] Registrar no router (4 entries: brands, models, years, price)
 - **Provider primário:** parallelum (`/fipe/api/v1/{tipo}/marcas/...`) — hierarquia completa
-- **Provider fallback:** BrasilAPI (`/fipe/preco/v1/{codigoFipe}`) — lookup direto por código
 - **Operations:** brands, models, years, price — 4 operações com displayOptions condicionais
 - **Params:** vehicleType (Cars→carros, Motorcycles→motos, Trucks→caminhoes), brandCode, modelCode, yearCode
 - **Validação:** brandCode/modelCode/yearCode non-empty conforme operação
-- **Nota:** parallelum tem 500 req/dia free; BrasilAPI preenche gap para price por código direto
+- **Status:** pending
 
-#### 16.5 Feriados Resource (BrasilAPI + Nager.Date)
+#### 19.2 Release v0.5.0 (#46)
+- [ ] CHANGELOG + bump + release + CI verde
+- **Status:** pending
+
+---
+
+### Phase 20: v0.6.0 — Feriados (Query)
+**Goal:** Adicionar recurso Feriados com fallback BrasilAPI → Nager.Date.
+**Milestone:** https://github.com/luisbarcia/n8n-nodes-brasil-hub/milestone/5
+**Issues:** #35, #47
+
+#### 20.1 Feriados Resource (#35)
 - [ ] RED: testes para normalizers (2 providers) + execute
 - [ ] GREEN: `feriados.description.ts` + `feriados.execute.ts` + `feriados.normalize.ts`
 - [ ] Registrar no router
@@ -257,8 +317,25 @@ Phase 16 (pending) — v0.2.0: Feature parity + beyond all competitors
 - **Operations:** query
 - **Output:** Array → multiple items (1 item por feriado)
 - **Validação:** ano 4 dígitos, range 1900–2199
+- **Status:** pending
 
-#### 16.6 Additional CNPJ Providers (+4)
+#### 20.2 Release v0.6.0 (#47)
+- [ ] CHANGELOG + bump + release + CI verde
+- **Status:** pending
+
+---
+
+### Phase 21: v0.7.0 — Additional Providers + Polish
+**Goal:** Suplantar todos os concorrentes: 7 CNPJ providers, 4 CEP providers, Simplify, error messages.
+**Milestone:** https://github.com/luisbarcia/n8n-nodes-brasil-hub/milestone/6
+**Issues:** #36, #37, #38, #39, #48
+
+**Competitive gap analysis:**
+- cnpj-hub tem 6 CNPJ providers → nós teremos 7
+- brasilapi-dv tem DDD, FIPE, Feriados → nós já teremos todos
+- ninguém tem CPF validate, Banks, testes, AI ready → continuamos únicos
+
+#### 21.1 Additional CNPJ Providers (#36)
 - [ ] RED: testes para normalizers dos 4 novos providers
 - [ ] GREEN: adicionar normalizers em `cnpj.normalize.ts`
 - [ ] Adicionar providers ao array em `cnpj.execute.ts`
@@ -268,52 +345,51 @@ Phase 16 (pending) — v0.2.0: Feature parity + beyond all competitors
   - OpenCNPJ.com: `https://kitana.opencnpj.com/cnpj/{cnpj}` (wrapped, camelCase, 100 req/min)
   - CNPJA: `https://open.cnpja.com/office/{cnpj}` (nested, camelCase, rate limit agressivo)
 - **Resultado:** 7 providers total (mais que qualquer concorrente)
+- **Status:** pending
 
-#### 16.6b Additional CEP Provider (+1)
+#### 21.2 Additional CEP Provider (#37)
 - [ ] RED: testes para normalizer ApiCEP
 - [ ] GREEN: adicionar normalizer em `cep.normalize.ts`
 - [ ] Adicionar provider ao array em `cep.execute.ts`
 - **Provider novo:** ApiCEP: `https://cdn.apicep.com/file/apicep/{XXXXX-XXX}.json`
 - **Atenção:** CEP precisa de hífen (format XXXXX-XXX) — normalizer deve formatar
 - **Resultado:** 4 providers CEP total
+- **Status:** pending
 
-#### 16.7 Simplify Parameter para CNPJ
+#### 21.3 Simplify Parameter para CNPJ (#38)
 - [ ] Adicionar checkbox "Simplify" ao CNPJ query
 - [ ] Quando ativo: retornar top-level flat (razao_social, situacao, cnpj)
 - [ ] Quando desativo: retornar output completo (endereço, sócios, atividades)
 - **Ref:** UX guidelines recomendam Simplify para >10 campos
+- **Status:** pending
 
-#### 16.8 Error Messages com Contexto por Provider
+#### 21.4 Error Messages com Contexto por Provider (#39)
 - [ ] Incluir qual provider falhou e HTTP status no erro
 - [ ] Melhorar mensagem final de fallback exhausted com lista de tentativas
+- **Status:** pending
 
-#### 16.9 Release v0.2.0
-- [ ] Atualizar CHANGELOG.md
-- [ ] Bump version para 0.2.0
-- [ ] Pre-release checklist (compliance, security, tests, build, lint)
-- [ ] Tag + GitHub release + npm publish
-- [ ] Verificar CI verde + scan passed
-
-**Status:** pending
+#### 21.5 Release v0.7.0 (#48)
+- [ ] CHANGELOG + bump + release + CI verde + package metadata update
+- **Status:** pending
 
 ---
 
-### Phase 17: v1.0 — Features Exclusivas (nenhum concorrente tem)
+### Phase 22: v1.0 — Features Exclusivas (nenhum concorrente tem)
 **Goal:** Consolidar liderança com features que ninguém mais oferece.
 
-#### 17.1 IBGE Resource
+#### 22.1 IBGE Resource
 - [ ] Cities, states, regions via BrasilAPI (`/api/ibge/municipios/v1/{siglaUF}`, `/uf/v1`)
 - [ ] Operations: states (listar UFs), cities (listar municípios por UF)
 
-#### 17.2 NCM Resource
+#### 22.2 NCM Resource
 - [ ] Tax classification codes via BrasilAPI (`/api/ncm/v1/{code}`, `/api/ncm/v1?search=`)
 - [ ] Operations: query (por código), search (por descrição)
 
-#### 17.3 Configurable Provider Order
+#### 22.3 Configurable Provider Order
 - [ ] Param para usuário escolher provider primário
 - [ ] Fallback segue ordem custom
 
-#### 17.4 Configurable Timeout + Rate Limiting
+#### 22.4 Configurable Timeout + Rate Limiting
 - [ ] Timeout customizável por provider
 - [ ] Respeitar HTTP 429 com backoff
 

@@ -158,7 +158,7 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for full development guidelines.
 
 | | |
 |---|---|
-| [Roadmap](ROADMAP.md) | Planned features (CPF, Banks, DDD, IBGE) |
+| [Roadmap](ROADMAP.md) | Planned features (CPF, Banks, DDD, FIPE, Feriados, more providers) |
 | [Changelog](CHANGELOG.md) | Version history |
 | [Contributing](.github/CONTRIBUTING.md) | How to contribute |
 | [Security](.github/SECURITY.md) | Vulnerability reporting |
