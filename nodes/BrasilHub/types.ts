@@ -120,6 +120,18 @@ export interface IBank {
 	_raw?: unknown;
 }
 
+/** Normalized DDD query result from BrasilAPI. */
+export interface IDdd {
+	/** Two-letter state code (e.g. "SP", "RJ"). */
+	state: string;
+	/** List of cities that use this area code. */
+	cities: string[];
+	/** Query metadata. Present when queried via API. */
+	_meta?: IMeta;
+	/** Raw provider response. Present only when "Include Raw Response" is enabled. */
+	_raw?: unknown;
+}
+
 /** A data provider endpoint used by the fallback engine. */
 export interface IProvider {
 	/** Provider identifier (e.g. "brasilapi", "cnpjws", "receitaws"). */

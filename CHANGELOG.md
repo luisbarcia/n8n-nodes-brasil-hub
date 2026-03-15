@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-03-15
+
+### Added
+- **DDD resource** with Query operation (BrasilAPI)
+- Fetch state and cities for a Brazilian area code (DDD)
+- Input validation: 2-digit range 11–99 before API call
+- IDdd interface in types.ts
+- 9 new tests (normalizer, execute, integration)
+
+### Changed
+- Resource options sorted alphabetically (Bank, CEP, CNPJ, CPF, DDD)
+- 105 tests total
+
 ## [0.3.0] - 2026-03-15
 
 ### Added
@@ -127,7 +140,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.5...v0.1.6

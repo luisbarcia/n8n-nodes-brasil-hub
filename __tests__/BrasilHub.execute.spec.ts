@@ -9,6 +9,7 @@ function createExecuteContext(overrides: {
 	cep?: string;
 	cpf?: string;
 	bankCode?: string;
+	ddd?: string;
 	includeRaw?: boolean;
 	items?: INodeExecutionData[];
 	continueOnFail?: boolean;
@@ -22,6 +23,7 @@ function createExecuteContext(overrides: {
 		cep: overrides.cep ?? '01001000',
 		cpf: overrides.cpf ?? '52998224725',
 		bankCode: overrides.bankCode ?? '1',
+		ddd: overrides.ddd ?? '11',
 		includeRaw: overrides.includeRaw ?? false,
 	};
 
@@ -114,6 +116,18 @@ describe('BrasilHub.execute()', () => {
 		expect(results).toHaveLength(2);
 		expect(results[0].json).toHaveProperty('code', 1);
 		expect(results[1].json).toHaveProperty('code', 70);
+	});
+
+	it('should dispatch ddd/query and return state with cities', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ddd',
+			operation: 'query',
+			httpResponse: { state: 'SP', cities: ['SÃO PAULO', 'GUARULHOS'] },
+		});
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('state', 'SP');
+		expect(result.json).toHaveProperty('cities');
+		expect(result.json).toHaveProperty('_meta');
 	});
 
 	it('should dispatch cpf/validate and return result', async () => {

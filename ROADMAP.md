@@ -25,7 +25,7 @@ Each new resource ships as its own MINOR release for faster iteration and easier
 
 ## v0.4.0 — DDD
 
-- [ ] **DDD resource** — Query area codes by state/city (BrasilAPI) ([#33](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/33))
+- [x] **DDD resource** — Query area codes by state/city (BrasilAPI) ([#33](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/33))
 
 ## v0.5.0 — FIPE
 
