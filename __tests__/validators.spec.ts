@@ -103,6 +103,13 @@ describe('validateCpf', () => {
 		expect(validateCpf('45317828791').valid).toBe(true);
 		expect(validateCpf('11144477735').valid).toBe(true);
 	});
+
+	it('should validate CPF where check digit remainders are less than 2', () => {
+		// 12345678909 — sum1 % 11 = 1 (< 2), so check1 = 0
+		expect(validateCpf('12345678909').valid).toBe(true);
+		// 74650688000 — both sum1 % 11 = 0 and sum2 % 11 = 0 (< 2), so check1 = check2 = 0
+		expect(validateCpf('74650688000').valid).toBe(true);
+	});
 });
 
 describe('sanitizeCpf', () => {
