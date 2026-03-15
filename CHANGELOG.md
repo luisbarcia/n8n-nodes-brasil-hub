@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-03-15
+
+### Added
+- **DDD fallback provider**: municipios-brasileiros (kelvins/municipios-brasileiros GitHub JSON) as fallback when BrasilAPI fails
+- UF_CODES mapping table (27 IBGE codes → state abbreviations) for municipios normalization
+- Multi-state DDD support: picks the most frequent UF when a DDD spans multiple states
+- 6 new DDD tests (municipios filtering, multi-state, not-found)
+
+### Changed
+- DDD resource now has fallback resilience (was single-provider)
+- 112 tests total, 99.27% branch coverage
+
 ## [0.4.1] - 2026-03-15
 
 ### Changed
@@ -150,7 +162,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.2.0...v0.3.0

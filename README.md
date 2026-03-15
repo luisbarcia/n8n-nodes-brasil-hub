@@ -47,7 +47,7 @@ npm install n8n-nodes-brasil-hub
 | **CNPJ** | Query | Fetch company data by CNPJ number | BrasilAPI → CNPJ.ws → ReceitaWS |
 | **CNPJ** | Validate | Check if CNPJ is valid (local checksum, no API) | — |
 | **CPF** | Validate | Check if CPF is valid (local checksum, no API) | — |
-| **DDD** | Query | Fetch state and cities by area code | BrasilAPI |
+| **DDD** | Query | Fetch state and cities by area code | BrasilAPI → municipios-brasileiros |
 
 ## Example Output
 
@@ -143,7 +143,7 @@ Each provider has a **10-second timeout**. The `_meta.strategy` field tells you 
 git clone https://github.com/luisbarcia/n8n-nodes-brasil-hub.git
 cd n8n-nodes-brasil-hub
 npm install
-npm test          # 105 tests, 100% coverage
+npm test          # 112 tests, 100% coverage
 npm run build
 npm run lint
 ```
