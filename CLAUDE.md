@@ -198,6 +198,14 @@ gh run list --workflow=release.yml --limit 1
 
 Executar **antes de cada release**, na ordem abaixo. Cada fase usa skills específicas.
 
+**REGRAS INVIOLÁVEIS:**
+- **Executar TODAS as 5 fases**, na ordem. Nenhuma fase pode ser pulada.
+- **Cada fase é um gate bloqueante** — não prosseguir para a próxima se houver findings Critical/High não resolvidos.
+- **Audits (Fase 1) devem COMPLETAR antes de fazer merge/tag/release** — rodar em background é OK, mas esperar resultado antes de prosseguir.
+- **Fase 2 (test-master, simplify, code-documenter) é OBRIGATÓRIA** — não pular por parecer redundante.
+- **Paralelizar é permitido DENTRO de cada fase** (ex: 3 agents da Fase 2 em paralelo), mas não ENTRE fases.
+- **Lição aprendida:** v0.2.0–v0.4.0 foram publicadas pulando Fase 2 inteira — isso não pode se repetir.
+
 ### Fase 1: Compliance & Segurança (bloqueia release)
 
 | # | Skill | O que faz | Comando referência |
