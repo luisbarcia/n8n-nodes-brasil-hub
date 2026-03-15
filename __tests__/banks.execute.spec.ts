@@ -92,3 +92,44 @@ describe('banksList', () => {
 		expect(results[0].json).toHaveProperty('_raw');
 	});
 });
+
+describe('banksQuery with fallback', () => {
+	it('should set strategy to fallback when first provider fails', async () => {
+		let callCount = 0;
+		const ctx = {
+			...createMockContext(),
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callCount++;
+					if (callCount === 1) throw new Error('Timeout');
+					return [
+						{ COMPE: '001', ISPB: '00000000', ShortName: 'BCO DO BRASIL S.A.', LongName: 'Banco do Brasil S.A.' },
+					];
+				}),
+			},
+		} as unknown as Parameters<typeof banksQuery>[0];
+		const [result] = await banksQuery(ctx, 0);
+		expect(result.json._meta).toHaveProperty('strategy', 'fallback');
+		expect(result.json._meta).toHaveProperty('errors');
+	});
+});
+
+describe('banksList with fallback', () => {
+	it('should set strategy to fallback when first provider fails', async () => {
+		let callCount = 0;
+		const ctx = {
+			...createMockContext(),
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callCount++;
+					if (callCount === 1) throw new Error('Timeout');
+					return [
+						{ COMPE: '001', ISPB: '00000000', ShortName: 'BCO DO BRASIL S.A.', LongName: 'Banco do Brasil S.A.' },
+					];
+				}),
+			},
+		} as unknown as Parameters<typeof banksList>[0];
+		const results = await banksList(ctx, 0);
+		expect(results[0].json._meta).toHaveProperty('strategy', 'fallback');
+	});
+});

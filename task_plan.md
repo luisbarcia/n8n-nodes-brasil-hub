@@ -4,7 +4,7 @@
 Implementar o community node n8n "Brasil Hub" que consulta dados públicos brasileiros (CNPJ e CEP) com fallback multi-provider, seguindo todos os padrões oficiais n8n.
 
 ## Current Phase
-Phase 16 (pending) — v0.2.0: Router refactor + CPF Validate
+Phase 17 (pending) — v0.3.0: Banks (Query + List)
 
 ## Release Strategy
 Each new resource ships as its own MINOR release:
@@ -222,24 +222,25 @@ Each new resource ships as its own MINOR release:
 **Issues:** #40, #5, #43
 
 #### 16.0 Router Refactor (#40)
-- [ ] Mudar `ExecuteFunction` para retornar `INodeExecutionData[]`
-- [ ] Atualizar execute loop: `returnData.push(...results)`
-- [ ] Atualizar todos os handlers existentes: wrap single result em `[result]`
-- [ ] Todos os testes existentes devem passar sem mudanças
-- **Status:** pending
+- [x] Mudar `ExecuteFunction` para retornar `INodeExecutionData[]`
+- [x] Atualizar execute loop: `returnData.push(...results)`
+- [x] Atualizar todos os handlers existentes: wrap single result em `[result]`
+- [x] Todos os testes existentes passam sem mudanças
+- **Status:** complete (commit f30ee65)
 
 #### 16.1 CPF Resource (#5)
-- [ ] RED: testes para `validateCpf()` (checksum, edge cases: 000.000.000-00, etc.)
-- [ ] GREEN: implementar `validators.ts` + `cpf.description.ts` + `cpf.execute.ts`
-- [ ] Registrar no router em `BrasilHub.node.ts`
+- [x] RED: testes para `validateCpf()` (checksum, edge cases)
+- [x] GREEN: implementar `validators.ts` + `cpf.description.ts` + `cpf.execute.ts`
+- [x] Registrar no router em `BrasilHub.node.ts`
 - **Providers:** nenhum (validação 100% local)
 - **Operations:** validate
-- **Status:** pending
+- **Status:** complete (commits b55b602, 98d8a67, 360f7eb)
 
 #### 16.2 Release v0.2.0 (#43)
-- [ ] Atualizar CHANGELOG.md, bump version, pre-release checklist
-- [ ] Tag + GitHub release + npm publish + CI verde
-- **Status:** pending
+- [x] Atualizar CHANGELOG.md, bump version, pre-release checklist
+- [x] Pre-release audit: compliance 17/17, security 0 findings
+- [x] Tag + GitHub release + npm publish + CI verde
+- **Status:** complete (PR #50, tag v0.2.0, npm 0.2.0)
 
 ---
 

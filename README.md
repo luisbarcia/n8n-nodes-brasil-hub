@@ -5,7 +5,7 @@
 <h1 align="center">Brasil Hub for n8n</h1>
 
 <p align="center">
-  Query Brazilian public data (CNPJ, CEP &amp; CPF) with automatic multi-provider fallback — zero configuration, zero credentials.
+  Query Brazilian public data (CNPJ, CEP, CPF &amp; Banks) with automatic multi-provider fallback — zero configuration, zero credentials.
 </p>
 
 <p align="center">
@@ -40,6 +40,8 @@ npm install n8n-nodes-brasil-hub
 
 | Resource | Operation | Description | Providers |
 |----------|-----------|-------------|-----------|
+| **Bank** | Query | Fetch bank info by COMPE code | BrasilAPI → BancosBrasileiros |
+| **Bank** | List | List all Brazilian banks | BrasilAPI → BancosBrasileiros |
 | **CEP** | Query | Fetch address data by CEP number | BrasilAPI → ViaCEP → OpenCEP |
 | **CEP** | Validate | Check if CEP format is valid (local, no API) | — |
 | **CNPJ** | Query | Fetch company data by CNPJ number | BrasilAPI → CNPJ.ws → ReceitaWS |
@@ -140,7 +142,7 @@ Each provider has a **10-second timeout**. The `_meta.strategy` field tells you 
 git clone https://github.com/luisbarcia/n8n-nodes-brasil-hub.git
 cd n8n-nodes-brasil-hub
 npm install
-npm test          # 76 tests, 100% coverage
+npm test          # 96 tests, 100% coverage
 npm run build
 npm run lint
 ```
@@ -159,7 +161,7 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for full development guidelines.
 
 | | |
 |---|---|
-| [Roadmap](ROADMAP.md) | Planned features (Banks, DDD, FIPE, Feriados, more providers) |
+| [Roadmap](ROADMAP.md) | Planned features (DDD, FIPE, Feriados, more providers) |
 | [Changelog](CHANGELOG.md) | Version history |
 | [Contributing](.github/CONTRIBUTING.md) | How to contribute |
 | [Security](.github/SECURITY.md) | Vulnerability reporting |

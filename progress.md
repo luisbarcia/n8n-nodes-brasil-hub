@@ -342,14 +342,49 @@
     - `.github/SECURITY.md`: supported versions expandida
 - Files modified: ROADMAP.md, task_plan.md, progress.md, README.md, CLAUDE.md, .github/copilot-instructions.md, .github/SECURITY.md
 
+### Phase 16: v0.2.0 — Router Refactor + CPF Validate
+- **Status:** complete
+- **Started:** 2026-03-15
+- Actions taken:
+  - Router refactor: ExecuteFunction → INodeExecutionData[] (multi-item support)
+  - CPF validate: TDD (RED→GREEN), checksum Módulo 11, 16 novos testes
+  - Pre-release audit: compliance 17/17, security 0 findings
+  - Docs atualizados: README, CHANGELOG, CLAUDE.md, copilot-instructions, ROADMAP, codex, package.json
+  - Issues #5, #40, #43 fechadas no GitHub
+  - PR #50 (squash merge), CI + SonarCloud verdes
+  - v0.2.0 publicada no npm com provenance
+  - Release workflow verde
+- Files created/modified:
+  - `nodes/BrasilHub/resources/cpf/cpf.description.ts` (created)
+  - `nodes/BrasilHub/resources/cpf/cpf.execute.ts` (created)
+  - `__tests__/cpf.execute.spec.ts` (created)
+  - `nodes/BrasilHub/shared/validators.ts` (modified — validateCpf, sanitizeCpf)
+  - `nodes/BrasilHub/BrasilHub.node.ts` (modified — router, imports, CPF resource)
+  - Multiple docs updated
+- Tag: `v0.2.0`, npm: `0.2.0`
+
+## Test Results (Current)
+| Suite | Tests | Status |
+|-------|-------|--------|
+| validators.spec.ts | 25 | PASS |
+| fallback.spec.ts | 7 | PASS |
+| cnpj.normalize.spec.ts | 10 | PASS |
+| cep.normalize.spec.ts | 6 | PASS |
+| cnpj.execute.spec.ts | 6 | PASS |
+| cep.execute.spec.ts | 5 | PASS |
+| cpf.execute.spec.ts | 4 | PASS |
+| BrasilHub.node.spec.ts | 4 | PASS |
+| BrasilHub.execute.spec.ts | 9 | PASS |
+| **Total** | **76** | **ALL PASS (100% coverage)** |
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Docs atualizados para per-resource releases — pronto para implementar Phase 16 (v0.2.0) |
-| Where am I going? | Phase 16: Router refactor (#40) + CPF validate (#5) → release v0.2.0 |
-| What's the goal? | Cada recurso é um release MINOR: v0.2.0 CPF → v0.3.0 Banks → ... → v0.7.0 providers+polish |
-| What have I learned? | parallelum é o provider certo pra FIPE; per-resource releases dão rollback granular |
-| What have I done? | Spec aprovado, 6 milestones, issues distribuídas, todos os docs atualizados |
+| Where am I? | v0.2.0 released — CPF validate + router refactor shipped |
+| Where am I going? | Phase 17: Banks resource (Query + List) → release v0.3.0 |
+| What's the goal? | Cada recurso é um release MINOR: v0.3.0 Banks → v0.4.0 DDD → v0.5.0 FIPE → v0.6.0 Feriados → v0.7.0 providers+polish |
+| What have I learned? | Dictionary Map Pattern permite adicionar resources com zero mudanças em arquivos existentes; pre-release workflow com skills em paralelo é eficiente |
+| What have I done? | v0.2.0: router refactor, CPF validate, 76 testes 100% coverage, audits clean, npm published |
 
 ---
 *Update after completing each phase or encountering errors*

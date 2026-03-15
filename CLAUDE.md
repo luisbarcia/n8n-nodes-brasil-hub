@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.2.x ships CNPJ, CEP, and CPF. New resources ship as incremental MINOR releases (v0.3.0 Banks → v0.4.0 DDD → v0.5.0 FIPE → v0.6.0 Feriados → v0.7.0 additional providers).
+Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.3.x ships CNPJ, CEP, CPF, and Banks. New resources ship as incremental MINOR releases (v0.4.0 DDD → v0.5.0 FIPE → v0.6.0 Feriados → v0.7.0 additional providers).
 
 - **License:** MIT
 - **Tech Stack:** TypeScript, n8n-workflow, Jest + ts-jest
@@ -55,9 +55,13 @@ nodes/BrasilHub/
 │   │   ├── cep.description.ts
 │   │   ├── cep.execute.ts
 │   │   └── cep.normalize.ts
-│   └── cpf/
-│       ├── cpf.description.ts   # Validate only (no query — local checksum)
-│       └── cpf.execute.ts
+│   ├── cpf/
+│   │   ├── cpf.description.ts   # Validate only (no query — local checksum)
+│   │   └── cpf.execute.ts
+│   └── banks/
+│       ├── banks.description.ts # Query + List operations
+│       ├── banks.execute.ts
+│       └── banks.normalize.ts   # BrasilAPI + BancosBrasileiros
 ├── shared/
 │   ├── fallback.ts              # Generic multi-provider fallback (10s timeout)
 │   └── validators.ts            # CNPJ/CPF checksum, CEP format validation (local, no API)
@@ -70,6 +74,7 @@ const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
   cnpj: { query: cnpjQuery, validate: cnpjValidate },
   cep:  { query: cepQuery,  validate: cepValidate },
   cpf:  { validate: cpfValidate },
+  banks: { query: banksQuery, list: banksList },
 };
 ```
 

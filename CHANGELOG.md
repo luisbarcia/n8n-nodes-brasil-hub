@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-15
+
+### Added
+- **Bank resource** with Query and List operations
+- Query: fetch bank info by COMPE code (BrasilAPI → BancosBrasileiros fallback)
+- List: fetch all Brazilian banks, returns one n8n item per bank (multi-item)
+- Bank code validation (must be positive integer) before API calls
+- BancosBrasileiros (GitHub raw JSON) as fallback provider with local filtering
+- IBank interface in types.ts
+- 18 new tests (normalizer, execute, integration, fallback)
+
+### Changed
+- Resource option uses singular "Bank" per n8n lint convention
+- 96 tests total, 100% statement/function/line coverage
+
 ## [0.2.0] - 2026-03-15
 
 ### Added
@@ -112,7 +127,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.4...v0.1.5
