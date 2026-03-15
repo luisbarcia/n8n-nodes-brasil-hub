@@ -11,6 +11,8 @@ import { cepDescription } from './resources/cep/cep.description';
 import { cepQuery, cepValidate } from './resources/cep/cep.execute';
 import { cpfDescription } from './resources/cpf/cpf.description';
 import { cpfValidate } from './resources/cpf/cpf.execute';
+import { banksDescription } from './resources/banks/banks.description';
+import { banksQuery, banksList } from './resources/banks/banks.execute';
 
 /** Signature for resource/operation execute handlers (returns array to support multi-item resources). */
 type ExecuteFunction = (
@@ -26,6 +28,7 @@ const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
 	cnpj: { query: cnpjQuery, validate: cnpjValidate },
 	cep: { query: cepQuery, validate: cepValidate },
 	cpf: { validate: cpfValidate },
+	banks: { query: banksQuery, list: banksList },
 };
 
 /**
@@ -58,6 +61,7 @@ export class BrasilHub implements INodeType {
 				type: 'options',
 				noDataExpression: true,
 				options: [
+					{ name: 'Banks', value: 'banks', description: 'Query or list Brazilian banks and financial institutions' },
 					{ name: 'CEP', value: 'cep', description: 'Query or validate Brazilian postal codes' },
 					{ name: 'CNPJ', value: 'cnpj', description: 'Query or validate Brazilian company tax IDs' },
 					{ name: 'CPF', value: 'cpf', description: 'Validate Brazilian individual tax IDs' },
@@ -67,6 +71,7 @@ export class BrasilHub implements INodeType {
 			...cnpjDescription,
 			...cepDescription,
 			...cpfDescription,
+			...banksDescription,
 		],
 	};
 

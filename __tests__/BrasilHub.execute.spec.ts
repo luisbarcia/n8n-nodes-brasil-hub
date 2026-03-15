@@ -8,6 +8,7 @@ function createExecuteContext(overrides: {
 	cnpj?: string;
 	cep?: string;
 	cpf?: string;
+	bankCode?: string;
 	includeRaw?: boolean;
 	items?: INodeExecutionData[];
 	continueOnFail?: boolean;
@@ -20,6 +21,7 @@ function createExecuteContext(overrides: {
 		cnpj: overrides.cnpj ?? '11222333000181',
 		cep: overrides.cep ?? '01001000',
 		cpf: overrides.cpf ?? '52998224725',
+		bankCode: overrides.bankCode ?? '1',
 		includeRaw: overrides.includeRaw ?? false,
 	};
 
@@ -85,6 +87,33 @@ describe('BrasilHub.execute()', () => {
 			formatted: '01001-000',
 			input: '01001000',
 		});
+	});
+
+	it('should dispatch banks/query and return normalized bank', async () => {
+		const ctx = createExecuteContext({
+			resource: 'banks',
+			operation: 'query',
+			httpResponse: { ispb: '00000000', name: 'BCO DO BRASIL S.A.', code: 1, fullName: 'Banco do Brasil S.A.' },
+		});
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('code', 1);
+		expect(result.json).toHaveProperty('name', 'BCO DO BRASIL S.A.');
+		expect(result.json).toHaveProperty('_meta');
+	});
+
+	it('should dispatch banks/list and return multiple items', async () => {
+		const ctx = createExecuteContext({
+			resource: 'banks',
+			operation: 'list',
+			httpResponse: [
+				{ ispb: '00000000', name: 'BCO DO BRASIL S.A.', code: 1, fullName: 'Banco do Brasil S.A.' },
+				{ ispb: '00000208', name: 'BRB', code: 70, fullName: 'BRB - BANCO DE BRASILIA S.A.' },
+			],
+		});
+		const [results] = await node.execute.call(ctx);
+		expect(results).toHaveLength(2);
+		expect(results[0].json).toHaveProperty('code', 1);
+		expect(results[1].json).toHaveProperty('code', 70);
 	});
 
 	it('should dispatch cpf/validate and return result', async () => {
