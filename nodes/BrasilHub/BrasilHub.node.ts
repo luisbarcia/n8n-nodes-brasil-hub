@@ -10,11 +10,11 @@ import { cnpjQuery, cnpjValidate } from './resources/cnpj/cnpj.execute';
 import { cepDescription } from './resources/cep/cep.description';
 import { cepQuery, cepValidate } from './resources/cep/cep.execute';
 
-/** Signature for resource/operation execute handlers. */
+/** Signature for resource/operation execute handlers (returns array to support multi-item resources). */
 type ExecuteFunction = (
 	context: IExecuteFunctions,
 	itemIndex: number,
-) => Promise<INodeExecutionData>;
+) => Promise<INodeExecutionData[]>;
 
 /**
  * Dictionary map routing resource+operation pairs to their execute handlers.
@@ -88,8 +88,8 @@ export class BrasilHub implements INodeType {
 					);
 				}
 
-				const result = await handler(this, i);
-				returnData.push(result);
+				const results = await handler(this, i);
+				returnData.push(...results);
 			} catch (error) {
 				if (this.continueOnFail()) {
 					const nodeError = error instanceof NodeOperationError

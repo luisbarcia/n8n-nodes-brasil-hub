@@ -28,13 +28,13 @@ function buildProviders(cep: string): IProvider[] {
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
- * @returns n8n execution data with normalized CEP result as JSON.
+ * @returns Array of n8n execution data with normalized CEP result as JSON.
  * @throws {NodeOperationError} If the CEP is invalid (wrong length or all zeros) or all providers fail.
  */
 export async function cepQuery(
 	context: IExecuteFunctions,
 	itemIndex: number,
-): Promise<INodeExecutionData> {
+): Promise<INodeExecutionData[]> {
 	const cepInput = context.getNodeParameter('cep', itemIndex) as string;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
 	const cep = sanitizeCep(cepInput);
@@ -60,14 +60,14 @@ export async function cepQuery(
 		...(result.errors.length > 0 && { errors: result.errors }),
 	};
 
-	return {
+	return [{
 		json: {
 			...normalized,
 			_meta: meta,
 			...(includeRaw && { _raw: result.data as IDataObject }),
 		} as IDataObject,
 		pairedItem: { item: itemIndex },
-	};
+	}];
 }
 
 /**
@@ -77,17 +77,17 @@ export async function cepQuery(
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
- * @returns n8n execution data with validation result as JSON.
+ * @returns Array of n8n execution data with validation result as JSON.
  */
 export async function cepValidate(
 	context: IExecuteFunctions,
 	itemIndex: number,
-): Promise<INodeExecutionData> {
+): Promise<INodeExecutionData[]> {
 	const cepInput = context.getNodeParameter('cep', itemIndex) as string;
 	const result = validateCep(cepInput);
 
-	return {
+	return [{
 		json: result as unknown as IDataObject,
 		pairedItem: { item: itemIndex },
-	};
+	}];
 }

@@ -25,13 +25,13 @@ function buildProviders(cnpj: string): IProvider[] {
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
- * @returns n8n execution data with normalized CNPJ result as JSON.
+ * @returns Array of n8n execution data with normalized CNPJ result as JSON.
  * @throws {NodeOperationError} If the CNPJ is invalid (wrong length or checksum) or all providers fail.
  */
 export async function cnpjQuery(
 	context: IExecuteFunctions,
 	itemIndex: number,
-): Promise<INodeExecutionData> {
+): Promise<INodeExecutionData[]> {
 	const cnpjInput = context.getNodeParameter('cnpj', itemIndex) as string;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
 	const cnpj = sanitizeCnpj(cnpjInput);
@@ -57,14 +57,14 @@ export async function cnpjQuery(
 		...(result.errors.length > 0 && { errors: result.errors }),
 	};
 
-	return {
+	return [{
 		json: {
 			...normalized,
 			_meta: meta,
 			...(includeRaw && { _raw: result.data as IDataObject }),
 		} as IDataObject,
 		pairedItem: { item: itemIndex },
-	};
+	}];
 }
 
 /**
@@ -74,17 +74,17 @@ export async function cnpjQuery(
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
- * @returns n8n execution data with validation result as JSON.
+ * @returns Array of n8n execution data with validation result as JSON.
  */
 export async function cnpjValidate(
 	context: IExecuteFunctions,
 	itemIndex: number,
-): Promise<INodeExecutionData> {
+): Promise<INodeExecutionData[]> {
 	const cnpjInput = context.getNodeParameter('cnpj', itemIndex) as string;
 	const result = validateCnpj(cnpjInput);
 
-	return {
+	return [{
 		json: result as unknown as IDataObject,
 		pairedItem: { item: itemIndex },
-	};
+	}];
 }
