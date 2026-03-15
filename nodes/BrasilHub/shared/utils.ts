@@ -14,6 +14,33 @@ export function safeStr(value: unknown): string {
 }
 
 /**
+ * Builds the standard `_meta` object attached to every API query response.
+ *
+ * Centralizes the fallback/direct strategy logic and error collection
+ * so that each resource handler doesn't repeat the same 6-line block.
+ *
+ * @param provider - Name of the provider that returned the data.
+ * @param query - Sanitized input used for the query.
+ * @param errors - Error messages from providers that failed before the successful one.
+ * @returns IMeta object ready to attach to the response.
+ */
+export function buildMeta(provider: string, query: string, errors: string[]): {
+	provider: string;
+	query: string;
+	queried_at: string;
+	strategy: 'fallback' | 'direct';
+	errors?: string[];
+} {
+	return {
+		provider,
+		query,
+		queried_at: new Date().toISOString(),
+		strategy: errors.length > 0 ? 'fallback' : 'direct',
+		...(errors.length > 0 && { errors }),
+	};
+}
+
+/**
  * Removes all non-digit characters from a string.
  *
  * @param value - Raw input (e.g. `"11.222.333/0001-81"`).

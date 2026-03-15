@@ -1,6 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import type { IProvider, IMeta } from '../../types';
+import type { IProvider } from '../../types';
+import { buildMeta } from '../../shared/utils';
 import { queryWithFallback } from '../../shared/fallback';
 import { normalizeBank, normalizeBanks } from './banks.normalize';
 
@@ -51,13 +52,7 @@ export async function banksQuery(
 
 	const normalized = normalizeBank(result.data, result.provider, bankCode);
 
-	const meta: IMeta = {
-		provider: result.provider,
-		query: String(bankCode),
-		queried_at: new Date().toISOString(),
-		strategy: result.errors.length > 0 ? 'fallback' : 'direct',
-		...(result.errors.length > 0 && { errors: result.errors }),
-	};
+	const meta = buildMeta(result.provider, String(bankCode), result.errors);
 
 	return [{
 		json: {
@@ -90,13 +85,7 @@ export async function banksList(
 	const rawItems = result.data as Array<Record<string, unknown>>;
 	const banks = normalizeBanks(result.data, result.provider);
 
-	const meta: IMeta = {
-		provider: result.provider,
-		query: 'all',
-		queried_at: new Date().toISOString(),
-		strategy: result.errors.length > 0 ? 'fallback' : 'direct',
-		...(result.errors.length > 0 && { errors: result.errors }),
-	};
+	const meta = buildMeta(result.provider, 'all', result.errors);
 
 	return banks.map((bank, index) => ({
 		json: {

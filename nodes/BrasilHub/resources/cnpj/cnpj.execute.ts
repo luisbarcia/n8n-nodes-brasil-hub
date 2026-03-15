@@ -1,6 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import type { IProvider, IMeta } from '../../types';
+import type { IProvider } from '../../types';
+import { buildMeta } from '../../shared/utils';
 import { validateCnpj, sanitizeCnpj } from '../../shared/validators';
 import { queryWithFallback } from '../../shared/fallback';
 import { normalizeCnpj } from './cnpj.normalize';
@@ -49,13 +50,7 @@ export async function cnpjQuery(
 
 	const normalized = normalizeCnpj(result.data, result.provider);
 
-	const meta: IMeta = {
-		provider: result.provider,
-		query: cnpj,
-		queried_at: new Date().toISOString(),
-		strategy: result.errors.length > 0 ? 'fallback' : 'direct',
-		...(result.errors.length > 0 && { errors: result.errors }),
-	};
+	const meta = buildMeta(result.provider, cnpj, result.errors);
 
 	return [{
 		json: {

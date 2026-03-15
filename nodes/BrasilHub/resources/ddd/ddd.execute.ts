@@ -1,6 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import type { IProvider, IMeta } from '../../types';
+import type { IProvider } from '../../types';
+import { buildMeta } from '../../shared/utils';
 import { queryWithFallback } from '../../shared/fallback';
 import { normalizeDdd } from './ddd.normalize';
 
@@ -38,13 +39,7 @@ export async function dddQuery(
 	const result = await queryWithFallback(context, providers);
 	const normalized = normalizeDdd(result.data, result.provider);
 
-	const meta: IMeta = {
-		provider: result.provider,
-		query: String(ddd),
-		queried_at: new Date().toISOString(),
-		strategy: result.errors.length > 0 ? 'fallback' : 'direct',
-		...(result.errors.length > 0 && { errors: result.errors }),
-	};
+	const meta = buildMeta(result.provider, String(ddd), result.errors);
 
 	return [{
 		json: {

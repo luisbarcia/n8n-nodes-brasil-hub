@@ -1,6 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import type { IProvider, IMeta } from '../../types';
+import type { IProvider } from '../../types';
+import { buildMeta } from '../../shared/utils';
 import { validateCep, sanitizeCep } from '../../shared/validators';
 import { queryWithFallback } from '../../shared/fallback';
 import { normalizeCep } from './cep.normalize';
@@ -52,13 +53,7 @@ export async function cepQuery(
 
 	const normalized = normalizeCep(result.data, result.provider);
 
-	const meta: IMeta = {
-		provider: result.provider,
-		query: cep,
-		queried_at: new Date().toISOString(),
-		strategy: result.errors.length > 0 ? 'fallback' : 'direct',
-		...(result.errors.length > 0 && { errors: result.errors }),
-	};
+	const meta = buildMeta(result.provider, cep, result.errors);
 
 	return [{
 		json: {
