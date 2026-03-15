@@ -50,7 +50,7 @@ export class BrasilHub implements INodeType {
 		group: [],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Query Brazilian public data (CNPJ, CEP, CPF, Banks) with multi-provider fallback',
+		description: 'Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD) with multi-provider fallback',
 		defaults: {
 			name: 'Brasil Hub',
 		},
@@ -66,9 +66,9 @@ export class BrasilHub implements INodeType {
 				options: [
 					{ name: 'Bank', value: 'banks', description: 'Query or list Brazilian banks and financial institutions' },
 					{ name: 'CEP', value: 'cep', description: 'Query or validate Brazilian postal codes' },
-					{ name: 'DDD', value: 'ddd', description: 'Query Brazilian area codes and their cities' },
 					{ name: 'CNPJ', value: 'cnpj', description: 'Query or validate Brazilian company tax IDs' },
 					{ name: 'CPF', value: 'cpf', description: 'Validate Brazilian individual tax IDs' },
+					{ name: 'DDD', value: 'ddd', description: 'Query Brazilian area codes and their cities' },
 				],
 				default: 'cnpj',
 			},
