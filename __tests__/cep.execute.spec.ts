@@ -27,7 +27,7 @@ function createMockContext(overrides: Record<string, unknown> = {}) {
 describe('cepQuery', () => {
 	it('should return normalized data with _meta', async () => {
 		const ctx = createMockContext();
-		const result = await cepQuery(ctx, 0);
+		const [result] = await cepQuery(ctx, 0);
 		expect(result.json).toHaveProperty('cep', '01001000');
 		expect(result.json).toHaveProperty('_meta');
 		expect(result.json._meta).toHaveProperty('provider', 'brasilapi');
@@ -63,7 +63,7 @@ describe('cepQuery with fallback', () => {
 				}),
 			},
 		} as unknown as Parameters<typeof cepQuery>[0];
-		const result = await cepQuery(ctx, 0);
+		const [result] = await cepQuery(ctx, 0);
 		expect(result.json._meta).toHaveProperty('strategy', 'fallback');
 		expect(result.json._meta).toHaveProperty('errors');
 	});
@@ -72,7 +72,7 @@ describe('cepQuery with fallback', () => {
 describe('cepQuery with includeRaw', () => {
 	it('should include raw response when includeRaw is true', async () => {
 		const ctx = createMockContext({ includeRaw: true });
-		const result = await cepQuery(ctx, 0);
+		const [result] = await cepQuery(ctx, 0);
 		expect(result.json).toHaveProperty('_raw');
 	});
 });
@@ -80,7 +80,7 @@ describe('cepQuery with includeRaw', () => {
 describe('cepValidate', () => {
 	it('should return validation result', async () => {
 		const ctx = createMockContext({ cep: '01001-000' });
-		const result = await cepValidate(ctx, 0);
+		const [result] = await cepValidate(ctx, 0);
 		expect(result.json).toEqual({
 			valid: true,
 			formatted: '01001-000',

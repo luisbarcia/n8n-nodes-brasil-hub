@@ -81,6 +81,70 @@ export function validateCep(cep: string): IValidationResult {
 	return { valid: true, formatted: formatCep(digits), input };
 }
 
+/** Formats an 11-digit string into `XXX.XXX.XXX-XX`. */
+function formatCpf(digits: string): string {
+	return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`;
+}
+
+/**
+ * Validates a CPF number using the Receita Federal checksum algorithm.
+ *
+ * Checks length (11 digits), rejects all-same-digit sequences, and verifies
+ * both check digits using weighted modular arithmetic.
+ *
+ * @param cpf - CPF string, with or without formatting (e.g. `"529.982.247-25"` or `"52998224725"`).
+ * @returns Validation result with `valid`, `formatted`, and original `input`.
+ */
+export function validateCpf(cpf: string): IValidationResult {
+	const input = cpf;
+	const digits = stripNonDigits(cpf);
+
+	if (digits.length !== 11) {
+		return { valid: false, formatted: '', input };
+	}
+
+	if (/^(\d)\1{10}$/.test(digits)) {
+		return { valid: false, formatted: '', input };
+	}
+
+	const weights1 = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+	const weights2 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+
+	let sum = 0;
+	for (let i = 0; i < 9; i++) {
+		sum += Number.parseInt(digits[i], 10) * weights1[i];
+	}
+	let remainder = sum % 11;
+	const check1 = remainder < 2 ? 0 : 11 - remainder;
+
+	if (Number.parseInt(digits[9], 10) !== check1) {
+		return { valid: false, formatted: '', input };
+	}
+
+	sum = 0;
+	for (let i = 0; i < 10; i++) {
+		sum += Number.parseInt(digits[i], 10) * weights2[i];
+	}
+	remainder = sum % 11;
+	const check2 = remainder < 2 ? 0 : 11 - remainder;
+
+	if (Number.parseInt(digits[10], 10) !== check2) {
+		return { valid: false, formatted: '', input };
+	}
+
+	return { valid: true, formatted: formatCpf(digits), input };
+}
+
+/**
+ * Strips non-digit characters from a CPF string.
+ *
+ * @param cpf - Raw CPF input (e.g. `"529.982.247-25"`).
+ * @returns Digits-only string (e.g. `"52998224725"`).
+ */
+export function sanitizeCpf(cpf: string): string {
+	return stripNonDigits(cpf);
+}
+
 /**
  * Strips non-digit characters from a CNPJ string.
  *

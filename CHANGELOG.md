@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-15
+
+### Added
+- **CPF resource** with Validate operation (local Módulo 11 checksum, no API call)
+- CPF checksum validator (`validateCpf`) and sanitizer (`sanitizeCpf`) in shared validators
+- 16 new tests for CPF validation (validators, execute handler, integration, edge cases)
+- CPF alias added to codex for discoverability
+
+### Changed
+- Execute handlers now return `INodeExecutionData[]` (array) instead of single items, enabling future multi-item resources (Banks list, Feriados)
+- Router uses `push(...results)` spread pattern for multi-item support
+- Resource options sorted alphabetically (CEP, CNPJ, CPF)
+- Node description updated to include CPF
+- 76 tests total with 100% coverage (statements, branches, functions, lines)
+
 ## [0.1.6] - 2026-03-11
 
 ### Fixed
@@ -97,7 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.3...v0.1.4

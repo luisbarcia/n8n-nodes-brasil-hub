@@ -7,6 +7,7 @@ function createExecuteContext(overrides: {
 	operation?: string;
 	cnpj?: string;
 	cep?: string;
+	cpf?: string;
 	includeRaw?: boolean;
 	items?: INodeExecutionData[];
 	continueOnFail?: boolean;
@@ -18,6 +19,7 @@ function createExecuteContext(overrides: {
 		operation: overrides.operation ?? 'validate',
 		cnpj: overrides.cnpj ?? '11222333000181',
 		cep: overrides.cep ?? '01001000',
+		cpf: overrides.cpf ?? '52998224725',
 		includeRaw: overrides.includeRaw ?? false,
 	};
 
@@ -82,6 +84,16 @@ describe('BrasilHub.execute()', () => {
 			valid: true,
 			formatted: '01001-000',
 			input: '01001000',
+		});
+	});
+
+	it('should dispatch cpf/validate and return result', async () => {
+		const ctx = createExecuteContext({ resource: 'cpf', operation: 'validate' });
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toEqual({
+			valid: true,
+			formatted: '529.982.247-25',
+			input: '52998224725',
 		});
 	});
 

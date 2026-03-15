@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.1.x ships CNPJ and CEP. New resources ship as incremental MINOR releases (v0.2.0 CPF → v0.3.0 Banks → v0.4.0 DDD → v0.5.0 FIPE → v0.6.0 Feriados → v0.7.0 additional providers).
+Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.2.x ships CNPJ, CEP, and CPF. New resources ship as incremental MINOR releases (v0.3.0 Banks → v0.4.0 DDD → v0.5.0 FIPE → v0.6.0 Feriados → v0.7.0 additional providers).
 
 - **License:** MIT
 - **Tech Stack:** TypeScript, n8n-workflow, Jest + ts-jest
@@ -49,23 +49,27 @@ nodes/BrasilHub/
 ├── resources/
 │   ├── cnpj/
 │   │   ├── cnpj.description.ts  # INodeProperties[]
-│   │   ├── cnpj.execute.ts      # { consultar, validar }
+│   │   ├── cnpj.execute.ts      # { query, validate }
 │   │   └── cnpj.normalize.ts    # Provider response → normalized schema
-│   └── cep/
-│       ├── cep.description.ts
-│       ├── cep.execute.ts
-│       └── cep.normalize.ts
+│   ├── cep/
+│   │   ├── cep.description.ts
+│   │   ├── cep.execute.ts
+│   │   └── cep.normalize.ts
+│   └── cpf/
+│       ├── cpf.description.ts   # Validate only (no query — local checksum)
+│       └── cpf.execute.ts
 ├── shared/
-│   ├── fallback.ts              # Generic multi-provider fallback (1s delay, 10s timeout)
-│   └── validators.ts            # CNPJ checksum, CEP format validation (local, no API)
+│   ├── fallback.ts              # Generic multi-provider fallback (10s timeout)
+│   └── validators.ts            # CNPJ/CPF checksum, CEP format validation (local, no API)
 ```
 
 ### Router Pattern
 
 ```typescript
 const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
-  cnpj: { consultar: cnpjConsultar, validar: cnpjValidar },
-  cep:  { consultar: cepConsultar,  validar: cepValidar },
+  cnpj: { query: cnpjQuery, validate: cnpjValidate },
+  cep:  { query: cepQuery,  validate: cepValidate },
+  cpf:  { validate: cpfValidate },
 };
 ```
 

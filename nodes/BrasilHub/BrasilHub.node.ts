@@ -9,12 +9,14 @@ import { cnpjDescription } from './resources/cnpj/cnpj.description';
 import { cnpjQuery, cnpjValidate } from './resources/cnpj/cnpj.execute';
 import { cepDescription } from './resources/cep/cep.description';
 import { cepQuery, cepValidate } from './resources/cep/cep.execute';
+import { cpfDescription } from './resources/cpf/cpf.description';
+import { cpfValidate } from './resources/cpf/cpf.execute';
 
-/** Signature for resource/operation execute handlers. */
+/** Signature for resource/operation execute handlers (returns array to support multi-item resources). */
 type ExecuteFunction = (
 	context: IExecuteFunctions,
 	itemIndex: number,
-) => Promise<INodeExecutionData>;
+) => Promise<INodeExecutionData[]>;
 
 /**
  * Dictionary map routing resource+operation pairs to their execute handlers.
@@ -23,6 +25,7 @@ type ExecuteFunction = (
 const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
 	cnpj: { query: cnpjQuery, validate: cnpjValidate },
 	cep: { query: cepQuery, validate: cepValidate },
+	cpf: { validate: cpfValidate },
 };
 
 /**
@@ -41,7 +44,7 @@ export class BrasilHub implements INodeType {
 		group: [],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Query Brazilian public data (CNPJ, CEP) with multi-provider fallback',
+		description: 'Query Brazilian public data (CNPJ, CEP, CPF) with multi-provider fallback',
 		defaults: {
 			name: 'Brasil Hub',
 		},
@@ -55,13 +58,15 @@ export class BrasilHub implements INodeType {
 				type: 'options',
 				noDataExpression: true,
 				options: [
-					{ name: 'CNPJ', value: 'cnpj', description: 'Query or validate Brazilian company tax IDs' },
 					{ name: 'CEP', value: 'cep', description: 'Query or validate Brazilian postal codes' },
+					{ name: 'CNPJ', value: 'cnpj', description: 'Query or validate Brazilian company tax IDs' },
+					{ name: 'CPF', value: 'cpf', description: 'Validate Brazilian individual tax IDs' },
 				],
 				default: 'cnpj',
 			},
 			...cnpjDescription,
 			...cepDescription,
+			...cpfDescription,
 		],
 	};
 
@@ -88,8 +93,8 @@ export class BrasilHub implements INodeType {
 					);
 				}
 
-				const result = await handler(this, i);
-				returnData.push(result);
+				const results = await handler(this, i);
+				returnData.push(...results);
 			} catch (error) {
 				if (this.continueOnFail()) {
 					const nodeError = error instanceof NodeOperationError
