@@ -62,6 +62,12 @@ describe('banksQuery', () => {
 		const [result] = await banksQuery(ctx, 0);
 		expect(result.json).toHaveProperty('code', 1);
 	});
+
+	it('should include raw response when includeRaw is true', async () => {
+		const ctx = createMockContext({ includeRaw: true });
+		const [result] = await banksQuery(ctx, 0);
+		expect(result.json).toHaveProperty('_raw');
+	});
 });
 
 describe('banksList', () => {
