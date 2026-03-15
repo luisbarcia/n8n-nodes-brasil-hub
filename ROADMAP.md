@@ -21,7 +21,7 @@ Each new resource ships as its own MINOR release for faster iteration and easier
 
 ## v0.3.0 — Banks
 
-- [ ] **Banks resource** — Query/list bank info (BrasilAPI + BancosBrasileiros fallback) ([#32](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/32))
+- [x] **Banks resource** — Query/list bank info (BrasilAPI + BancosBrasileiros fallback) ([#32](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/32))
 
 ## v0.4.0 — DDD
 
