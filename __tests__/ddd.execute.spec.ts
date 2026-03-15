@@ -52,3 +52,27 @@ describe('dddQuery', () => {
 		expect(result.json).toHaveProperty('_raw');
 	});
 });
+
+describe('dddQuery with fallback', () => {
+	it('should fall back to municipios-brasileiros and return state + cities', async () => {
+		let callCount = 0;
+		const ctx = {
+			...createMockContext(),
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callCount++;
+					if (callCount === 1) throw new Error('BrasilAPI down');
+					return [
+						{ codigo_ibge: 3550308, nome: 'São Paulo', codigo_uf: 35, ddd: 11 },
+						{ codigo_ibge: 3518800, nome: 'Guarulhos', codigo_uf: 35, ddd: 11 },
+						{ codigo_ibge: 9999999, nome: 'Other', codigo_uf: 35, ddd: 21 },
+					];
+				}),
+			},
+		} as unknown as Parameters<typeof dddQuery>[0];
+		const [result] = await dddQuery(ctx, 0);
+		expect(result.json._meta).toHaveProperty('strategy', 'fallback');
+		expect(result.json).toHaveProperty('state', 'SP');
+		expect(result.json.cities).toEqual(['São Paulo', 'Guarulhos']);
+	});
+});

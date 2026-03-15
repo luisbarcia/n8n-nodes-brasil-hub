@@ -6,10 +6,10 @@ import { queryWithFallback } from '../../shared/fallback';
 import { normalizeDdd } from './ddd.normalize';
 
 /**
- * Queries DDD (area code) data from BrasilAPI.
+ * Queries DDD (area code) data with multi-provider fallback.
  *
  * Validates DDD is a 2-digit number in range 11–99, then fetches
- * state and cities for that area code. Single provider (no fallback).
+ * state and cities for that area code (BrasilAPI → municipios-brasileiros).
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
@@ -34,10 +34,11 @@ export async function dddQuery(
 
 	const providers: IProvider[] = [
 		{ name: 'brasilapi', url: `https://brasilapi.com.br/api/ddd/v1/${ddd}` },
+		{ name: 'municipios', url: 'https://raw.githubusercontent.com/kelvins/municipios-brasileiros/main/json/municipios.json' },
 	];
 
 	const result = await queryWithFallback(context, providers);
-	const normalized = normalizeDdd(result.data, result.provider);
+	const normalized = normalizeDdd(result.data, result.provider, ddd);
 
 	const meta = buildMeta(result.provider, String(ddd), result.errors);
 
