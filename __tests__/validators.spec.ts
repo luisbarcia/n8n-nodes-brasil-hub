@@ -1,4 +1,4 @@
-import { validateCnpj, validateCep } from '../nodes/BrasilHub/shared/validators';
+import { validateCnpj, validateCep, validateCpf, sanitizeCpf } from '../nodes/BrasilHub/shared/validators';
 
 describe('validateCnpj', () => {
 	it('should validate a correct CNPJ', () => {
@@ -53,6 +53,65 @@ describe('validateCnpj', () => {
 	it('should validate CNPJ where second check digit remainder < 2', () => {
 		// 80000000000040 — sum2 % 11 = 1 (< 2), so check2 = 0
 		expect(validateCnpj('80000000000040').valid).toBe(true);
+	});
+});
+
+describe('validateCpf', () => {
+	it('should validate a correct CPF', () => {
+		expect(validateCpf('52998224725')).toEqual({
+			valid: true,
+			formatted: '529.982.247-25',
+			input: '52998224725',
+		});
+	});
+
+	it('should validate a formatted CPF', () => {
+		expect(validateCpf('529.982.247-25')).toEqual({
+			valid: true,
+			formatted: '529.982.247-25',
+			input: '529.982.247-25',
+		});
+	});
+
+	it('should reject a CPF with wrong check digits', () => {
+		expect(validateCpf('52998224799').valid).toBe(false);
+	});
+
+	it('should reject all-same-digit CPFs', () => {
+		for (let d = 0; d <= 9; d++) {
+			const cpf = String(d).repeat(11);
+			expect(validateCpf(cpf).valid).toBe(false);
+		}
+	});
+
+	it('should reject CPF with wrong length', () => {
+		expect(validateCpf('1234567890').valid).toBe(false);
+		expect(validateCpf('123456789012').valid).toBe(false);
+	});
+
+	it('should reject empty string', () => {
+		expect(validateCpf('').valid).toBe(false);
+	});
+
+	it('should reject CPF with valid first check digit but invalid second', () => {
+		// 529.982.247-25 is valid; change last digit to break only check2
+		expect(validateCpf('52998224726').valid).toBe(false);
+	});
+
+	it('should validate known valid CPFs', () => {
+		// Generated from the algorithm
+		expect(validateCpf('45317828791').valid).toBe(true);
+		expect(validateCpf('11144477735').valid).toBe(true);
+	});
+});
+
+describe('sanitizeCpf', () => {
+	it('should strip non-digit characters', () => {
+		expect(sanitizeCpf('529.982.247-25')).toBe('52998224725');
+	});
+
+	it('should return digits-only input unchanged', () => {
+		expect(sanitizeCpf('52998224725')).toBe('52998224725');
 	});
 });
 
