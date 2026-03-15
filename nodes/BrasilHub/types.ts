@@ -104,6 +104,22 @@ export interface IMeta {
 	errors?: string[];
 }
 
+/** Normalized bank query result, unified across providers (BrasilAPI, BancosBrasileiros). */
+export interface IBank {
+	/** COMPE bank code (e.g. 1, 237, 341). Zero when not assigned. */
+	code: number;
+	/** Short bank name (e.g. "BCO DO BRASIL S.A."). */
+	name: string;
+	/** Full official bank name (e.g. "Banco do Brasil S.A."). */
+	fullName: string;
+	/** ISPB identifier (8-digit string, e.g. "00000000"). */
+	ispb: string;
+	/** Query metadata. Present when queried via API. */
+	_meta?: IMeta;
+	/** Raw provider response. Present only when "Include Raw Response" is enabled. */
+	_raw?: unknown;
+}
+
 /** A data provider endpoint used by the fallback engine. */
 export interface IProvider {
 	/** Provider identifier (e.g. "brasilapi", "cnpjws", "receitaws"). */
