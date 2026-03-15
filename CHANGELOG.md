@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-03-15
+
+### Changed
+- Extract `buildMeta()` helper to `shared/utils.ts`, eliminating duplicated meta-building logic across 5 execute handlers
+- Improve branch coverage: Banks 91% → 100%, DDD normalize 66% → 100% (3 new edge case tests)
+- 108 tests total, 98.6% branch coverage (remaining gap: DDD fallback dead code with single provider)
+
+### Fixed
+- Document mandatory pre-release workflow rules in CLAUDE.md (all 5 phases must execute in order)
+
 ## [0.4.0] - 2026-03-15
 
 ### Added
@@ -140,7 +150,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.1.6...v0.2.0
