@@ -16,8 +16,8 @@ Each new resource ships as its own MINOR release for faster iteration and easier
 
 ## v0.2.0 — CPF Validate
 
-- [ ] Refactor router for multi-item returns ([#40](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/40))
-- [ ] **CPF resource** — Validate CPF numbers (local Módulo 11 checksum, no API) ([#5](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/5))
+- [x] Refactor router for multi-item returns ([#40](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/40))
+- [x] **CPF resource** — Validate CPF numbers (local Módulo 11 checksum, no API) ([#5](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/5))
 
 ## v0.3.0 — Banks
 
