@@ -6,7 +6,7 @@ Threat model and security assurance case for n8n-nodes-brasil-hub.
 
 ### What this package does
 
-- Receives CNPJ/CEP input from n8n workflow items
+- Receives CNPJ/CEP/CPF/Bank code/DDD input from n8n workflow items
 - Makes HTTP GET requests to **public Brazilian data APIs** (no auth required)
 - Returns normalized JSON responses to the n8n workflow
 
@@ -26,8 +26,8 @@ Threat model and security assurance case for n8n-nodes-brasil-hub.
 │  ┌───────────────────────────────────┐      │
 │  │ Brasil Hub Node                   │      │
 │  │  ┌─────────────┐                 │      │
-│  │  │ Input       │ CNPJ/CEP string │      │
-│  │  │ Validation  │◄────────────────│      │
+│  │  │ Input       │ CNPJ/CEP/CPF/   │      │
+│  │  │ Validation  │ Bank/DDD input  │      │
 │  │  └──────┬──────┘                 │      │
 │  │         │ validated input         │      │
 │  │  ┌──────▼──────┐                 │      │
@@ -40,7 +40,7 @@ Threat model and security assurance case for n8n-nodes-brasil-hub.
 ┌────────────▼────────────────────────────────┐
 │ Public APIs (untrusted)                      │
 │  BrasilAPI, CNPJ.ws, ReceitaWS              │
-│  ViaCEP, OpenCEP                            │
+│  ViaCEP, OpenCEP, BancosBrasileiros         │
 └─────────────────────────────────────────────┘
 ```
 
@@ -48,8 +48,8 @@ Threat model and security assurance case for n8n-nodes-brasil-hub.
 
 | # | Threat | Mitigation | Status |
 |---|--------|-----------|--------|
-| T1 | **Malformed input** — Invalid CNPJ/CEP strings | Input validation before API calls: CNPJ checksum (mod 11), CEP format (8 digits) | ✅ Implemented |
-| T2 | **Injection via input** — CNPJ/CEP used in URL path | `stripNonDigits()` removes all non-numeric characters before URL construction | ✅ Implemented |
+| T1 | **Malformed input** — Invalid CNPJ/CEP/CPF/Bank/DDD strings | Input validation before API calls: CNPJ/CPF checksum (mod 11), CEP format (8 digits), Bank code (positive integer), DDD range (11–99) | ✅ Implemented |
+| T2 | **Injection via input** — Input used in URL path | `stripNonDigits()` removes all non-numeric characters before URL construction | ✅ Implemented |
 | T3 | **SSRF via provider URLs** — Attacker controls API endpoint | Provider URLs are hardcoded constants, not configurable by user input | ✅ Implemented |
 | T4 | **Malicious API response** — Provider returns unexpected data | Normalizers extract only expected fields; TypeScript interfaces enforce shape | ✅ Implemented |
 | T5 | **Man-in-the-middle** — API traffic intercepted | All provider URLs use HTTPS; Node.js verifies TLS certificates by default | ✅ Implemented |
@@ -64,7 +64,7 @@ Threat model and security assurance case for n8n-nodes-brasil-hub.
 | **Least privilege** | Zero dependencies, no fs/env/net access beyond HTTP GET to known APIs |
 | **Defense in depth** | Input validation + URL hardcoding + output normalization |
 | **Fail securely** | Validation errors return structured error objects, not raw exceptions |
-| **Minimize attack surface** | Only 4 operations (2 resources × 2 ops), 2 of which are local-only |
+| **Minimize attack surface** | 8 operations across 5 resources, 3 of which are local-only (CPF/CNPJ/CEP validate) |
 | **Separation of concerns** | Validators, normalizers, and fallback logic are isolated modules |
 
 ## Known Limitations
