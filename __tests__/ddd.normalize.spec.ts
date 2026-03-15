@@ -20,6 +20,11 @@ describe('normalizeDdd', () => {
 		expect(result.cities).toEqual([]);
 	});
 
+	it('should handle missing cities field (not an array)', () => {
+		const result = normalizeDdd({ state: 'AC' }, 'brasilapi');
+		expect(result.cities).toEqual([]);
+	});
+
 	it('should throw for unknown provider', () => {
 		expect(() => normalizeDdd({}, 'unknown')).toThrow('Unknown DDD provider: unknown');
 	});

@@ -101,6 +101,12 @@ describe('normalizeBanks (list)', () => {
 		expect(result[1].fullName).toBe('Banco da Amazônia S.A.');
 	});
 
+	it('should handle BancosBrasileiros entry with non-numeric COMPE', () => {
+		const badCompe = [{ COMPE: 'ABC', ISPB: '12345678', ShortName: 'TEST', LongName: 'Test Bank' }];
+		const result = normalizeBanks(badCompe, 'bancosbrasileiros');
+		expect(result[0].code).toBe(0);
+	});
+
 	it('should throw for unknown provider', () => {
 		expect(() => normalizeBanks([], 'unknown')).toThrow('Unknown bank provider: unknown');
 	});
