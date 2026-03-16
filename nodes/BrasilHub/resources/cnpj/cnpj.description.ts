@@ -43,6 +43,14 @@ export const cnpjDescription: INodeProperties[] = [
 		description: 'The CNPJ number to query or validate (with or without formatting)',
 	},
 	{
+		displayName: 'Simplify',
+		name: 'simplify',
+		type: 'boolean',
+		displayOptions: { show: showForCnpjQuery },
+		default: true,
+		description: 'Whether to return a simplified response with only the most important fields',
+	},
+	{
 		displayName: 'Include Raw Response',
 		name: 'includeRaw',
 		type: 'boolean',

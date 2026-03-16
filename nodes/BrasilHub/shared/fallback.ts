@@ -37,7 +37,9 @@ export async function queryWithFallback(
 			return { data, provider: provider.name, errors };
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			errors.push(`${provider.name}: ${message}`);
+			const httpCode = (error as Record<string, unknown>)?.httpCode;
+			const detail = httpCode ? `[${httpCode}] ${message}` : message;
+			errors.push(`${provider.name}: ${detail}`);
 		}
 	}
 

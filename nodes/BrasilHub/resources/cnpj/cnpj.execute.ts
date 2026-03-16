@@ -34,6 +34,7 @@ export async function cnpjQuery(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const cnpjInput = context.getNodeParameter('cnpj', itemIndex) as string;
+	const simplify = context.getNodeParameter('simplify', itemIndex, true) as boolean;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
 	const cnpj = sanitizeCnpj(cnpjInput);
 
@@ -48,8 +49,12 @@ export async function cnpjQuery(
 	const providers = buildProviders(cnpj);
 	const result = await queryWithFallback(context, providers);
 
-	const normalized = normalizeCnpj(result.data, result.provider);
+	const full = normalizeCnpj(result.data, result.provider);
 	const meta = buildMeta(result.provider, cnpj, result.errors);
+
+	const normalized = simplify
+		? { cnpj: full.cnpj, razao_social: full.razao_social, nome_fantasia: full.nome_fantasia, situacao: full.situacao, data_abertura: full.data_abertura, porte: full.porte }
+		: full;
 
 	return buildResultItem(normalized as unknown as Record<string, unknown>, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
 }

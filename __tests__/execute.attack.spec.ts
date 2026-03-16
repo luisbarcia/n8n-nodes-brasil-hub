@@ -384,7 +384,7 @@ describe('VECTOR 3: HTTP status codes (404 vs 500)', () => {
 
 		const result = await queryWithFallback(ctx, providers);
 		expect(result.provider).toBe('p2');
-		expect(result.errors).toEqual(['p1: 404 Not Found']);
+		expect(result.errors).toEqual(['p1: [404] 404 Not Found']);
 		// OBSERVATION: 404 means "this CNPJ doesn't exist" — ideally should NOT
 		// fallback because other providers will also return not-found.
 		// But the current implementation treats all errors identically.
