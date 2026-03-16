@@ -155,21 +155,212 @@ function normalizeReceitaWs(data: Record<string, unknown>): ICnpjResult {
 	};
 }
 
+/** Maps MinhaReceita flat, snake_case response to {@link ICnpjResult}. Similar to BrasilAPI. */
+function normalizeMinhaReceita(data: Record<string, unknown>): ICnpjResult {
+	const qsa = Array.isArray(data.qsa) ? data.qsa : [];
+	return {
+		cnpj: safeStr(data.cnpj),
+		razao_social: safeStr(data.razao_social),
+		nome_fantasia: safeStr(data.nome_fantasia),
+		situacao: safeStr(data.descricao_situacao_cadastral),
+		data_abertura: safeStr(data.data_inicio_atividade),
+		porte: safeStr(data.porte),
+		natureza_juridica: safeStr(data.natureza_juridica),
+		capital_social: safeCapital(data.capital_social),
+		atividade_principal: {
+			codigo: data.cnae_fiscal != null ? String(data.cnae_fiscal) : '',
+			descricao: safeStr(data.cnae_fiscal_descricao),
+		},
+		endereco: {
+			logradouro: safeStr(data.logradouro),
+			numero: safeStr(data.numero),
+			complemento: safeStr(data.complemento),
+			bairro: safeStr(data.bairro),
+			cep: safeStr(data.cep),
+			municipio: safeStr(data.municipio),
+			uf: safeStr(data.uf),
+		},
+		contato: {
+			telefone: [
+				safeStr(data.ddd_telefone_1),
+				safeStr(data.ddd_telefone_2),
+			].filter(Boolean).join(' / '),
+			email: safeStr(data.email),
+		},
+		socios: qsa.map((s: Record<string, unknown>) => ({
+			nome: safeStr(s.nome_socio),
+			cpf_cnpj: safeStr(s.cnpj_cpf_do_socio),
+			qualificacao: safeStr(s.qualificacao_socio),
+			data_entrada: safeStr(s.data_entrada_sociedade),
+		})),
+	};
+}
+
+/** Maps OpenCNPJ.org flat, snake_case response to {@link ICnpjResult}. */
+function normalizeOpenCnpjOrg(data: Record<string, unknown>): ICnpjResult {
+	const qsa = Array.isArray(data.QSA) ? data.QSA : [];
+	const telefones = Array.isArray(data.telefones) ? data.telefones : [];
+	const phone = telefones.length > 0
+		? `${safeStr((telefones[0] as Record<string, unknown>).ddd)}${safeStr((telefones[0] as Record<string, unknown>).numero)}`
+		: '';
+
+	const rawCapital = data.capital_social;
+	const capitalSocial = typeof rawCapital === 'string'
+		? parseFloat(rawCapital.replace(',', '.')) || 0
+		: safeCapital(rawCapital);
+
+	return {
+		cnpj: safeStr(data.cnpj),
+		razao_social: safeStr(data.razao_social),
+		nome_fantasia: safeStr(data.nome_fantasia),
+		situacao: safeStr(data.situacao_cadastral),
+		data_abertura: safeStr(data.data_inicio_atividade),
+		porte: safeStr(data.porte_empresa),
+		natureza_juridica: safeStr(data.natureza_juridica),
+		capital_social: capitalSocial,
+		atividade_principal: {
+			codigo: safeStr(data.cnae_principal),
+			descricao: '',
+		},
+		endereco: {
+			logradouro: safeStr(data.logradouro),
+			numero: safeStr(data.numero),
+			complemento: safeStr(data.complemento),
+			bairro: safeStr(data.bairro),
+			cep: safeStr(data.cep),
+			municipio: safeStr(data.municipio),
+			uf: safeStr(data.uf),
+		},
+		contato: {
+			telefone: phone,
+			email: safeStr(data.email),
+		},
+		socios: qsa.map((s: Record<string, unknown>) => ({
+			nome: safeStr(s.nome_socio),
+			cpf_cnpj: safeStr(s.cnpj_cpf_do_socio),
+			qualificacao: safeStr(s.qualificacao_socio),
+			data_entrada: safeStr(s.data_entrada_sociedade),
+		})),
+	};
+}
+
+/** Maps OpenCNPJ.com wrapped camelCase response to {@link ICnpjResult}. */
+function normalizeOpenCnpjCom(raw: Record<string, unknown>): ICnpjResult {
+	const data = ((raw as Record<string, unknown>).data ?? raw) as Record<string, unknown>;
+	const socios = Array.isArray(data.socios) ? data.socios : [];
+	return {
+		cnpj: safeStr(data.cnpj),
+		razao_social: safeStr(data.razaoSocial),
+		nome_fantasia: safeStr(data.nomeFantasia),
+		situacao: safeStr(data.situacaoCadastral),
+		data_abertura: '',
+		porte: '',
+		natureza_juridica: safeStr(data.naturezaJuridica),
+		capital_social: safeCapital(data.capitalSocial),
+		atividade_principal: {
+			codigo: safeStr(data.cnaePrincipal),
+			descricao: safeStr(data.cnaePrincipalDescricao),
+		},
+		endereco: {
+			logradouro: safeStr(data.logradouro),
+			numero: safeStr(data.numero),
+			complemento: safeStr(data.complemento),
+			bairro: safeStr(data.bairro),
+			cep: safeStr(data.cep),
+			municipio: safeStr(data.municipio),
+			uf: safeStr(data.uf),
+		},
+		contato: {
+			telefone: safeStr(data.telefone),
+			email: safeStr(data.email),
+		},
+		socios: socios.map((s: Record<string, unknown>) => ({
+			nome: safeStr(s.nome),
+			cpf_cnpj: safeStr(s.cpf_cnpj),
+			qualificacao: safeStr(s.qualificacao),
+			data_entrada: safeStr(s.data_entrada_sociedade),
+		})),
+	};
+}
+
+/** Maps CNPJA deeply nested camelCase response to {@link ICnpjResult}. */
+function normalizeCnpja(data: Record<string, unknown>): ICnpjResult {
+	const company = (data.company ?? {}) as Record<string, unknown>;
+	const address = (data.address ?? {}) as Record<string, unknown>;
+	const status = (data.status ?? {}) as Record<string, unknown>;
+	const mainActivity = (data.mainActivity ?? {}) as Record<string, unknown>;
+	const size = (company.size ?? {}) as Record<string, unknown>;
+	const nature = (company.nature ?? {}) as Record<string, unknown>;
+	const phones = Array.isArray(data.phones) ? data.phones : [];
+	const emails = Array.isArray(data.emails) ? data.emails : [];
+	const members = Array.isArray(company.members) ? company.members : [];
+
+	const firstPhone = phones.length > 0 ? phones[0] as Record<string, unknown> : null;
+	const phoneStr = firstPhone
+		? `${safeStr(firstPhone.area)}${safeStr(firstPhone.number)}`
+		: '';
+
+	const firstEmail = emails.length > 0 ? emails[0] as Record<string, unknown> : null;
+
+	return {
+		cnpj: safeStr(data.taxId),
+		razao_social: safeStr(company.name),
+		nome_fantasia: safeStr(data.alias),
+		situacao: safeStr(status.text),
+		data_abertura: safeStr(data.founded),
+		porte: safeStr(size.text),
+		natureza_juridica: safeStr(nature.text),
+		capital_social: safeCapital(company.equity),
+		atividade_principal: {
+			codigo: mainActivity.id != null ? String(mainActivity.id) : '',
+			descricao: safeStr(mainActivity.text),
+		},
+		endereco: {
+			logradouro: safeStr(address.street),
+			numero: safeStr(address.number),
+			complemento: safeStr(address.details),
+			bairro: safeStr(address.district),
+			cep: safeStr(address.zip),
+			municipio: safeStr(address.city),
+			uf: safeStr(address.state),
+		},
+		contato: {
+			telefone: phoneStr,
+			email: firstEmail ? safeStr(firstEmail.address) : '',
+		},
+		socios: members.map((m: Record<string, unknown>) => {
+			const person = (m.person ?? {}) as Record<string, unknown>;
+			const role = (m.role ?? {}) as Record<string, unknown>;
+			return {
+				nome: safeStr(person.name),
+				cpf_cnpj: safeStr(person.taxId),
+				qualificacao: safeStr(role.text),
+				data_entrada: safeStr(m.since),
+			};
+		}),
+	};
+}
+
 /** Provider name → normalizer function dispatch table. */
 const normalizers: Record<string, (data: Record<string, unknown>) => ICnpjResult> = {
 	brasilapi: normalizeBrasilApi,
 	cnpjws: normalizeCnpjWs,
 	receitaws: normalizeReceitaWs,
+	minhareceita: normalizeMinhaReceita,
+	opencnpjorg: normalizeOpenCnpjOrg,
+	opencnpjcom: normalizeOpenCnpjCom,
+	cnpja: normalizeCnpja,
 };
 
 /**
  * Normalizes raw CNPJ API response into the unified {@link ICnpjResult} schema.
  *
- * Dispatches to provider-specific normalizers (BrasilAPI, CNPJ.ws, ReceitaWS)
- * that handle field name mapping and data type coercion.
+ * Dispatches to provider-specific normalizers (BrasilAPI, CNPJ.ws, ReceitaWS,
+ * MinhaReceita, OpenCNPJ.org, OpenCNPJ.com, CNPJA) that handle field name
+ * mapping and data type coercion.
  *
  * @param data - Raw JSON response from the provider.
- * @param provider - Provider identifier (e.g. `"brasilapi"`, `"cnpjws"`, `"receitaws"`).
+ * @param provider - Provider identifier (e.g. `"brasilapi"`, `"cnpjws"`, `"minhareceita"`).
  * @returns Normalized CNPJ result.
  * @throws {Error} If the provider name is not recognized.
  */

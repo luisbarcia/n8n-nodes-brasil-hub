@@ -38,6 +38,17 @@ const openCepResponse = {
 	ddd: '11',
 };
 
+const apiCepResponse = {
+	status: 200,
+	ok: true,
+	code: '06233-030',
+	state: 'SP',
+	city: 'Osasco',
+	district: 'Piratininga',
+	address: 'Rua Paula Rodrigues',
+	statusText: 'ok',
+};
+
 describe('normalizeCep', () => {
 	it('should normalize BrasilAPI response', () => {
 		const result = normalizeCep(brasilApiResponse, 'brasilapi');
@@ -77,5 +88,35 @@ describe('normalizeCep', () => {
 
 	it('should detect ViaCEP error response', () => {
 		expect(() => normalizeCep({ erro: true }, 'viacep')).toThrow();
+	});
+
+	it('should normalize ApiCEP response', () => {
+		const result = normalizeCep(apiCepResponse, 'apicep');
+		expect(result.cep).toBe('06233030');
+		expect(result.logradouro).toBe('Rua Paula Rodrigues');
+		expect(result.complemento).toBe('');
+		expect(result.bairro).toBe('Piratininga');
+		expect(result.cidade).toBe('Osasco');
+		expect(result.uf).toBe('SP');
+		expect(result.ibge).toBe('');
+		expect(result.ddd).toBe('');
+	});
+
+	it('should handle empty ApiCEP object with safe defaults', () => {
+		const result = normalizeCep({ ok: true }, 'apicep');
+		expect(result.cep).toBe('');
+		expect(result.logradouro).toBe('');
+		expect(result.bairro).toBe('');
+		expect(result.cidade).toBe('');
+		expect(result.uf).toBe('');
+	});
+
+	it('should throw for ApiCEP error response (ok: false)', () => {
+		expect(() => normalizeCep({ ok: false }, 'apicep')).toThrow('CEP not found');
+	});
+
+	it('should strip hyphen from ApiCEP code field', () => {
+		const result = normalizeCep({ ok: true, code: '01001-000' }, 'apicep');
+		expect(result.cep).toBe('01001000');
 	});
 });

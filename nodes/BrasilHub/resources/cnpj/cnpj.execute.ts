@@ -10,6 +10,10 @@ const CNPJ_PROVIDERS: IProvider[] = [
 	{ name: 'brasilapi', url: 'https://brasilapi.com.br/api/cnpj/v1/' },
 	{ name: 'cnpjws', url: 'https://publica.cnpj.ws/cnpj/' },
 	{ name: 'receitaws', url: 'https://receitaws.com.br/v1/cnpj/' },
+	{ name: 'minhareceita', url: 'https://minhareceita.org/' },
+	{ name: 'opencnpjorg', url: 'https://api.opencnpj.org/' },
+	{ name: 'opencnpjcom', url: 'https://kitana.opencnpj.com/cnpj/' },
+	{ name: 'cnpja', url: 'https://open.cnpja.com/office/' },
 ];
 
 /** Appends the sanitized CNPJ to each provider base URL. */

@@ -10,11 +10,16 @@ const CEP_PROVIDERS: IProvider[] = [
 	{ name: 'brasilapi', url: 'https://brasilapi.com.br/api/cep/v2/' },
 	{ name: 'viacep', url: 'https://viacep.com.br/ws/' },
 	{ name: 'opencep', url: 'https://opencep.com/v1/' },
+	{ name: 'apicep', url: 'https://cdn.apicep.com/file/apicep/' },
 ];
 
-/** Appends the sanitized CEP to each provider base URL (ViaCEP needs `/json` suffix). */
+/** Appends the sanitized CEP to each provider base URL (ViaCEP needs `/json` suffix, ApiCEP needs hyphenated format). */
 function buildProviders(cep: string): IProvider[] {
 	return CEP_PROVIDERS.map((p) => {
+		if (p.name === 'apicep') {
+			const formatted = `${cep.slice(0, 5)}-${cep.slice(5)}`;
+			return { name: p.name, url: `${p.url}${formatted}.json` };
+		}
 		const suffix = p.name === 'viacep' ? `${cep}/json` : cep;
 		return { name: p.name, url: `${p.url}${suffix}` };
 	});
@@ -24,7 +29,7 @@ function buildProviders(cep: string): IProvider[] {
  * Executes a CEP query against public APIs with multi-provider fallback.
  *
  * Sanitizes input, validates length and format, queries providers in order
- * (BrasilAPI → ViaCEP → OpenCEP), normalizes the response, and attaches metadata.
+ * (BrasilAPI → ViaCEP → OpenCEP → ApiCEP), normalizes the response, and attaches metadata.
  * Optionally includes the raw provider response.
  *
  * @param context - n8n execution context.
