@@ -1,5 +1,6 @@
 import type {
 	IExecuteFunctions,
+	INode,
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
@@ -26,6 +27,27 @@ type ExecuteFunction = (
  * Dictionary map routing resource+operation pairs to their execute handlers.
  * Adding a new resource or operation only requires a new entry here.
  */
+/** Builds an error output item for continueOnFail mode. */
+function buildFailItem(node: INode, error: unknown, itemIndex: number): INodeExecutionData {
+	const nodeError = error instanceof NodeOperationError
+		? error
+		: new NodeOperationError(node, error as Error, { itemIndex });
+	return {
+		json: { error: error instanceof Error ? error.message : String(error) },
+		error: nodeError,
+		pairedItem: { item: itemIndex },
+	};
+}
+
+/** Re-throws an error with itemIndex attached to its context. */
+function rethrowWithContext(node: INode, error: unknown, itemIndex: number): never {
+	if ((error as Record<string, unknown>).context) {
+		(error as Record<string, unknown> & { context: Record<string, unknown> }).context.itemIndex = itemIndex;
+		throw error;
+	}
+	throw new NodeOperationError(node, error as Error, { itemIndex });
+}
+
 const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
 	cnpj: { query: cnpjQuery, validate: cnpjValidate },
 	cep: { query: cepQuery, validate: cepValidate },
@@ -109,21 +131,10 @@ export class BrasilHub implements INodeType {
 				returnData.push(...results);
 			} catch (error) {
 				if (this.continueOnFail()) {
-					const nodeError = error instanceof NodeOperationError
-						? error
-						: new NodeOperationError(this.getNode(), error as Error, { itemIndex: i });
-					returnData.push({
-						json: { error: error instanceof Error ? error.message : String(error) },
-						error: nodeError,
-						pairedItem: { item: i },
-					});
+					returnData.push(buildFailItem(this.getNode(), error, i));
 					continue;
 				}
-				if ((error as Record<string, unknown>).context) {
-					(error as Record<string, unknown> & { context: Record<string, unknown> }).context.itemIndex = i;
-					throw error;
-				}
-				throw new NodeOperationError(this.getNode(), error as Error, { itemIndex: i });
+				rethrowWithContext(this.getNode(), error, i);
 			}
 		}
 
