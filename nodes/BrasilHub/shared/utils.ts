@@ -47,5 +47,6 @@ export function buildMeta(provider: string, query: string, errors: string[]): {
  * @returns Digits-only string (e.g. `"11222333000181"`).
  */
 export function stripNonDigits(value: string): string {
+	if (typeof value !== 'string') return String(value ?? '').replace(/\D/g, '');
 	return value.replace(/\D/g, ''); // NOSONAR: replaceAll requires es2021 lib, project targets es2019
 }

@@ -1,6 +1,20 @@
 import type { ICnpjResult } from '../../types';
 import { safeStr, stripNonDigits } from '../../shared/utils';
 
+/**
+ * Safely coerces a value to a number, returning 0 for NaN/null/undefined.
+ *
+ * Handles cases where API responses contain non-numeric strings (e.g. `"abc"`)
+ * that `Number()` would convert to NaN.
+ *
+ * @param value - Any value from an untyped API response.
+ * @returns The value as a number, or `0` if NaN/null/undefined.
+ */
+function safeCapital(value: unknown): number {
+	const n = Number(value ?? 0);
+	return Number.isNaN(n) ? 0 : n;
+}
+
 /** Concatenates DDD area code and phone number, returning empty string if either is missing. */
 function buildPhone(ddd?: string | null, phone?: string | null): string {
 	if (ddd && phone) return `${ddd}${phone}`;
@@ -18,7 +32,7 @@ function normalizeBrasilApi(data: Record<string, unknown>): ICnpjResult {
 		data_abertura: safeStr(data.data_inicio_atividade),
 		porte: safeStr(data.descricao_porte),
 		natureza_juridica: safeStr(data.natureza_juridica),
-		capital_social: Number(data.capital_social ?? 0),
+		capital_social: safeCapital(data.capital_social),
 		atividade_principal: {
 			codigo: safeStr(data.cnae_fiscal),
 			descricao: safeStr(data.cnae_fiscal_descricao),
@@ -71,7 +85,7 @@ function normalizeCnpjWs(data: Record<string, unknown>): ICnpjResult {
 		data_abertura: safeStr(est.data_inicio_atividade),
 		porte: safeStr(porte.descricao),
 		natureza_juridica: safeStr(natJuridica.descricao),
-		capital_social: Number(data.capital_social ?? 0),
+		capital_social: safeCapital(data.capital_social),
 		atividade_principal: {
 			codigo: safeStr(ativPrincipal.id),
 			descricao: safeStr(ativPrincipal.descricao),
@@ -114,7 +128,7 @@ function normalizeReceitaWs(data: Record<string, unknown>): ICnpjResult {
 		data_abertura: safeStr(data.abertura),
 		porte: safeStr(data.porte),
 		natureza_juridica: safeStr(data.natureza_juridica),
-		capital_social: Number.parseFloat(safeStr(data.capital_social) || '0'),
+		capital_social: safeCapital(data.capital_social),
 		atividade_principal: {
 			codigo: safeStr((ativPrincipal as Record<string, unknown>).code),
 			descricao: safeStr((ativPrincipal as Record<string, unknown>).text),
@@ -164,5 +178,5 @@ export function normalizeCnpj(data: unknown, provider: string): ICnpjResult {
 	if (!normalizer) {
 		throw new Error(`Unknown CNPJ provider: ${provider}`);
 	}
-	return normalizer(data as Record<string, unknown>);
+	return normalizer((data ?? {}) as Record<string, unknown>);
 }

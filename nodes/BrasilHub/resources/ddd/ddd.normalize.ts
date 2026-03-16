@@ -28,7 +28,7 @@ function normalizeBrasilApiDdd(data: Record<string, unknown>): IDdd {
  * frequent UF (state) code among matches.
  */
 function normalizeMunicipiosDdd(data: Array<Record<string, unknown>>, dddCode: number): IDdd {
-	const matches = data.filter((m) => m.ddd === dddCode);
+	const matches = data.filter((m) => Number(m.ddd) === dddCode);
 	if (matches.length === 0) {
 		throw new Error(`DDD ${dddCode} not found`);
 	}
@@ -69,10 +69,11 @@ function normalizeMunicipiosDdd(data: Array<Record<string, unknown>>, dddCode: n
  */
 export function normalizeDdd(data: unknown, provider: string, dddCode?: number): IDdd {
 	if (provider === 'brasilapi') {
-		return normalizeBrasilApiDdd(data as Record<string, unknown>);
+		return normalizeBrasilApiDdd((data ?? {}) as Record<string, unknown>);
 	}
 	if (provider === 'municipios') {
-		return normalizeMunicipiosDdd(data as Array<Record<string, unknown>>, dddCode!);
+		const items = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
+		return normalizeMunicipiosDdd(items, dddCode!);
 	}
 	throw new Error(`Unknown DDD provider: ${provider}`);
 }

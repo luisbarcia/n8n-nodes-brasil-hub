@@ -61,5 +61,5 @@ export function normalizeCep(data: unknown, provider: string): ICepResult {
 	if (!normalizer) {
 		throw new Error(`Unknown CEP provider: ${provider}`);
 	}
-	return normalizer(data as Record<string, unknown>);
+	return normalizer((data ?? {}) as Record<string, unknown>);
 }
