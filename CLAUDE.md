@@ -256,7 +256,7 @@ gh run list --limit 3
 | 13 | `project-release` | Versioning, tag, gh release create |
 | 14 | `verification-before-completion` | Verificação final pós-release: CI verde, npm publicado, scan passou |
 
-### Fase 5: Pós-Release (verificar)
+### Fase 5: Pós-Release (verificar + comunicar)
 
 ```bash
 # 15. CI do release workflow passou
@@ -269,6 +269,15 @@ gh run list --workflow=release.yml --limit 1
 npm view n8n-nodes-brasil-hub version
 ```
 
+**18. GitHub Discussions (OBRIGATÓRIO):**
+- Criar **Announcement** em Discussions com resumo do release (o que mudou, breaking changes, upgrade instructions)
+- Atualizar **Roadmap discussion** (#63) com status atual dos recursos planejados
+- Se houve deprecação de versões, mencionar no announcement
+
+**19. Deprecação de versões bugadas (se aplicável):**
+- `npm deprecate "n8n-nodes-brasil-hub@<X.Y.Z" "mensagem"` para versões com bugs críticos
+- Usar granular access token com bypass 2FA
+
 ### Resumo Rápido (copiar e colar)
 
 ```
@@ -277,7 +286,7 @@ PRE-RELEASE CHECKLIST:
 □ Fase 2: /test-master → /simplify → /code-documenter
 □ Fase 3: build → lint → test → audit → push → CI verde
 □ Fase 4: changelog → tag → release
-□ Fase 5: CI release verde → npm publicado
+□ Fase 5: CI release verde → npm publicado → discussions → deprecate
 ```
 
 ## Living Docs — Atualizar em Mudanças Estruturais
