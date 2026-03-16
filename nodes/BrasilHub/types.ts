@@ -132,6 +132,20 @@ export interface IDdd {
 	_raw?: unknown;
 }
 
+/** Normalized Brazilian public holiday result, unified across providers (BrasilAPI, Nager.Date). */
+export interface IFeriado {
+	/** ISO 8601 date string (e.g. "2026-01-01"). */
+	date: string;
+	/** Holiday name in Portuguese (e.g. "Confraternização mundial"). */
+	name: string;
+	/** Holiday type (e.g. "national", "Public"). */
+	type: string;
+	/** Query metadata. Present when queried via API. */
+	_meta?: IMeta;
+	/** Raw provider response. Present only when "Include Raw Response" is enabled. */
+	_raw?: unknown;
+}
+
 /** Normalized FIPE brand (marca) result from parallelum. */
 export interface IFipeBrand {
 	/** Brand code as returned by the API (e.g. "1", "59"). */
