@@ -1,7 +1,15 @@
 import type { ICnpjResult } from '../../types';
 import { safeStr, stripNonDigits } from '../../shared/utils';
 
-/** Safely coerces a value to a number, returning 0 for NaN/null/undefined. */
+/**
+ * Safely coerces a value to a number, returning 0 for NaN/null/undefined.
+ *
+ * Handles cases where API responses contain non-numeric strings (e.g. `"abc"`)
+ * that `Number()` would convert to NaN.
+ *
+ * @param value - Any value from an untyped API response.
+ * @returns The value as a number, or `0` if NaN/null/undefined.
+ */
 function safeCapital(value: unknown): number {
 	const n = Number(value ?? 0);
 	return Number.isNaN(n) ? 0 : n;
