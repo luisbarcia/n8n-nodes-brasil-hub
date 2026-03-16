@@ -10,6 +10,11 @@ function createExecuteContext(overrides: {
 	cpf?: string;
 	bankCode?: string;
 	ddd?: string;
+	vehicleType?: string;
+	brandCode?: string;
+	modelCode?: string;
+	yearCode?: string;
+	referenceTable?: number;
 	includeRaw?: boolean;
 	items?: INodeExecutionData[];
 	continueOnFail?: boolean;
@@ -24,6 +29,11 @@ function createExecuteContext(overrides: {
 		cpf: overrides.cpf ?? '52998224725',
 		bankCode: overrides.bankCode ?? '1',
 		ddd: overrides.ddd ?? '11',
+		vehicleType: overrides.vehicleType ?? 'carros',
+		brandCode: overrides.brandCode ?? '59',
+		modelCode: overrides.modelCode ?? '4828',
+		yearCode: overrides.yearCode ?? '2024-1',
+		referenceTable: overrides.referenceTable ?? 0,
 		includeRaw: overrides.includeRaw ?? false,
 	};
 
@@ -127,6 +137,72 @@ describe('BrasilHub.execute()', () => {
 		const [[result]] = await node.execute.call(ctx);
 		expect(result.json).toHaveProperty('state', 'SP');
 		expect(result.json).toHaveProperty('cities');
+		expect(result.json).toHaveProperty('_meta');
+	});
+
+	it('should dispatch fipe/brands and return multiple items', async () => {
+		const ctx = createExecuteContext({
+			resource: 'fipe',
+			operation: 'brands',
+			httpResponse: [
+				{ codigo: '1', nome: 'Acura' },
+				{ codigo: '59', nome: 'Honda' },
+			],
+		});
+		const [results] = await node.execute.call(ctx);
+		expect(results).toHaveLength(2);
+		expect(results[0].json).toHaveProperty('code', '1');
+		expect(results[1].json).toHaveProperty('name', 'Honda');
+	});
+
+	it('should dispatch fipe/models and return models only', async () => {
+		const ctx = createExecuteContext({
+			resource: 'fipe',
+			operation: 'models',
+			httpResponse: {
+				modelos: [{ codigo: 1, nome: 'Integra GS 1.8' }],
+				anos: [{ codigo: '2024-1', nome: '2024 Gasolina' }],
+			},
+		});
+		const [results] = await node.execute.call(ctx);
+		expect(results).toHaveLength(1);
+		expect(results[0].json).toHaveProperty('code', 1);
+		expect(results[0].json).toHaveProperty('name', 'Integra GS 1.8');
+	});
+
+	it('should dispatch fipe/years and return year options', async () => {
+		const ctx = createExecuteContext({
+			resource: 'fipe',
+			operation: 'years',
+			httpResponse: [
+				{ codigo: '2024-1', nome: '2024 Gasolina' },
+				{ codigo: '2023-1', nome: '2023 Gasolina' },
+			],
+		});
+		const [results] = await node.execute.call(ctx);
+		expect(results).toHaveLength(2);
+		expect(results[0].json).toHaveProperty('code', '2024-1');
+	});
+
+	it('should dispatch fipe/price and return single item', async () => {
+		const ctx = createExecuteContext({
+			resource: 'fipe',
+			operation: 'price',
+			httpResponse: {
+				TipoVeiculo: 1,
+				Valor: 'R$ 148.363,00',
+				Marca: 'Honda',
+				Modelo: 'Civic',
+				AnoModelo: 2024,
+				Combustivel: 'Gasolina',
+				CodigoFipe: '014275-3',
+				MesReferencia: 'março de 2026',
+				SiglaCombustivel: 'G',
+			},
+		});
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('price', 'R$ 148.363,00');
+		expect(result.json).toHaveProperty('brand', 'Honda');
 		expect(result.json).toHaveProperty('_meta');
 	});
 
