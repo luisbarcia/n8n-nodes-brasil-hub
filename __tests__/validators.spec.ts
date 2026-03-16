@@ -143,6 +143,17 @@ describe('validateCep', () => {
 		expect(validateCep('00000000').valid).toBe(false);
 	});
 
+	it('should reject CEP below minimum range (00xxx-xxx)', () => {
+		expect(validateCep('00010000').valid).toBe(false);
+		expect(validateCep('00010-000').valid).toBe(false);
+		expect(validateCep('00999999').valid).toBe(false);
+	});
+
+	it('should accept CEP at minimum valid range (01000-000)', () => {
+		expect(validateCep('01000000').valid).toBe(true);
+		expect(validateCep('01000-000').valid).toBe(true);
+	});
+
 	it('should reject CEP with wrong length', () => {
 		expect(validateCep('1234567').valid).toBe(false);
 		expect(validateCep('123456789').valid).toBe(false);

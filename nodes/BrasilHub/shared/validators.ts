@@ -74,7 +74,7 @@ export function validateCep(cep: string): IValidationResult {
 		return { valid: false, formatted: '', input };
 	}
 
-	if (/^0{8}$/.test(digits)) {
+	if (Number.parseInt(digits, 10) < 1000000) {
 		return { valid: false, formatted: '', input };
 	}
 

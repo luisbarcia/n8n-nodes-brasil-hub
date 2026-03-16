@@ -54,12 +54,15 @@ nodes/BrasilHub/
 ├── brasilHub.svg               # Node icon
 ├── types.ts                    # TypeScript interfaces
 ├── shared/
-│   ├── validators.ts           # CNPJ/CEP validation (local, no API)
+│   ├── validators.ts           # CNPJ/CEP/CPF validation (local, no API)
 │   ├── fallback.ts             # Multi-provider fallback logic
-│   └── utils.ts                # Shared utilities (stripNonDigits, safeStr)
+│   └── utils.ts                # Shared utilities (stripNonDigits, safeStr, buildMeta)
 └── resources/
+    ├── banks/                  # Bank resource (description, execute, normalize)
+    ├── cep/                    # CEP resource (description, execute, normalize)
     ├── cnpj/                   # CNPJ resource (description, execute, normalize)
-    └── cep/                    # CEP resource (description, execute, normalize)
+    ├── cpf/                    # CPF resource (description, execute, normalize)
+    └── ddd/                    # DDD resource (description, execute, normalize)
 ```
 
 ## Adding a New Resource
