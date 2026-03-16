@@ -41,6 +41,66 @@ export function buildMeta(provider: string, query: string, errors: string[]): {
 }
 
 /**
+ * Builds an array of n8n execution data items from normalized results.
+ *
+ * Centralizes the repeated `.map()` pattern used by multi-item handlers
+ * (banksList, fipeBrands, fipeModels, fipeYears, feriadosQuery).
+ *
+ * @param items - Array of normalized result objects.
+ * @param meta - Meta object from buildMeta().
+ * @param rawItems - Raw API response items (aligned by index).
+ * @param includeRaw - Whether to include _raw in each item.
+ * @param itemIndex - n8n input item index for pairedItem.
+ * @returns Array of n8n execution data items.
+ */
+export function buildResultItems(
+	items: Array<Record<string, unknown>>,
+	meta: Record<string, unknown>,
+	rawItems: Array<Record<string, unknown>>,
+	includeRaw: boolean,
+	itemIndex: number,
+): Array<{ json: Record<string, unknown>; pairedItem: { item: number } }> {
+	return items.map((item, index) => ({
+		json: {
+			...item,
+			_meta: meta,
+			...(includeRaw && { _raw: rawItems[index] }),
+		},
+		pairedItem: { item: itemIndex },
+	}));
+}
+
+/**
+ * Builds a single n8n execution data item from a normalized result.
+ *
+ * Centralizes the repeated single-item return pattern used by
+ * cnpjQuery, cepQuery, dddQuery, banksQuery, fipePrice.
+ *
+ * @param normalized - Normalized result object.
+ * @param meta - Meta object from buildMeta().
+ * @param rawData - Raw API response data.
+ * @param includeRaw - Whether to include _raw.
+ * @param itemIndex - n8n input item index for pairedItem.
+ * @returns Single-element array of n8n execution data.
+ */
+export function buildResultItem(
+	normalized: Record<string, unknown>,
+	meta: Record<string, unknown>,
+	rawData: unknown,
+	includeRaw: boolean,
+	itemIndex: number,
+): Array<{ json: Record<string, unknown>; pairedItem: { item: number } }> {
+	return [{
+		json: {
+			...normalized,
+			_meta: meta,
+			...(includeRaw && { _raw: rawData as Record<string, unknown> }),
+		},
+		pairedItem: { item: itemIndex },
+	}];
+}
+
+/**
  * Removes all non-digit characters from a string.
  *
  * @param value - Raw input (e.g. `"11.222.333/0001-81"`).

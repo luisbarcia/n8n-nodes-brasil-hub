@@ -1,6 +1,6 @@
-import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
+import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { buildMeta } from '../../shared/utils';
+import { buildMeta, buildResultItem, buildResultItems } from '../../shared/utils';
 import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice } from './fipe.normalize';
 
 const BASE_URL = 'https://parallelum.com.br/fipe/api/v1';
@@ -82,14 +82,7 @@ export async function fipeBrands(
 	const rawItems = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
 	const meta = buildMeta('parallelum', vehicleType, []);
 
-	return brands.map((brand, index) => ({
-		json: {
-			...brand,
-			_meta: meta,
-			...(includeRaw && { _raw: rawItems[index] as unknown as IDataObject }),
-		} as IDataObject,
-		pairedItem: { item: itemIndex },
-	}));
+	return buildResultItems(brands as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
 }
 
 /**
@@ -118,14 +111,7 @@ export async function fipeModels(
 	const rawModelos = ((data as Record<string, unknown>)?.modelos ?? []) as Array<Record<string, unknown>>;
 	const meta = buildMeta('parallelum', `${vehicleType}/${brandCode}`, []);
 
-	return models.map((model, index) => ({
-		json: {
-			...model,
-			_meta: meta,
-			...(includeRaw && { _raw: rawModelos[index] as unknown as IDataObject }),
-		} as IDataObject,
-		pairedItem: { item: itemIndex },
-	}));
+	return buildResultItems(models as unknown as Array<Record<string, unknown>>, meta, rawModelos, includeRaw, itemIndex) as INodeExecutionData[];
 }
 
 /**
@@ -156,14 +142,7 @@ export async function fipeYears(
 	const rawItems = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
 	const meta = buildMeta('parallelum', `${vehicleType}/${brandCode}/${modelCode}`, []);
 
-	return years.map((year, index) => ({
-		json: {
-			...year,
-			_meta: meta,
-			...(includeRaw && { _raw: rawItems[index] as unknown as IDataObject }),
-		} as IDataObject,
-		pairedItem: { item: itemIndex },
-	}));
+	return buildResultItems(years as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
 }
 
 /**
@@ -195,12 +174,5 @@ export async function fipePrice(
 	const price = normalizePrice(data);
 	const meta = buildMeta('parallelum', `${vehicleType}/${brandCode}/${modelCode}/${yearCode}`, []);
 
-	return [{
-		json: {
-			...price,
-			_meta: meta,
-			...(includeRaw && { _raw: data as IDataObject }),
-		} as IDataObject,
-		pairedItem: { item: itemIndex },
-	}];
+	return buildResultItem(price as unknown as Record<string, unknown>, meta, data, includeRaw, itemIndex) as INodeExecutionData[];
 }

@@ -1,7 +1,7 @@
-import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
+import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta } from '../../shared/utils';
+import { buildMeta, buildResultItem, buildResultItems } from '../../shared/utils';
 import { queryWithFallback } from '../../shared/fallback';
 import { normalizeBank, normalizeBanks } from './banks.normalize';
 
@@ -54,14 +54,7 @@ export async function banksQuery(
 
 	const meta = buildMeta(result.provider, String(bankCode), result.errors);
 
-	return [{
-		json: {
-			...normalized,
-			_meta: meta,
-			...(includeRaw && { _raw: result.data as IDataObject }),
-		} as IDataObject,
-		pairedItem: { item: itemIndex },
-	}];
+	return buildResultItem(normalized as unknown as Record<string, unknown>, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
 }
 
 /**
@@ -87,12 +80,5 @@ export async function banksList(
 
 	const meta = buildMeta(result.provider, 'all', result.errors);
 
-	return banks.map((bank, index) => ({
-		json: {
-			...bank,
-			_meta: meta,
-			...(includeRaw && { _raw: rawItems[index] as unknown as IDataObject }),
-		} as IDataObject,
-		pairedItem: { item: itemIndex },
-	}));
+	return buildResultItems(banks as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
 }

@@ -1,7 +1,7 @@
-import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
+import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta } from '../../shared/utils';
+import { buildMeta, buildResultItems } from '../../shared/utils';
 import { queryWithFallback } from '../../shared/fallback';
 import { normalizeFeriados } from './feriados.normalize';
 
@@ -52,12 +52,5 @@ export async function feriadosQuery(
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
 	const meta = buildMeta(result.provider, String(year), result.errors);
 
-	return feriados.map((feriado, index) => ({
-		json: {
-			...feriado,
-			_meta: meta,
-			...(includeRaw && { _raw: rawItems[index] as unknown as IDataObject }),
-		} as IDataObject,
-		pairedItem: { item: itemIndex },
-	}));
+	return buildResultItems(feriados as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
 }
