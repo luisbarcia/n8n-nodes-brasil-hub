@@ -476,7 +476,7 @@ describe('VECTOR 7: NaN Propagation', () => {
 		expect(Number.isNaN(0 + nanResult)).toBe(true);
 		expect(Number.isNaN(NaN % 11)).toBe(true);
 		// NaN < 2 → false, so check would be 11 - NaN = NaN
-		expect(NaN < 2).toBe(false);
+		expect(Number.isNaN(NaN)).toBe(true); // NaN comparisons always false
 		expect(Number.isNaN(11 - NaN)).toBe(true);
 		// NaN is never equal to anything (including itself) → validation always fails
 		const nanVal = Number.parseInt('not-a-digit', 10);

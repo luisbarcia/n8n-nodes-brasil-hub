@@ -522,7 +522,6 @@ describe('VECTOR 5: continueOnFail edge cases', () => {
 	it('throw undefined → continueOnFail handles it', async () => {
 		// Special case: httpError is undefined means "no error" in our mock
 		// so we need to test this differently
-		let callIndex = 0;
 		const ctx = createExecuteContext({
 			resource: 'cnpj',
 			operation: 'query',
@@ -530,8 +529,7 @@ describe('VECTOR 5: continueOnFail edge cases', () => {
 		});
 		// Override httpRequest to throw undefined
 		(ctx.helpers.httpRequest as jest.Mock).mockImplementation(async () => {
-			callIndex++;
-			throw undefined; // eslint-disable-line no-throw-literal
+			throw undefined;
 		});
 
 		const [[result]] = await node.execute.call(ctx);
@@ -550,8 +548,7 @@ describe('VECTOR 5: continueOnFail edge cases', () => {
 		(ctx.getNodeParameter as jest.Mock).mockImplementation((name: string) => {
 			if (name === 'resource') return 'cnpj';
 			if (name === 'operation') return 'query';
-			if (name === 'cnpj') throw 'raw string error'; // eslint-disable-line no-throw-literal
-			return undefined;
+			if (name === 'cnpj') throw 'raw string error';			return undefined;
 		});
 
 		const [[result]] = await node.execute.call(ctx);
@@ -568,8 +565,7 @@ describe('VECTOR 5: continueOnFail edge cases', () => {
 		(ctx.getNodeParameter as jest.Mock).mockImplementation((name: string) => {
 			if (name === 'resource') return 'cnpj';
 			if (name === 'operation') return 'query';
-			if (name === 'cnpj') throw 'string thrown'; // eslint-disable-line no-throw-literal
-			return undefined;
+			if (name === 'cnpj') throw 'string thrown';			return undefined;
 		});
 
 		const [[result]] = await node.execute.call(ctx);
