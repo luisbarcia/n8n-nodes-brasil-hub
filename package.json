@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-brasil-hub",
-  "version": "0.6.0",
-  "description": "n8n community node for querying Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Feriados, FIPE) with multi-provider fallback",
+  "version": "0.7.0",
+  "description": "n8n community node for querying Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Feriados, FIPE) with multi-provider fallback — 7 CNPJ + 4 CEP providers",
   "license": "MIT",
   "homepage": "https://github.com/luisbarcia/n8n-nodes-brasil-hub",
   "keywords": [

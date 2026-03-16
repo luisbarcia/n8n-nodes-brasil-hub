@@ -25,7 +25,7 @@
 
 Most Brazilian public data APIs are free but unreliable. A single provider going down breaks your entire workflow. Brasil Hub solves this:
 
-- **3 providers per resource** — if one fails, the next kicks in automatically
+- **Up to 7 providers per resource** — if one fails, the next kicks in automatically
 - **Normalized output** — same schema regardless of which provider responds
 - **No credentials needed** — all providers are public APIs
 - **AI Agent ready** — works as a tool in n8n AI Agent workflows
@@ -46,9 +46,9 @@ npm install n8n-nodes-brasil-hub
 |----------|-----------|-------------|-----------|
 | **Bank** | Query | Fetch bank info by COMPE code | BrasilAPI → BancosBrasileiros |
 | **Bank** | List | List all Brazilian banks | BrasilAPI → BancosBrasileiros |
-| **CEP** | Query | Fetch address data by CEP number | BrasilAPI → ViaCEP → OpenCEP |
+| **CEP** | Query | Fetch address data by CEP number | BrasilAPI → ViaCEP → OpenCEP → ApiCEP |
 | **CEP** | Validate | Check if CEP format is valid (local, no API) | — |
-| **CNPJ** | Query | Fetch company data by CNPJ number | BrasilAPI → CNPJ.ws → ReceitaWS |
+| **CNPJ** | Query | Fetch company data by CNPJ number | BrasilAPI → CNPJ.ws → ReceitaWS → MinhaReceita → OpenCNPJ.org → OpenCNPJ.com → CNPJA |
 | **CNPJ** | Validate | Check if CNPJ is valid (local checksum, no API) | — |
 | **CPF** | Validate | Check if CPF is valid (local checksum, no API) | — |
 | **DDD** | Query | Fetch state and cities by area code | BrasilAPI → municipios-brasileiros |
@@ -152,7 +152,7 @@ Each provider has a **10-second timeout**. The `_meta.strategy` field tells you 
 git clone https://github.com/luisbarcia/n8n-nodes-brasil-hub.git
 cd n8n-nodes-brasil-hub
 npm install
-npm test          # 688 tests, 99%+ coverage
+npm test          # 709 tests, 99%+ coverage
 npm run build
 npm run lint
 ```

@@ -206,7 +206,7 @@ function normalizeOpenCnpjOrg(data: Record<string, unknown>): ICnpjResult {
 
 	const rawCapital = data.capital_social;
 	const capitalSocial = typeof rawCapital === 'string'
-		? parseFloat(rawCapital.replace(',', '.')) || 0
+		? parseFloat(rawCapital.replaceAll('.', '').replace(',', '.')) || 0
 		: safeCapital(rawCapital);
 
 	return {

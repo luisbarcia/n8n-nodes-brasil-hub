@@ -4,8 +4,8 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.6.x   | :white_check_mark: |
-| < 0.6   | :x:                |
+| 0.7.x   | :white_check_mark: |
+| < 0.7   | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -42,7 +42,7 @@ Instead, please use one of these methods:
 
 This package:
 - Has **zero runtime dependencies** (only `n8n-workflow` as peer dependency)
-- Makes HTTP requests only to **public Brazilian data APIs** (BrasilAPI, ViaCEP, OpenCEP, ReceitaWS, CNPJ.ws, BancosBrasileiros, Nager.Date, parallelum)
+- Makes HTTP requests only to **public Brazilian data APIs** (BrasilAPI, ViaCEP, OpenCEP, ApiCEP, ReceitaWS, CNPJ.ws, MinhaReceita, OpenCNPJ.org, OpenCNPJ.com, CNPJA, BancosBrasileiros, Nager.Date, parallelum)
 - Does **not** store or cache any data
 - Does **not** require authentication credentials
 - Runs within the n8n sandbox with standard node permissions
