@@ -9,9 +9,9 @@ import { safeStr } from '../../shared/utils';
  */
 export function normalizeBrands(data: unknown): IFipeBrand[] {
 	if (!Array.isArray(data)) return [];
-	return (data as Array<Record<string, unknown>>).map((item) => ({
-		code: safeStr(item.codigo),
-		name: safeStr(item.nome),
+	return (data as unknown[]).filter((item) => item != null && typeof item === 'object').map((item) => ({
+		code: safeStr((item as Record<string, unknown>).codigo),
+		name: safeStr((item as Record<string, unknown>).nome),
 	}));
 }
 
@@ -29,7 +29,7 @@ export function normalizeModels(data: unknown): IFipeModel[] {
 	const modelos = Array.isArray(obj.modelos)
 		? (obj.modelos as Array<Record<string, unknown>>)
 		: [];
-	return modelos.map((item) => ({
+	return modelos.filter((item) => item != null && typeof item === 'object').map((item) => ({
 		code: typeof item.codigo === 'number' ? item.codigo : 0,
 		name: safeStr(item.nome),
 	}));
@@ -43,9 +43,9 @@ export function normalizeModels(data: unknown): IFipeModel[] {
  */
 export function normalizeYears(data: unknown): IFipeYear[] {
 	if (!Array.isArray(data)) return [];
-	return (data as Array<Record<string, unknown>>).map((item) => ({
-		code: safeStr(item.codigo),
-		name: safeStr(item.nome),
+	return (data as unknown[]).filter((item) => item != null && typeof item === 'object').map((item) => ({
+		code: safeStr((item as Record<string, unknown>).codigo),
+		name: safeStr((item as Record<string, unknown>).nome),
 	}));
 }
 

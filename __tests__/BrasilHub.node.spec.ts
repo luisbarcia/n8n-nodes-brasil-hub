@@ -35,4 +35,48 @@ describe('BrasilHub node', () => {
 			}
 		}
 	});
+
+	it('should have a router handler for every resource/operation pair in the UI', async () => {
+		const node = new BrasilHub();
+		const resourceProp = node.description.properties.find((p) => p.name === 'resource');
+		const resources = (resourceProp!.options as Array<{ value: string }>).map((o) => o.value);
+
+		for (const resource of resources) {
+			const opProp = node.description.properties.find(
+				(p) => p.name === 'operation' &&
+					p.displayOptions?.show?.resource?.includes(resource),
+			);
+			expect(opProp).toBeDefined();
+			const operations = (opProp!.options as Array<{ value: string }>).map((o) => o.value);
+
+			for (const operation of operations) {
+				const params: Record<string, unknown> = {
+					resource,
+					operation,
+					cnpj: '11222333000181',
+					cep: '01001000',
+					cpf: '52998224725',
+					bankCode: '1',
+					ddd: '11',
+					vehicleType: 'carros',
+					brandCode: '59',
+					modelCode: '4828',
+					yearCode: '2024-1',
+					referenceTable: 0,
+					includeRaw: false,
+				};
+				const ctx = {
+					getInputData: jest.fn(() => [{ json: {} }]),
+					getNodeParameter: jest.fn((name: string, _i: number, fb?: unknown) => params[name] ?? fb),
+					getNode: jest.fn(() => ({ name: 'Brasil Hub' })),
+					continueOnFail: jest.fn(() => false),
+					helpers: { httpRequest: jest.fn().mockResolvedValue({}) },
+				};
+				// Should not throw "Unknown resource/operation"
+				await expect(
+					node.execute.call(ctx as never),
+				).resolves.not.toThrow();
+			}
+		}
+	});
 });

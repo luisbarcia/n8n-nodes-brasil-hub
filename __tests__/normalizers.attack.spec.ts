@@ -13,6 +13,7 @@ import { normalizeCnpj } from '../nodes/BrasilHub/resources/cnpj/cnpj.normalize'
 import { normalizeCep } from '../nodes/BrasilHub/resources/cep/cep.normalize';
 import { normalizeBank, normalizeBanks } from '../nodes/BrasilHub/resources/banks/banks.normalize';
 import { normalizeDdd } from '../nodes/BrasilHub/resources/ddd/ddd.normalize';
+import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice } from '../nodes/BrasilHub/resources/fipe/fipe.normalize';
 import { safeStr } from '../nodes/BrasilHub/shared/utils';
 
 // ─────────────────────────────────────────────────────────────
@@ -580,5 +581,561 @@ describe('EDGE: capital_social coercion', () => {
 	it('FIXED — cnpjws: "abc" → 0 (safeCapital guards NaN)', () => {
 		const result = normalizeCnpj({ capital_social: 'abc' }, 'cnpjws');
 		expect(result.capital_social).toBe(0);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// FIPE NORMALIZER ATTACK TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────
+// FIPE VECTOR 1: Malformed API responses (null, undefined, "", 42, true)
+// ─────────────────────────────────────────────────────────────
+describe('FIPE VECTOR 1: Malformed API responses', () => {
+	describe('normalizeBrands — non-array inputs return empty array', () => {
+		it.each([
+			['null', null],
+			['undefined', undefined],
+			['{}', {}],
+			['42', 42],
+			['true', true],
+			['""', ''],
+		])('PASS — normalizeBrands(%s) → []', (_label, value) => {
+			expect(normalizeBrands(value)).toEqual([]);
+		});
+	});
+
+	describe('normalizeModels — non-object/null/undefined inputs return empty array', () => {
+		it.each([
+			['null', null],
+			['undefined', undefined],
+			['42', 42],
+			['true', true],
+			['""', ''],
+		])('PASS — normalizeModels(%s) → []', (_label, value) => {
+			expect(normalizeModels(value)).toEqual([]);
+		});
+	});
+
+	describe('normalizeYears — non-array inputs return empty array', () => {
+		it.each([
+			['null', null],
+			['undefined', undefined],
+			['{}', {}],
+			['42', 42],
+			['true', true],
+			['""', ''],
+		])('PASS — normalizeYears(%s) → []', (_label, value) => {
+			expect(normalizeYears(value)).toEqual([]);
+		});
+	});
+
+	describe('normalizePrice — null/undefined produce safe defaults', () => {
+		it.each([
+			['null', null],
+			['undefined', undefined],
+		])('PASS — normalizePrice(%s) → safe defaults', (_label, value) => {
+			const result = normalizePrice(value);
+			expect(result.vehicleType).toBe(0);
+			expect(result.brand).toBe('');
+			expect(result.model).toBe('');
+			expect(result.modelYear).toBe(0);
+			expect(result.fuel).toBe('');
+			expect(result.fipeCode).toBe('');
+			expect(result.referenceMonth).toBe('');
+			expect(result.price).toBe('');
+			expect(result.fuelAbbreviation).toBe('');
+		});
+	});
+
+	describe('normalizePrice — non-object primitives produce safe defaults', () => {
+		it.each([
+			['42', 42],
+			['true', true],
+			['"string"', 'string'],
+			['[]', []],
+		])('PASS — normalizePrice(%s) → safe defaults', (_label, value) => {
+			const result = normalizePrice(value);
+			expect(result.vehicleType).toBe(0);
+			expect(result.brand).toBe('');
+			expect(result.price).toBe('');
+		});
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FIPE VECTOR 2: Type confusion — wrong types for all fields
+// ─────────────────────────────────────────────────────────────
+describe('FIPE VECTOR 2: Type confusion', () => {
+	describe('normalizeBrands — entries with wrong field types', () => {
+		it('PASS — codigo as number instead of string → safeStr coerces', () => {
+			const result = normalizeBrands([{ codigo: 123, nome: 'Test' }]);
+			expect(result[0].code).toBe('123');
+			expect(result[0].name).toBe('Test');
+		});
+
+		it('PASS — codigo as boolean → safeStr coerces', () => {
+			const result = normalizeBrands([{ codigo: true, nome: false }]);
+			expect(result[0].code).toBe('true');
+			expect(result[0].name).toBe('false');
+		});
+
+		it('PASS — codigo as null, nome as undefined → safeStr returns ""', () => {
+			const result = normalizeBrands([{ codigo: null, nome: undefined }]);
+			expect(result[0].code).toBe('');
+			expect(result[0].name).toBe('');
+		});
+
+		it('PASS — codigo as object {} → safeStr returns ""', () => {
+			const result = normalizeBrands([{ codigo: {}, nome: [] }]);
+			expect(result[0].code).toBe('');
+			expect(result[0].name).toBe('');
+		});
+
+		it('FIXED — entries that are null/undefined are filtered out', () => {
+			expect(normalizeBrands([null])).toEqual([]);
+			expect(normalizeBrands([undefined])).toEqual([]);
+		});
+
+		it('PASS — entries that are non-null primitives are filtered out', () => {
+			// With the null guard filter, non-object primitives are also filtered
+			const result = normalizeBrands([42, 'string', true]);
+			expect(result).toHaveLength(0);
+		});
+	});
+
+	describe('normalizeModels — codigo type confusion', () => {
+		it('PASS — codigo as string instead of number → falls back to 0', () => {
+			const result = normalizeModels({ modelos: [{ codigo: '4828', nome: 'Civic' }] });
+			expect(result[0].code).toBe(0);
+			expect(result[0].name).toBe('Civic');
+		});
+
+		it('PASS — codigo as float → kept as-is (typeof number)', () => {
+			const result = normalizeModels({ modelos: [{ codigo: 3.14, nome: 'Pi' }] });
+			expect(result[0].code).toBe(3.14);
+		});
+
+		it('PASS — codigo as NaN → falls back to 0 (typeof NaN === "number" but NaN)', () => {
+			const result = normalizeModels({ modelos: [{ codigo: NaN, nome: 'NaN' }] });
+			// typeof NaN === 'number', so it passes the typeof check
+			expect(result[0].code).toBeNaN();
+		});
+
+		it('PASS — codigo as Infinity → kept as-is (typeof number)', () => {
+			const result = normalizeModels({ modelos: [{ codigo: Infinity, nome: 'Inf' }] });
+			expect(result[0].code).toBe(Infinity);
+		});
+
+		it('PASS — codigo as negative number → kept as-is', () => {
+			const result = normalizeModels({ modelos: [{ codigo: -1, nome: 'Negative' }] });
+			expect(result[0].code).toBe(-1);
+		});
+
+		it('PASS — modelos as string instead of array → returns empty', () => {
+			const result = normalizeModels({ modelos: 'not an array' });
+			expect(result).toEqual([]);
+		});
+
+		it('PASS — modelos as number instead of array → returns empty', () => {
+			const result = normalizeModels({ modelos: 42 });
+			expect(result).toEqual([]);
+		});
+
+		it('PASS — modelos as null → returns empty', () => {
+			const result = normalizeModels({ modelos: null });
+			expect(result).toEqual([]);
+		});
+	});
+
+	describe('normalizePrice — field type confusion', () => {
+		it('PASS — TipoVeiculo as string → falls back to 0', () => {
+			const result = normalizePrice({ TipoVeiculo: '1', AnoModelo: '2024' });
+			expect(result.vehicleType).toBe(0);
+			expect(result.modelYear).toBe(0);
+		});
+
+		it('PASS — TipoVeiculo as boolean → falls back to 0', () => {
+			const result = normalizePrice({ TipoVeiculo: true, AnoModelo: false });
+			expect(result.vehicleType).toBe(0);
+			expect(result.modelYear).toBe(0);
+		});
+
+		it('PASS — TipoVeiculo as null → falls back to 0', () => {
+			const result = normalizePrice({ TipoVeiculo: null, AnoModelo: null });
+			expect(result.vehicleType).toBe(0);
+			expect(result.modelYear).toBe(0);
+		});
+
+		it('PASS — TipoVeiculo as NaN → accepted (typeof number)', () => {
+			const result = normalizePrice({ TipoVeiculo: NaN, AnoModelo: NaN });
+			expect(result.vehicleType).toBeNaN();
+			expect(result.modelYear).toBeNaN();
+		});
+
+		it('PASS — TipoVeiculo as Infinity → accepted (typeof number)', () => {
+			const result = normalizePrice({ TipoVeiculo: Infinity });
+			expect(result.vehicleType).toBe(Infinity);
+		});
+
+		it('PASS — TipoVeiculo as negative → accepted (typeof number)', () => {
+			const result = normalizePrice({ TipoVeiculo: -999, AnoModelo: -1 });
+			expect(result.vehicleType).toBe(-999);
+			expect(result.modelYear).toBe(-1);
+		});
+
+		it('PASS — all string fields as numbers → safeStr coerces to string', () => {
+			const result = normalizePrice({
+				Marca: 123,
+				Modelo: 456,
+				Combustivel: 789,
+				CodigoFipe: 0,
+				MesReferencia: -1,
+				Valor: 999.99,
+				SiglaCombustivel: 42,
+			});
+			expect(result.brand).toBe('123');
+			expect(result.model).toBe('456');
+			expect(result.fuel).toBe('789');
+			expect(result.fipeCode).toBe('0');
+			expect(result.referenceMonth).toBe('-1');
+			expect(result.price).toBe('999.99');
+			expect(result.fuelAbbreviation).toBe('42');
+		});
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FIPE VECTOR 3: Null/undefined injection in nested objects
+// ─────────────────────────────────────────────────────────────
+describe('FIPE VECTOR 3: Null/undefined injection in nested objects', () => {
+	it('FIXED — normalizeBrands with array of nulls filters them out', () => {
+		const result = normalizeBrands([null, null, null]);
+		expect(result).toEqual([]);
+	});
+
+	it('FIXED — normalizeBrands with array of undefineds filters them out', () => {
+		expect(normalizeBrands([undefined, undefined])).toEqual([]);
+	});
+
+	it('FIXED — normalizeModels with array of nulls in modelos filters them out', () => {
+		const result = normalizeModels({ modelos: [null, null] });
+		expect(result).toEqual([]);
+	});
+
+	it('FIXED — normalizeYears with array of nulls filters them out', () => {
+		expect(normalizeYears([null, null])).toEqual([]);
+	});
+
+	it('PASS — normalizeModels with deeply nested null in modelos items (field-level null is OK)', () => {
+		// null as a FIELD value is fine — only null as the ITEM itself crashes
+		const result = normalizeModels({ modelos: [{ codigo: null, nome: null }] });
+		expect(result[0].code).toBe(0);
+		expect(result[0].name).toBe('');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FIPE VECTOR 4: XSS/SQLi payloads in string fields
+// ─────────────────────────────────────────────────────────────
+describe('FIPE VECTOR 4: XSS/SQLi payloads (NOTED — passthrough expected for backend)', () => {
+	const xssPayload = '<script>alert("xss")</script>';
+	const sqli = "'; DROP TABLE vehicles--";
+
+	it('NOTED — normalizeBrands with XSS in brand name passes through', () => {
+		const result = normalizeBrands([{ codigo: '1', nome: xssPayload }]);
+		expect(result[0].name).toBe(xssPayload);
+	});
+
+	it('NOTED — normalizeBrands with SQLi in brand code passes through', () => {
+		const result = normalizeBrands([{ codigo: sqli, nome: 'Test' }]);
+		expect(result[0].code).toBe(sqli);
+	});
+
+	it('NOTED — normalizeModels with XSS in model name passes through', () => {
+		const result = normalizeModels({ modelos: [{ codigo: 1, nome: xssPayload }] });
+		expect(result[0].name).toBe(xssPayload);
+	});
+
+	it('NOTED — normalizeYears with XSS in year name passes through', () => {
+		const result = normalizeYears([{ codigo: '2024-1', nome: xssPayload }]);
+		expect(result[0].name).toBe(xssPayload);
+	});
+
+	it('NOTED — normalizePrice with XSS in all string fields passes through', () => {
+		const result = normalizePrice({
+			TipoVeiculo: 1,
+			Marca: xssPayload,
+			Modelo: xssPayload,
+			AnoModelo: 2024,
+			Combustivel: sqli,
+			CodigoFipe: sqli,
+			MesReferencia: xssPayload,
+			Valor: xssPayload,
+			SiglaCombustivel: sqli,
+		});
+		expect(result.brand).toBe(xssPayload);
+		expect(result.model).toBe(xssPayload);
+		expect(result.fuel).toBe(sqli);
+		expect(result.fipeCode).toBe(sqli);
+		expect(result.referenceMonth).toBe(xssPayload);
+		expect(result.price).toBe(xssPayload);
+		expect(result.fuelAbbreviation).toBe(sqli);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FIPE VECTOR 5: Prototype pollution attempts
+// ─────────────────────────────────────────────────────────────
+describe('FIPE VECTOR 5: Prototype pollution attempts', () => {
+	it('PASS — normalizeBrands with __proto__ field does not pollute Object prototype', () => {
+		const malicious = [{ codigo: '1', nome: 'Test', __proto__: { polluted: true } }];
+		normalizeBrands(malicious);
+		expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+	});
+
+	it('PASS — normalizeModels with constructor.prototype in modelos', () => {
+		const malicious = {
+			modelos: [{ codigo: 1, nome: 'Test', constructor: { prototype: { hacked: true } } }],
+		};
+		normalizeModels(malicious);
+		expect(({} as Record<string, unknown>).hacked).toBeUndefined();
+	});
+
+	it('PASS — normalizePrice with __proto__ fields does not pollute', () => {
+		const malicious = {
+			TipoVeiculo: 1,
+			Marca: 'Test',
+			__proto__: { polluted: true },
+		};
+		normalizePrice(malicious);
+		expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+	});
+
+	it('PASS — normalizeBrands with toString/valueOf overrides in items', () => {
+		const malicious = [{
+			codigo: '1',
+			nome: 'Test',
+			toString: () => 'evil',
+			valueOf: () => 666,
+		}];
+		const result = normalizeBrands(malicious);
+		expect(result[0].code).toBe('1');
+		expect(result[0].name).toBe('Test');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FIPE VECTOR 6: Extremely large payloads
+// ─────────────────────────────────────────────────────────────
+describe('FIPE VECTOR 6: Extremely large payloads', () => {
+	it('PASS — normalizeBrands handles 100,000 entries', () => {
+		const large = Array.from({ length: 100_000 }, (_, i) => ({
+			codigo: String(i),
+			nome: `Brand ${i}`,
+		}));
+		const result = normalizeBrands(large);
+		expect(result).toHaveLength(100_000);
+		expect(result[0].code).toBe('0');
+		expect(result[99_999].code).toBe('99999');
+	});
+
+	it('PASS — normalizeModels handles 50,000 models', () => {
+		const large = {
+			modelos: Array.from({ length: 50_000 }, (_, i) => ({
+				codigo: i,
+				nome: `Model ${i}`,
+			})),
+		};
+		const result = normalizeModels(large);
+		expect(result).toHaveLength(50_000);
+		expect(result[0].code).toBe(0);
+		expect(result[49_999].code).toBe(49_999);
+	});
+
+	it('PASS — normalizeYears handles 10,000 entries', () => {
+		const large = Array.from({ length: 10_000 }, (_, i) => ({
+			codigo: `${2024 - i}-1`,
+			nome: `${2024 - i} Gasolina`,
+		}));
+		const result = normalizeYears(large);
+		expect(result).toHaveLength(10_000);
+	});
+
+	it('PASS — normalizePrice with extremely long string values', () => {
+		const longStr = 'A'.repeat(1_000_000);
+		const result = normalizePrice({
+			TipoVeiculo: 1,
+			Marca: longStr,
+			Modelo: longStr,
+			AnoModelo: 2024,
+			Combustivel: longStr,
+			CodigoFipe: longStr,
+			MesReferencia: longStr,
+			Valor: longStr,
+			SiglaCombustivel: longStr,
+		});
+		expect(result.brand).toHaveLength(1_000_000);
+		expect(result.model).toHaveLength(1_000_000);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FIPE VECTOR 7: Empty arrays vs null vs undefined for list operations
+// ─────────────────────────────────────────────────────────────
+describe('FIPE VECTOR 7: Empty arrays vs null vs undefined for list operations', () => {
+	it('PASS — normalizeBrands([]) → empty array', () => {
+		expect(normalizeBrands([])).toEqual([]);
+	});
+
+	it('PASS — normalizeYears([]) → empty array', () => {
+		expect(normalizeYears([])).toEqual([]);
+	});
+
+	it('PASS — normalizeModels({modelos: []}) → empty array', () => {
+		expect(normalizeModels({ modelos: [] })).toEqual([]);
+	});
+
+	it('PASS — normalizeModels with modelos as empty object → empty array', () => {
+		expect(normalizeModels({ modelos: {} })).toEqual([]);
+	});
+
+	it('PASS — normalizeBrands with single empty object → one item with empty fields', () => {
+		const result = normalizeBrands([{}]);
+		expect(result).toHaveLength(1);
+		expect(result[0].code).toBe('');
+		expect(result[0].name).toBe('');
+	});
+
+	it('PASS — normalizeYears with single empty object → one item with empty fields', () => {
+		const result = normalizeYears([{}]);
+		expect(result).toHaveLength(1);
+		expect(result[0].code).toBe('');
+		expect(result[0].name).toBe('');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FIPE VECTOR 8: Integer overflow for model codes
+// ─────────────────────────────────────────────────────────────
+describe('FIPE VECTOR 8: Integer overflow for model codes', () => {
+	it('PASS — normalizeModels with Number.MAX_SAFE_INTEGER', () => {
+		const result = normalizeModels({
+			modelos: [{ codigo: Number.MAX_SAFE_INTEGER, nome: 'Max' }],
+		});
+		expect(result[0].code).toBe(Number.MAX_SAFE_INTEGER);
+	});
+
+	it('PASS — normalizeModels with Number.MAX_SAFE_INTEGER + 1 (precision loss)', () => {
+		const result = normalizeModels({
+			modelos: [{ codigo: Number.MAX_SAFE_INTEGER + 1, nome: 'Overflow' }],
+		});
+		// JS cannot represent MAX_SAFE_INTEGER + 1 precisely
+		expect(result[0].code).toBe(Number.MAX_SAFE_INTEGER + 1);
+	});
+
+	it('PASS — normalizeModels with Number.MIN_SAFE_INTEGER', () => {
+		const result = normalizeModels({
+			modelos: [{ codigo: Number.MIN_SAFE_INTEGER, nome: 'Min' }],
+		});
+		expect(result[0].code).toBe(Number.MIN_SAFE_INTEGER);
+	});
+
+	it('PASS — normalizePrice with extreme numeric values', () => {
+		const result = normalizePrice({
+			TipoVeiculo: Number.MAX_SAFE_INTEGER,
+			AnoModelo: Number.MAX_VALUE,
+		});
+		expect(result.vehicleType).toBe(Number.MAX_SAFE_INTEGER);
+		expect(result.modelYear).toBe(Number.MAX_VALUE);
+	});
+
+	it('PASS — normalizePrice with Number.EPSILON', () => {
+		const result = normalizePrice({ TipoVeiculo: Number.EPSILON, AnoModelo: Number.EPSILON });
+		expect(result.vehicleType).toBe(Number.EPSILON);
+		expect(result.modelYear).toBe(Number.EPSILON);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FIPE VECTOR 9: Unicode/emoji in brand/model names
+// ─────────────────────────────────────────────────────────────
+describe('FIPE VECTOR 9: Unicode/emoji in brand/model names', () => {
+	it('PASS — normalizeBrands with emoji names passes through', () => {
+		const result = normalizeBrands([
+			{ codigo: '1', nome: 'Honda \u{1F697}' },
+			{ codigo: '2', nome: '\u{1F3CE}\uFE0F Ferrari' },
+		]);
+		expect(result[0].name).toBe('Honda \u{1F697}');
+		expect(result[1].name).toBe('\u{1F3CE}\uFE0F Ferrari');
+	});
+
+	it('PASS — normalizeModels with CJK characters', () => {
+		const result = normalizeModels({
+			modelos: [{ codigo: 1, nome: '\u4E30\u7530\u5361\u7F57\u62C9' }],
+		});
+		expect(result[0].name).toBe('\u4E30\u7530\u5361\u7F57\u62C9');
+	});
+
+	it('PASS — normalizeYears with RTL Arabic characters', () => {
+		const result = normalizeYears([{ codigo: '2024-1', nome: '\u0633\u064A\u0627\u0631\u0629' }]);
+		expect(result[0].name).toBe('\u0633\u064A\u0627\u0631\u0629');
+	});
+
+	it('PASS — normalizePrice with full Unicode stress test', () => {
+		const result = normalizePrice({
+			TipoVeiculo: 1,
+			Marca: 'Caf\u00E9 \u2603\uFE0F \u{1F600}',
+			Modelo: '\u2028\u2029\uFEFF\u200B',
+			AnoModelo: 2024,
+			Combustivel: '\u{1F525} Fire',
+			CodigoFipe: '\u0000\u0001\u0002',
+			MesReferencia: 'mar\u00E7o de 2026',
+			Valor: 'R$ 1.000,00 \u20AC',
+			SiglaCombustivel: '\u{1F1E7}\u{1F1F7}',
+		});
+		expect(result.brand).toBe('Caf\u00E9 \u2603\uFE0F \u{1F600}');
+		expect(result.fuel).toBe('\u{1F525} Fire');
+		expect(result.price).toBe('R$ 1.000,00 \u20AC');
+	});
+
+	it('PASS — normalizeBrands with zero-width characters', () => {
+		const result = normalizeBrands([
+			{ codigo: 'ab\u200Bcd', nome: 'Tes\u200Ct' },
+		]);
+		expect(result[0].code).toBe('ab\u200Bcd');
+		expect(result[0].name).toBe('Tes\u200Ct');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FIPE VECTOR 10: referenceTable edge cases in normalizers
+// (referenceTable is handled by execute, but normalizers receive its effects)
+// ─────────────────────────────────────────────────────────────
+describe('FIPE VECTOR 10: normalizePrice with empty/missing required fields', () => {
+	it('PASS — completely empty object → all defaults', () => {
+		const result = normalizePrice({});
+		expect(result.vehicleType).toBe(0);
+		expect(result.brand).toBe('');
+		expect(result.model).toBe('');
+		expect(result.modelYear).toBe(0);
+		expect(result.fuel).toBe('');
+		expect(result.fipeCode).toBe('');
+		expect(result.referenceMonth).toBe('');
+		expect(result.price).toBe('');
+		expect(result.fuelAbbreviation).toBe('');
+	});
+
+	it('PASS — extra unexpected fields are silently ignored', () => {
+		const result = normalizePrice({
+			TipoVeiculo: 1,
+			Marca: 'Honda',
+			UnknownField: 'should be ignored',
+			AnotherField: { nested: true },
+		});
+		expect(result.vehicleType).toBe(1);
+		expect(result.brand).toBe('Honda');
+		expect((result as unknown as Record<string, unknown>).UnknownField).toBeUndefined();
+		expect((result as unknown as Record<string, unknown>).AnotherField).toBeUndefined();
 	});
 });
