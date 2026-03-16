@@ -4,51 +4,50 @@ This document describes the planned direction for n8n-nodes-brasil-hub.
 
 Each new resource ships as its own MINOR release for faster iteration and easier rollback.
 
-## Current (v0.1.x)
+## Current (v0.7.x) ✅
 
-- [x] CNPJ resource (Query + Validate) with 3 providers
-- [x] CEP resource (Query + Validate) with 3 providers
-- [x] Multi-provider fallback with 10s timeout
-- [x] Normalized output + optional raw response
+- [x] **CNPJ resource** (Query + Validate) with 7 providers ([#36](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/36))
+- [x] **CEP resource** (Query + Validate) with 4 providers ([#37](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/37))
+- [x] **CPF resource** (Validate) — local checksum ([#5](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/5))
+- [x] **Bank resource** (Query + List) with 2 providers ([#32](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/32))
+- [x] **DDD resource** (Query) with 2 providers ([#33](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/33))
+- [x] **Feriado resource** (Query) with 2 providers ([#35](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/35))
+- [x] **FIPE resource** (Brands, Models, Years, Price) with 1 provider ([#34](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/34))
+- [x] CNPJ Simplify parameter ([#38](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/38))
+- [x] Enhanced error messages with HTTP status ([#39](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/39))
+- [x] DRY refactor: `buildResultItem`/`buildResultItems` shared helpers
+- [x] 815 tests, 99%+ branch coverage
 - [x] AI Agent ready (`usableAsTool: true`)
-- [x] 99%+ test coverage
 - [x] npm provenance + build attestation
 
-## v0.2.0 — CPF Validate
+## v0.8.0 — IBGE Resource
 
-- [x] Refactor router for multi-item returns ([#40](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/40))
-- [x] **CPF resource** — Validate CPF numbers (local Módulo 11 checksum, no API) ([#5](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/5))
+- [ ] **IBGE States** — List all Brazilian states/UFs (BrasilAPI + IBGE API oficial)
+- [ ] **IBGE Cities** — List municipalities by state (BrasilAPI + IBGE API oficial)
+- [ ] Operations: `states`, `cities`
+- [ ] Multi-item output (one item per state/city)
 
-## v0.3.0 — Banks
+## v0.9.0 — NCM Resource
 
-- [x] **Banks resource** — Query/list bank info (BrasilAPI + BancosBrasileiros fallback) ([#32](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/32))
+- [ ] **NCM Query** — Look up tax classification by code (BrasilAPI)
+- [ ] **NCM Search** — Search codes by description (BrasilAPI, multi-item)
+- [ ] Operations: `query`, `search`
 
-## v0.4.0 — DDD
+## v1.0.0 — Power User Features + Stable Release
 
-- [x] **DDD resource** — Query area codes by state/city (BrasilAPI) ([#33](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/33))
+- [ ] **Configurable Provider Order** — User chooses primary provider per resource
+- [ ] **Configurable Timeout** — Override default 10s timeout per operation
+- [ ] **Rate Limit Awareness** — Detect HTTP 429, retry with exponential backoff
+- [ ] **CNPJ Output Mode** — Simplified (default), Full, AI Summary
+- [ ] **Creator Portal resubmission** — Submit stable v1.0.0 for "Verified" badge
+- [ ] Comprehensive documentation site or wiki
 
-## v0.5.0 — FIPE
+## v1.1.0+ — Expansion (ideas, not committed)
 
-- [ ] **FIPE resource** — Query vehicle brands/models/years/prices (parallelum + BrasilAPI fallback) ([#34](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/34))
-
-## v0.6.0 — Feriados
-
-- [ ] **Feriados resource** — Query national holidays by year (BrasilAPI + Nager.Date fallback) ([#35](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/35))
-
-## v0.7.0 — Additional Providers + Polish
-
-- [ ] **Additional CNPJ providers** — Add MinhaReceita, OpenCNPJ.org, OpenCNPJ.com, CNPJA (7 total) ([#36](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/36))
-- [ ] **Additional CEP provider** — Add ApiCEP (4 total) ([#37](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/37))
-- [ ] Simplify/Output parameter for CNPJ query (>10 fields) ([#38](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/38))
-- [ ] Improve error messages with provider-specific context ([#39](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/39))
-
-## Future (v1.0) — Features no competitor offers
-
-- [ ] **IBGE resource** — Query cities, states, and regions
-- [ ] **NCM resource** — Query tax classification codes
-- [ ] Configurable provider order (user chooses primary)
-- [ ] Configurable timeout per provider
-- [ ] Rate limiting awareness (respect 429 responses)
+- [ ] **PIX Directory** — Query PIX participants (BCB API)
+- [ ] **CNES** — Health establishments (DataSUS)
+- [ ] **Historical FIPE** — Query past reference tables
+- [ ] **Correios Tracking** — Package tracking (if public API available)
 
 ## Not Planned
 
