@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-03-16
+
+### Added
+- **FIPE resource** with 4 hierarchical operations for vehicle price queries (Tabela FIPE)
+  - **Brands**: List all vehicle brands by type (Cars, Motorcycles, Trucks)
+  - **Models**: List models for a specific brand
+  - **Years**: List available years for a specific model
+  - **Price**: Get the FIPE table price for a specific vehicle (brand/model/year)
+- Conditional parameter visibility via displayOptions (vehicleType → brandCode → modelCode → yearCode)
+- Optional Reference Table parameter for querying historical FIPE data
+- IFipeBrand, IFipeModel, IFipeYear, IFipePrice interfaces in types.ts
+- 27 new tests (14 normalizer + 13 execute), 419 total, 99%+ branch coverage
+- FIPE and vehicle aliases added to codex for discoverability
+
+### Changed
+- Node description updated to include FIPE
+- Resource options now include FIPE (alphabetical: Bank, CEP, CNPJ, CPF, DDD, FIPE)
+- Provider: parallelum.com.br (single provider — BrasilAPI only supports price-by-code, not hierarchy)
+
 ## [0.4.3] - 2026-03-16
 
 ### Fixed
@@ -188,7 +207,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.3...v0.5.0
+[0.4.3]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.3.0...v0.4.0

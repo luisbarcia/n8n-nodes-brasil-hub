@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.3.x ships CNPJ, CEP, CPF, and Banks. New resources ship as incremental MINOR releases (v0.4.0 DDD → v0.5.0 FIPE → v0.6.0 Feriados → v0.7.0 additional providers).
+Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.5.x ships CNPJ, CEP, CPF, Banks, DDD, and FIPE. New resources ship as incremental MINOR releases (v0.6.0 Feriados → v0.7.0 additional providers).
 
 - **License:** MIT
 - **Tech Stack:** TypeScript, n8n-workflow, Jest + ts-jest
@@ -45,7 +45,7 @@ nodes/BrasilHub/
 ├── BrasilHub.node.ts            # Class + resource/operation dictionary map router
 ├── BrasilHub.node.json          # Codex metadata
 ├── brasilHub.svg                # Icon
-├── types.ts                     # ICnpjResult, ICepResult, IMeta, IValidationResult
+├── types.ts                     # ICnpjResult, ICepResult, IFipe*, IMeta, IValidationResult
 ├── resources/
 │   ├── cnpj/
 │   │   ├── cnpj.description.ts  # INodeProperties[]
@@ -58,10 +58,18 @@ nodes/BrasilHub/
 │   ├── cpf/
 │   │   ├── cpf.description.ts   # Validate only (no query — local checksum)
 │   │   └── cpf.execute.ts
-│   └── banks/
-│       ├── banks.description.ts # Query + List operations
-│       ├── banks.execute.ts
-│       └── banks.normalize.ts   # BrasilAPI + BancosBrasileiros
+│   ├── banks/
+│   │   ├── banks.description.ts # Query + List operations
+│   │   ├── banks.execute.ts
+│   │   └── banks.normalize.ts   # BrasilAPI + BancosBrasileiros
+│   ├── ddd/
+│   │   ├── ddd.description.ts
+│   │   ├── ddd.execute.ts
+│   │   └── ddd.normalize.ts     # BrasilAPI + municipios-brasileiros
+│   └── fipe/
+│       ├── fipe.description.ts  # Brands, Models, Years, Price operations
+│       ├── fipe.execute.ts      # 4 hierarchical operations (parallelum)
+│       └── fipe.normalize.ts    # normalizeBrands, normalizeModels, normalizeYears, normalizePrice
 ├── shared/
 │   ├── fallback.ts              # Generic multi-provider fallback (10s timeout)
 │   └── validators.ts            # CNPJ/CPF checksum, CEP format validation (local, no API)
@@ -75,6 +83,8 @@ const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
   cep:  { query: cepQuery,  validate: cepValidate },
   cpf:  { validate: cpfValidate },
   banks: { query: banksQuery, list: banksList },
+  ddd:  { query: dddQuery },
+  fipe: { brands: fipeBrands, models: fipeModels, years: fipeYears, price: fipePrice },
 };
 ```
 
@@ -93,6 +103,9 @@ Zero changes to existing resource files — only the router registration.
 
 **CNPJ:** BrasilAPI → CNPJ.ws → ReceitaWS
 **CEP:** BrasilAPI → ViaCEP → OpenCEP
+**Banks:** BrasilAPI → BancosBrasileiros
+**DDD:** BrasilAPI → municipios-brasileiros
+**FIPE:** parallelum (single provider — hierarchy API)
 
 Fallback is automatic. BrasilAPI is always primary. Headers include `User-Agent: n8n-brasil-hub-node/1.0`.
 
