@@ -4,7 +4,7 @@
 Implementar o community node n8n "Brasil Hub" que consulta dados públicos brasileiros (CNPJ e CEP) com fallback multi-provider, seguindo todos os padrões oficiais n8n.
 
 ## Current Phase
-Phase 17 (pending) — v0.3.0: Banks (Query + List)
+Phase 19 (complete) — v0.5.0: FIPE (Brands, Models, Years, Price)
 
 ## Release Strategy
 Each new resource ships as its own MINOR release:
@@ -290,18 +290,20 @@ Each new resource ships as its own MINOR release:
 **Issues:** #34, #46
 
 #### 19.1 FIPE Resource (#34)
-- [ ] RED: testes para normalizers + execute (4 operações)
-- [ ] GREEN: `fipe.description.ts` + `fipe.execute.ts` + `fipe.normalize.ts`
-- [ ] Registrar no router (4 entries: brands, models, years, price)
+- [x] RED: testes para normalizers + execute (4 operações)
+- [x] GREEN: `fipe.description.ts` + `fipe.execute.ts` + `fipe.normalize.ts`
+- [x] Registrar no router (4 entries: brands, models, years, price)
 - **Provider primário:** parallelum (`/fipe/api/v1/{tipo}/marcas/...`) — hierarquia completa
 - **Operations:** brands, models, years, price — 4 operações com displayOptions condicionais
 - **Params:** vehicleType (Cars→carros, Motorcycles→motos, Trucks→caminhoes), brandCode, modelCode, yearCode
 - **Validação:** brandCode/modelCode/yearCode non-empty conforme operação
-- **Status:** pending
+- **Status:** complete (commits 24cc66d, c04d3bc)
 
 #### 19.2 Release v0.5.0 (#46)
-- [ ] CHANGELOG + bump + release + CI verde
-- **Status:** pending
+- [x] CHANGELOG + bump + docs update
+- [ ] Pre-release workflow (5 phases)
+- [ ] Tag + release + CI verde
+- **Status:** in_progress (feature implemented, pending pre-release audit + tag)
 
 ---
 

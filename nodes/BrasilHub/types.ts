@@ -132,6 +132,68 @@ export interface IDdd {
 	_raw?: unknown;
 }
 
+/** Normalized FIPE brand (marca) result from parallelum. */
+export interface IFipeBrand {
+	/** Brand code as returned by the API (e.g. "1", "59"). */
+	code: string;
+	/** Brand name (e.g. "Acura", "Honda"). */
+	name: string;
+	/** Query metadata. Present when queried via API. */
+	_meta?: IMeta;
+	/** Raw provider response. Present only when "Include Raw Response" is enabled. */
+	_raw?: unknown;
+}
+
+/** Normalized FIPE model (modelo) result from parallelum. */
+export interface IFipeModel {
+	/** Model numeric code (e.g. 1, 4828). */
+	code: number;
+	/** Model name (e.g. "Integra GS 1.8", "Civic Sedan EXL 2.0"). */
+	name: string;
+	/** Query metadata. Present when queried via API. */
+	_meta?: IMeta;
+	/** Raw provider response. Present only when "Include Raw Response" is enabled. */
+	_raw?: unknown;
+}
+
+/** Normalized FIPE year (ano) result from parallelum. */
+export interface IFipeYear {
+	/** Year-fuel code (e.g. "2024-1", "32000-1"). */
+	code: string;
+	/** Human-readable year and fuel (e.g. "2024 Gasolina", "Zero KM Gasolina"). */
+	name: string;
+	/** Query metadata. Present when queried via API. */
+	_meta?: IMeta;
+	/** Raw provider response. Present only when "Include Raw Response" is enabled. */
+	_raw?: unknown;
+}
+
+/** Normalized FIPE price (preço) result from parallelum. */
+export interface IFipePrice {
+	/** Vehicle type code (1=Car, 2=Motorcycle, 3=Truck). */
+	vehicleType: number;
+	/** Brand name. */
+	brand: string;
+	/** Model name. */
+	model: string;
+	/** Model year. */
+	modelYear: number;
+	/** Fuel type description. */
+	fuel: string;
+	/** FIPE table code (e.g. "014275-3"). */
+	fipeCode: string;
+	/** Reference month (e.g. "março de 2026"). */
+	referenceMonth: string;
+	/** Price string (e.g. "R$ 120.000,00"). */
+	price: string;
+	/** Fuel type abbreviation (e.g. "G", "D", "E"). */
+	fuelAbbreviation: string;
+	/** Query metadata. Present when queried via API. */
+	_meta?: IMeta;
+	/** Raw provider response. Present only when "Include Raw Response" is enabled. */
+	_raw?: unknown;
+}
+
 /** A data provider endpoint used by the fallback engine. */
 export interface IProvider {
 	/** Provider identifier (e.g. "brasilapi", "cnpjws", "receitaws"). */

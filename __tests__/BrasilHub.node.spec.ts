@@ -20,12 +20,13 @@ describe('BrasilHub node', () => {
 		expect(values).toContain('cnpj');
 		expect(values).toContain('cpf');
 		expect(values).toContain('ddd');
+		expect(values).toContain('fipe');
 	});
 
 	it('should have operation properties for all resources', () => {
 		const node = new BrasilHub();
 		const ops = node.description.properties.filter((p) => p.name === 'operation');
-		expect(ops.length).toBe(5);
+		expect(ops.length).toBe(6);
 		for (const op of ops) {
 			expect(op.noDataExpression).toBe(true);
 			const values = op.options as Array<{ value: string; action: string }>;
