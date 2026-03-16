@@ -5,16 +5,47 @@ import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice } from
 
 const BASE_URL = 'https://parallelum.com.br/fipe/api/v1';
 
+const ALLOWED_VEHICLE_TYPES = new Set(['carros', 'motos', 'caminhoes']);
+const BRAND_MODEL_PATTERN = /^\d{1,6}$/;
+const YEAR_CODE_PATTERN = /^\d{1,5}-\d{1,2}$/;
+
 /** Appends `?tabela_referencia=X` when refTable > 0. */
 function appendRefTable(url: string, refTable: number): string {
-	return refTable > 0 ? `${url}?tabela_referencia=${refTable}` : url;
+	const safeRef = Math.floor(refTable);
+	return safeRef > 0 ? `${url}?tabela_referencia=${safeRef}` : url;
 }
 
-/** Reads common FIPE params from the execution context. */
+/** Validates vehicleType against the allowlist. */
+function validateVehicleType(context: IExecuteFunctions, vehicleType: string, itemIndex: number): void {
+	if (!ALLOWED_VEHICLE_TYPES.has(vehicleType)) {
+		throw new NodeOperationError(
+			context.getNode(),
+			`Invalid vehicle type: "${vehicleType}". Must be one of: carros, motos, caminhoes`,
+			{ itemIndex },
+		);
+	}
+}
+
+/** Validates a FIPE code parameter against a regex pattern. */
+function validateCode(context: IExecuteFunctions, value: string, name: string, pattern: RegExp, itemIndex: number): void {
+	if (!value) {
+		throw new NodeOperationError(context.getNode(), `${name} is required`, { itemIndex });
+	}
+	if (!pattern.test(value)) {
+		throw new NodeOperationError(
+			context.getNode(),
+			`Invalid ${name}: "${value}". Expected format: ${pattern.source}`,
+			{ itemIndex },
+		);
+	}
+}
+
+/** Reads common FIPE params from the execution context with validation. */
 function getCommonParams(context: IExecuteFunctions, itemIndex: number) {
 	const vehicleType = context.getNodeParameter('vehicleType', itemIndex) as string;
 	const referenceTable = context.getNodeParameter('referenceTable', itemIndex, 0) as number;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	validateVehicleType(context, vehicleType, itemIndex);
 	return { vehicleType, referenceTable, includeRaw };
 }
 
@@ -44,7 +75,7 @@ export async function fipeBrands(
 ): Promise<INodeExecutionData[]> {
 	const { vehicleType, referenceTable, includeRaw } = getCommonParams(context, itemIndex);
 
-	const url = appendRefTable(`${BASE_URL}/${vehicleType}/marcas`, referenceTable);
+	const url = appendRefTable(`${BASE_URL}/${encodeURIComponent(vehicleType)}/marcas`, referenceTable);
 	const data = await fetchFipe(context, url);
 
 	const brands = normalizeBrands(data);
@@ -75,13 +106,10 @@ export async function fipeModels(
 ): Promise<INodeExecutionData[]> {
 	const { vehicleType, referenceTable, includeRaw } = getCommonParams(context, itemIndex);
 	const brandCode = context.getNodeParameter('brandCode', itemIndex) as string;
-
-	if (!brandCode) {
-		throw new NodeOperationError(context.getNode(), 'Brand code is required', { itemIndex });
-	}
+	validateCode(context, brandCode, 'Brand code', BRAND_MODEL_PATTERN, itemIndex);
 
 	const url = appendRefTable(
-		`${BASE_URL}/${vehicleType}/marcas/${brandCode}/modelos`,
+		`${BASE_URL}/${encodeURIComponent(vehicleType)}/marcas/${encodeURIComponent(brandCode)}/modelos`,
 		referenceTable,
 	);
 	const data = await fetchFipe(context, url);
@@ -115,16 +143,11 @@ export async function fipeYears(
 	const { vehicleType, referenceTable, includeRaw } = getCommonParams(context, itemIndex);
 	const brandCode = context.getNodeParameter('brandCode', itemIndex) as string;
 	const modelCode = context.getNodeParameter('modelCode', itemIndex) as string;
-
-	if (!brandCode) {
-		throw new NodeOperationError(context.getNode(), 'Brand code is required', { itemIndex });
-	}
-	if (!modelCode) {
-		throw new NodeOperationError(context.getNode(), 'Model code is required', { itemIndex });
-	}
+	validateCode(context, brandCode, 'Brand code', BRAND_MODEL_PATTERN, itemIndex);
+	validateCode(context, modelCode, 'Model code', BRAND_MODEL_PATTERN, itemIndex);
 
 	const url = appendRefTable(
-		`${BASE_URL}/${vehicleType}/marcas/${brandCode}/modelos/${modelCode}/anos`,
+		`${BASE_URL}/${encodeURIComponent(vehicleType)}/marcas/${encodeURIComponent(brandCode)}/modelos/${encodeURIComponent(modelCode)}/anos`,
 		referenceTable,
 	);
 	const data = await fetchFipe(context, url);
@@ -159,19 +182,12 @@ export async function fipePrice(
 	const brandCode = context.getNodeParameter('brandCode', itemIndex) as string;
 	const modelCode = context.getNodeParameter('modelCode', itemIndex) as string;
 	const yearCode = context.getNodeParameter('yearCode', itemIndex) as string;
-
-	if (!brandCode) {
-		throw new NodeOperationError(context.getNode(), 'Brand code is required', { itemIndex });
-	}
-	if (!modelCode) {
-		throw new NodeOperationError(context.getNode(), 'Model code is required', { itemIndex });
-	}
-	if (!yearCode) {
-		throw new NodeOperationError(context.getNode(), 'Year code is required', { itemIndex });
-	}
+	validateCode(context, brandCode, 'Brand code', BRAND_MODEL_PATTERN, itemIndex);
+	validateCode(context, modelCode, 'Model code', BRAND_MODEL_PATTERN, itemIndex);
+	validateCode(context, yearCode, 'Year code', YEAR_CODE_PATTERN, itemIndex);
 
 	const url = appendRefTable(
-		`${BASE_URL}/${vehicleType}/marcas/${brandCode}/modelos/${modelCode}/anos/${yearCode}`,
+		`${BASE_URL}/${encodeURIComponent(vehicleType)}/marcas/${encodeURIComponent(brandCode)}/modelos/${encodeURIComponent(modelCode)}/anos/${encodeURIComponent(yearCode)}`,
 		referenceTable,
 	);
 	const data = await fetchFipe(context, url);

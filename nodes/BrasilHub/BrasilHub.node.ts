@@ -94,7 +94,7 @@ export class BrasilHub implements INodeType {
 					{ name: 'CNPJ', value: 'cnpj', description: 'Query or validate Brazilian company tax IDs' },
 					{ name: 'CPF', value: 'cpf', description: 'Validate Brazilian individual tax IDs' },
 					{ name: 'DDD', value: 'ddd', description: 'Query Brazilian area codes and their cities' },
-				{ name: 'FIPE', value: 'fipe', description: 'Query vehicle prices from the FIPE table' },
+					{ name: 'FIPE', value: 'fipe', description: 'Query vehicle prices from the FIPE table' },
 				],
 				default: 'cnpj',
 			},

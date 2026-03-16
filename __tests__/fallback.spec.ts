@@ -1,4 +1,5 @@
 import { queryWithFallback } from '../nodes/BrasilHub/shared/fallback';
+import { buildMeta } from '../nodes/BrasilHub/shared/utils';
 import type { IProvider } from '../nodes/BrasilHub/types';
 
 function createMockContext(responses: Array<{ success: boolean; data?: unknown; error?: string }>) {
@@ -99,5 +100,33 @@ describe('queryWithFallback', () => {
 			'provider1: Timeout',
 			'provider2: 404 Not Found',
 		]);
+	});
+});
+
+describe('buildMeta', () => {
+	it('should return direct strategy when no errors', () => {
+		const meta = buildMeta('brasilapi', '11222333000181', []);
+		expect(meta.provider).toBe('brasilapi');
+		expect(meta.query).toBe('11222333000181');
+		expect(meta.strategy).toBe('direct');
+		expect(meta.errors).toBeUndefined();
+	});
+
+	it('should return fallback strategy when errors present', () => {
+		const meta = buildMeta('cnpjws', '11222333000181', ['brasilapi: Timeout']);
+		expect(meta.strategy).toBe('fallback');
+		expect(meta.errors).toEqual(['brasilapi: Timeout']);
+	});
+
+	it('should produce valid ISO 8601 queried_at timestamp', () => {
+		const meta = buildMeta('brasilapi', 'test', []);
+		const parsed = new Date(meta.queried_at);
+		expect(parsed.toISOString()).toBe(meta.queried_at);
+		expect(Number.isNaN(parsed.getTime())).toBe(false);
+	});
+
+	it('should not include errors key when errors array is empty', () => {
+		const meta = buildMeta('brasilapi', 'test', []);
+		expect(Object.keys(meta)).not.toContain('errors');
 	});
 });
