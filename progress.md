@@ -377,14 +377,64 @@
 | BrasilHub.execute.spec.ts | 9 | PASS |
 | **Total** | **76** | **ALL PASS (100% coverage)** |
 
+### Phase 19: v0.5.0 — FIPE (Brands, Models, Years, Price)
+- **Status:** in_progress (feature done, pending pre-release + tag)
+- **Started:** 2026-03-16
+- Actions taken:
+  - TDD: normalizer tests (14) RED → GREEN, execute tests (13) RED → GREEN + 6 edge case tests
+  - 4 normalizers: normalizeBrands, normalizeModels, normalizeYears, normalizePrice
+  - 4 execute handlers: fipeBrands, fipeModels, fipeYears, fipePrice with validation
+  - Hierarchical displayOptions: vehicleType → brandCode → modelCode → yearCode
+  - Optional referenceTable param (query string when > 0)
+  - Router registration, node description updated
+  - 4 integration tests in BrasilHub.execute.spec.ts
+  - BrasilHub.node.spec.ts updated (6 resources, 6 operation blocks)
+  - Docs: CHANGELOG, README, CLAUDE.md, codex, copilot-instructions, SECURITY.md, package.json
+- Files created:
+  - `nodes/BrasilHub/resources/fipe/fipe.description.ts`
+  - `nodes/BrasilHub/resources/fipe/fipe.execute.ts`
+  - `nodes/BrasilHub/resources/fipe/fipe.normalize.ts`
+  - `__tests__/fipe.normalize.spec.ts`
+  - `__tests__/fipe.execute.spec.ts`
+- Files modified:
+  - `nodes/BrasilHub/types.ts` (IFipeBrand, IFipeModel, IFipeYear, IFipePrice)
+  - `nodes/BrasilHub/BrasilHub.node.ts` (imports, router, resource option)
+  - `__tests__/BrasilHub.execute.spec.ts` (4 FIPE scenarios)
+  - `__tests__/BrasilHub.node.spec.ts` (6 resources, 6 operations)
+  - All living docs (CHANGELOG, README, CLAUDE.md, etc.)
+- Commits: `24cc66d` (feat), `c04d3bc` (docs)
+
+## Test Results (Current)
+| Suite | Tests | Status |
+|-------|-------|--------|
+| validators.spec.ts | 25 | PASS |
+| validators.attack.spec.ts | 66 | PASS |
+| fallback.spec.ts | 7 | PASS |
+| cnpj.normalize.spec.ts | 10 | PASS |
+| cep.normalize.spec.ts | 6 | PASS |
+| banks.normalize.spec.ts | 10 | PASS |
+| ddd.normalize.spec.ts | 8 | PASS |
+| normalizers.attack.spec.ts | 127 | PASS |
+| fipe.normalize.spec.ts | 14 | PASS |
+| cnpj.execute.spec.ts | 6 | PASS |
+| cep.execute.spec.ts | 5 | PASS |
+| cpf.execute.spec.ts | 4 | PASS |
+| banks.execute.spec.ts | 12 | PASS |
+| ddd.execute.spec.ts | 6 | PASS |
+| fipe.execute.spec.ts | 27 | PASS |
+| execute.attack.spec.ts | 57 | PASS |
+| BrasilHub.node.spec.ts | 3 | PASS |
+| BrasilHub.execute.spec.ts | 16 | PASS |
+| **Total** | **419** | **ALL PASS (99%+ branch coverage)** |
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | v0.2.0 released — CPF validate + router refactor shipped |
-| Where am I going? | Phase 17: Banks resource (Query + List) → release v0.3.0 |
-| What's the goal? | Cada recurso é um release MINOR: v0.3.0 Banks → v0.4.0 DDD → v0.5.0 FIPE → v0.6.0 Feriados → v0.7.0 providers+polish |
-| What have I learned? | Dictionary Map Pattern permite adicionar resources com zero mudanças em arquivos existentes; pre-release workflow com skills em paralelo é eficiente |
-| What have I done? | v0.2.0: router refactor, CPF validate, 76 testes 100% coverage, audits clean, npm published |
+| Where am I? | v0.5.0 feature implemented — FIPE resource (Brands, Models, Years, Price) done, pending pre-release audit + tag |
+| Where am I going? | Complete pre-release workflow → tag v0.5.0 → release → npm publish |
+| What's the goal? | v0.6.0 Feriados → v0.7.0 providers+polish |
+| What have I learned? | FIPE is the most complex resource (4 ops, hierarchical params); parallelum is only viable provider for hierarchy; fetchFipe() replaces queryWithFallback() for single-provider |
+| What have I done? | v0.5.0: FIPE resource, 27 new tests, 419 total, docs updated, 2 commits (feat + docs) |
 
 ---
 *Update after completing each phase or encountering errors*
