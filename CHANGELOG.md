@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-03-16
+
+### Fixed
+- **Normalizers crash with null/undefined**: All normalizer entry points now guard against null/undefined API responses with `(data ?? {})` coercion, producing empty defaults instead of TypeError
+- **normalizeBanks/normalizeDdd no Array guard**: Added `Array.isArray()` guard before `.map()` and `.filter()` — non-array data returns empty array or descriptive error instead of crashing
+- **DDD municipios string-vs-number equality**: Fixed `===` comparison that failed when JSON had string DDD codes (`"11"` vs `11`) by using `Number()` coercion
+- **capital_social NaN for non-numeric strings**: Added `safeCapital()` helper with `Number.isNaN()` guard — `"abc"` now returns `0` instead of `NaN`
+- **continueOnFail string throw**: Fixed error message extraction using `error instanceof Error ? error.message : String(error)` — non-Error throws no longer produce `undefined` json.error
+- **stripNonDigits crash with non-string**: Added defensive `String(value ?? '')` coercion for non-string input types
+- Lint errors in attack test files (unused variable, unnecessary eslint-disable directives, direct NaN comparison)
+
+### Added
+- 250 adversarial attack tests across 3 new test files:
+  - `validators.attack.spec.ts` (66 tests): type confusion, unicode injection, prototype pollution, NaN propagation
+  - `normalizers.attack.spec.ts` (127 tests): null/undefined crashes, non-array data, XSS/SQLi passthrough, large payloads
+  - `execute.attack.spec.ts` (57 tests): garbage API responses, error objects, timeout, continueOnFail edge cases, DDD strict equality
+- JSDoc `@throws {NodeOperationError}` to `BrasilHub.execute()` method
+- Formal JSDoc with `@param`/`@returns` to `safeCapital()` helper
+
+### Changed
+- 374 tests total (was 124), 100% statement/function/line coverage, 96%+ branch coverage
+- Pre-release workflow: all 5 phases executed (compliance 17/17, security PASS, validation 12/12, simplify clean, JSDoc 87%)
+
+### Deprecated
+- All versions prior to 0.4.3 contain bugs fixed in this release (CEP validation, normalizer crashes, DDD equality, capital_social NaN)
+
 ## [0.4.2] - 2026-03-15
 
 ### Added
