@@ -37,22 +37,40 @@ function normalizeViaCep(data: Record<string, unknown>): ICepResult {
 	return normalizeViaCepFormat(data);
 }
 
+/** Maps ApiCEP response (address/district/city/state) to {@link ICepResult}, detecting `ok: false` as not-found. */
+function normalizeApiCep(data: Record<string, unknown>): ICepResult {
+	if (!data.ok) {
+		throw new Error('CEP not found');
+	}
+	return {
+		cep: stripNonDigits(safeStr(data.code)),
+		logradouro: safeStr(data.address),
+		complemento: '',
+		bairro: safeStr(data.district),
+		cidade: safeStr(data.city),
+		uf: safeStr(data.state),
+		ibge: '',
+		ddd: '',
+	};
+}
+
 /** Provider name → normalizer function dispatch table. */
 const normalizers: Record<string, (data: Record<string, unknown>) => ICepResult> = {
 	brasilapi: normalizeBrasilApi,
 	viacep: normalizeViaCep,
 	opencep: normalizeViaCepFormat,
+	apicep: normalizeApiCep,
 };
 
 /**
  * Normalizes raw CEP API response into the unified {@link ICepResult} schema.
  *
- * Dispatches to provider-specific normalizers (BrasilAPI, ViaCEP, OpenCEP)
- * that handle field name mapping. ViaCEP's `{erro: true}` response is detected
- * and thrown as an error during normalization.
+ * Dispatches to provider-specific normalizers (BrasilAPI, ViaCEP, OpenCEP, ApiCEP)
+ * that handle field name mapping. ViaCEP's `{erro: true}` and ApiCEP's `{ok: false}`
+ * responses are detected and thrown as errors during normalization.
  *
  * @param data - Raw JSON response from the provider.
- * @param provider - Provider identifier (e.g. `"brasilapi"`, `"viacep"`, `"opencep"`).
+ * @param provider - Provider identifier (e.g. `"brasilapi"`, `"viacep"`, `"opencep"`, `"apicep"`).
  * @returns Normalized CEP result.
  * @throws {Error} If the provider name is not recognized.
  */

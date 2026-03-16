@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.6.x ships CNPJ, CEP, CPF, Banks, DDD, Feriados, and FIPE. Next release: v0.7.0 additional providers + polish.
+Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.7.x ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Feriados, and FIPE. Next milestone: v1.0 (IBGE, NCM, configurable providers).
 
 - **License:** MIT
 - **Tech Stack:** TypeScript, n8n-workflow, Jest + ts-jest
@@ -101,8 +101,8 @@ Zero changes to existing resource files — only the router registration.
 
 ## Data Providers (Fallback Order)
 
-**CNPJ:** BrasilAPI → CNPJ.ws → ReceitaWS
-**CEP:** BrasilAPI → ViaCEP → OpenCEP
+**CNPJ:** BrasilAPI → CNPJ.ws → ReceitaWS → MinhaReceita → OpenCNPJ.org → OpenCNPJ.com → CNPJA
+**CEP:** BrasilAPI → ViaCEP → OpenCEP → ApiCEP
 **Banks:** BrasilAPI → BancosBrasileiros
 **DDD:** BrasilAPI → municipios-brasileiros
 **Feriados:** BrasilAPI → Nager.Date

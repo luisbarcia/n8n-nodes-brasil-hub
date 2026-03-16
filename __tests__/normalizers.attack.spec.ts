@@ -1297,6 +1297,705 @@ describe('FERIADOS VECTOR 5: Unknown provider throws', () => {
 	});
 });
 
+// ═══════════════════════════════════════════════════════════════════════
+// NEW CNPJ PROVIDERS ATTACK TESTS (MinhaReceita, OpenCNPJ.org, OpenCNPJ.com, CNPJA)
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────
+// CNPJ NEW PROVIDERS VECTOR 1: Malformed responses (null, undefined, {}, empty fields)
+// ─────────────────────────────────────────────────────────────
+describe('CNPJ NEW PROVIDERS VECTOR 1: Malformed responses → safe defaults', () => {
+	const newProviders = ['minhareceita', 'opencnpjorg', 'opencnpjcom', 'cnpja'] as const;
+
+	describe('null/undefined produce empty defaults for all new providers', () => {
+		for (const value of [null, undefined] as const) {
+			for (const provider of newProviders) {
+				it(`PASS — ${String(value)} (${provider}) → empty defaults`, () => {
+					const result = normalizeCnpj(value, provider);
+					expect(result.cnpj).toBe('');
+					expect(result.razao_social).toBe('');
+					expect(result.capital_social).toBe(0);
+					expect(result.socios).toEqual([]);
+					expect(result.contato.telefone).toBe('');
+					expect(result.contato.email).toBe('');
+					expect(result.endereco.logradouro).toBe('');
+				});
+			}
+		}
+	});
+
+	describe('empty object {} produces empty defaults for all new providers', () => {
+		for (const provider of newProviders) {
+			it(`PASS — {} (${provider}) → empty defaults`, () => {
+				const result = normalizeCnpj({}, provider);
+				expect(result.cnpj).toBe('');
+				expect(result.razao_social).toBe('');
+				expect(result.nome_fantasia).toBe('');
+				expect(result.situacao).toBe('');
+				expect(result.data_abertura).toBe('');
+				expect(result.porte).toBe('');
+				expect(result.natureza_juridica).toBe('');
+				expect(result.capital_social).toBe(0);
+				expect(result.atividade_principal.codigo).toBe('');
+				expect(result.atividade_principal.descricao).toBe('');
+				expect(result.endereco.logradouro).toBe('');
+				expect(result.endereco.numero).toBe('');
+				expect(result.endereco.complemento).toBe('');
+				expect(result.endereco.bairro).toBe('');
+				expect(result.endereco.cep).toBe('');
+				expect(result.endereco.municipio).toBe('');
+				expect(result.endereco.uf).toBe('');
+				expect(result.contato.telefone).toBe('');
+				expect(result.contato.email).toBe('');
+				expect(result.socios).toEqual([]);
+			});
+		}
+	});
+
+	describe('non-object primitives do not throw for new providers', () => {
+		for (const value of ['', 42, true] as const) {
+			for (const provider of newProviders) {
+				it(`PASS — ${JSON.stringify(value)} (${provider}) does not throw`, () => {
+					expect(() => normalizeCnpj(value, provider)).not.toThrow();
+				});
+			}
+		}
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// CNPJ NEW PROVIDERS VECTOR 2: MinhaReceita type confusion
+// ─────────────────────────────────────────────────────────────
+describe('CNPJ NEW PROVIDERS VECTOR 2: MinhaReceita type confusion', () => {
+	it('PASS — cnae_fiscal as string instead of number → String() coerces to same string', () => {
+		const data = { cnae_fiscal: '6201501', cnae_fiscal_descricao: 'Desenvolvimento de programas' };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.atividade_principal.codigo).toBe('6201501');
+		expect(result.atividade_principal.descricao).toBe('Desenvolvimento de programas');
+	});
+
+	it('PASS — cnae_fiscal as number → String() coerces to string', () => {
+		const data = { cnae_fiscal: 6201501 };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.atividade_principal.codigo).toBe('6201501');
+	});
+
+	it('PASS — cnae_fiscal as null → empty string (null check)', () => {
+		const data = { cnae_fiscal: null };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.atividade_principal.codigo).toBe('');
+	});
+
+	it('PASS — cnae_fiscal as undefined → empty string (missing key)', () => {
+		const result = normalizeCnpj({}, 'minhareceita');
+		expect(result.atividade_principal.codigo).toBe('');
+	});
+
+	it('PASS — cnae_fiscal as boolean true → String(true) = "true"', () => {
+		const data = { cnae_fiscal: true };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.atividade_principal.codigo).toBe('true');
+	});
+
+	it('PASS — cnae_fiscal as 0 → String(0) = "0"', () => {
+		const data = { cnae_fiscal: 0 };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.atividade_principal.codigo).toBe('0');
+	});
+
+	it('PASS — capital_social as string "1000.50" → safeCapital coerces', () => {
+		const data = { capital_social: '1000.50' };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.capital_social).toBe(1000.5);
+	});
+
+	it('FIXED — capital_social as string "abc" → safeCapital returns 0', () => {
+		const data = { capital_social: 'abc' };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.capital_social).toBe(0);
+	});
+
+	it('PASS — capital_social as null → 0', () => {
+		const data = { capital_social: null };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.capital_social).toBe(0);
+	});
+
+	it('PASS — qsa as string instead of array → empty socios', () => {
+		const data = { qsa: 'not an array' };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.socios).toEqual([]);
+	});
+
+	it('PASS — qsa as null → empty socios', () => {
+		const data = { qsa: null };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.socios).toEqual([]);
+	});
+
+	it('PASS — ddd_telefone_1 and ddd_telefone_2 both empty → empty phone string', () => {
+		const data = { ddd_telefone_1: '', ddd_telefone_2: '' };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.contato.telefone).toBe('');
+	});
+
+	it('PASS — ddd_telefone_1 present, ddd_telefone_2 empty → single phone', () => {
+		const data = { ddd_telefone_1: '1198765432', ddd_telefone_2: '' };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.contato.telefone).toBe('1198765432');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// CNPJ NEW PROVIDERS VECTOR 3: OpenCNPJ.org type confusion
+// ─────────────────────────────────────────────────────────────
+describe('CNPJ NEW PROVIDERS VECTOR 3: OpenCNPJ.org type confusion', () => {
+	it('FIXED — capital_social as comma string "1.234,56" → parsed to 1234.56', () => {
+		const data = { capital_social: '1.234,56' };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		// replaceAll('.', '') removes thousand separators, then replace(',', '.') for decimal
+		expect(result.capital_social).toBe(1234.56);
+	});
+
+	it('PASS — capital_social as simple comma string "1234,56" → parsed to 1234.56', () => {
+		const data = { capital_social: '1234,56' };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.capital_social).toBe(1234.56);
+	});
+
+	it('PASS — capital_social as number → safeCapital coerces normally', () => {
+		const data = { capital_social: 50000 };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.capital_social).toBe(50000);
+	});
+
+	it('PASS — capital_social as null → 0', () => {
+		const data = { capital_social: null };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.capital_social).toBe(0);
+	});
+
+	it('FIXED — capital_social as "abc" string → parseFloat returns NaN → || 0', () => {
+		const data = { capital_social: 'abc' };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.capital_social).toBe(0);
+	});
+
+	it('PASS — QSA as uppercase key with array → normal socios', () => {
+		const data = {
+			QSA: [
+				{ nome_socio: 'John', cnpj_cpf_do_socio: '123', qualificacao_socio: 'Admin', data_entrada_sociedade: '2020-01-01' },
+			],
+		};
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.socios).toHaveLength(1);
+		expect(result.socios[0].nome).toBe('John');
+	});
+
+	it('PASS — qsa (lowercase) is NOT recognized → empty socios (field is QSA)', () => {
+		const data = {
+			qsa: [
+				{ nome_socio: 'John' },
+			],
+		};
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.socios).toEqual([]);
+	});
+
+	it('PASS — QSA as null → empty socios', () => {
+		const data = { QSA: null };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.socios).toEqual([]);
+	});
+
+	it('PASS — QSA as string → empty socios', () => {
+		const data = { QSA: 'not an array' };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.socios).toEqual([]);
+	});
+
+	it('PASS — telefones as empty array → empty phone string', () => {
+		const data = { telefones: [] };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.contato.telefone).toBe('');
+	});
+
+	it('PASS — telefones with only fax entries (ddd+numero still extracted from first)', () => {
+		const data = {
+			telefones: [
+				{ ddd: '11', numero: '33334444', tipo: 'fax' },
+				{ ddd: '11', numero: '55556666', tipo: 'fax' },
+			],
+		};
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		// normalizer takes first entry regardless of tipo field
+		expect(result.contato.telefone).toBe('1133334444');
+	});
+
+	it('PASS — telefones as null → empty phone string', () => {
+		const data = { telefones: null };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.contato.telefone).toBe('');
+	});
+
+	it('PASS — telefones as string instead of array → empty phone string', () => {
+		const data = { telefones: 'not an array' };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.contato.telefone).toBe('');
+	});
+
+	it('PASS — telefones with null ddd/numero in first entry → empty strings concatenated', () => {
+		const data = { telefones: [{ ddd: null, numero: null }] };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		// safeStr(null) → '' for both, so phone = '' + '' = ''
+		expect(result.contato.telefone).toBe('');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// CNPJ NEW PROVIDERS VECTOR 4: OpenCNPJ.com wrapped vs unwrapped
+// ─────────────────────────────────────────────────────────────
+describe('CNPJ NEW PROVIDERS VECTOR 4: OpenCNPJ.com wrapped vs unwrapped', () => {
+	it('PASS — wrapped {success: true, data: {...}} extracts from data', () => {
+		const raw = {
+			success: true,
+			data: {
+				cnpj: '12345678000100',
+				razaoSocial: 'Test Company',
+				nomeFantasia: 'Test',
+				situacaoCadastral: 'ATIVA',
+				capitalSocial: 50000,
+				socios: [],
+			},
+		};
+		const result = normalizeCnpj(raw, 'opencnpjcom');
+		expect(result.cnpj).toBe('12345678000100');
+		expect(result.razao_social).toBe('Test Company');
+		expect(result.capital_social).toBe(50000);
+	});
+
+	it('PASS — unwrapped response (no data wrapper) works directly', () => {
+		const raw = {
+			cnpj: '12345678000100',
+			razaoSocial: 'Direct Company',
+			nomeFantasia: 'Direct',
+			situacaoCadastral: 'ATIVA',
+			capitalSocial: 75000,
+			socios: [],
+		};
+		const result = normalizeCnpj(raw, 'opencnpjcom');
+		expect(result.cnpj).toBe('12345678000100');
+		expect(result.razao_social).toBe('Direct Company');
+		expect(result.capital_social).toBe(75000);
+	});
+
+	it('PASS — {success: false} with no data → reads from top-level (empty defaults)', () => {
+		const raw = { success: false };
+		const result = normalizeCnpj(raw, 'opencnpjcom');
+		// data = (raw.data ?? raw) → raw.data is undefined → uses raw itself
+		// raw has no cnpj, razaoSocial etc → empty defaults
+		expect(result.cnpj).toBe('');
+		expect(result.razao_social).toBe('');
+		expect(result.capital_social).toBe(0);
+		expect(result.socios).toEqual([]);
+	});
+
+	it('PASS — {success: false, data: null} → data is null → falls back to raw', () => {
+		const raw = { success: false, data: null };
+		const result = normalizeCnpj(raw, 'opencnpjcom');
+		// data = (raw.data ?? raw) → raw.data is null → uses raw
+		expect(result.cnpj).toBe('');
+		expect(result.razao_social).toBe('');
+	});
+
+	it('PASS — {data: {}} → empty wrapped data produces defaults', () => {
+		const raw = { data: {} };
+		const result = normalizeCnpj(raw, 'opencnpjcom');
+		expect(result.cnpj).toBe('');
+		expect(result.razao_social).toBe('');
+		expect(result.capital_social).toBe(0);
+		expect(result.socios).toEqual([]);
+	});
+
+	it('PASS — socios as string instead of array → empty socios', () => {
+		const raw = { socios: 'not an array' };
+		const result = normalizeCnpj(raw, 'opencnpjcom');
+		expect(result.socios).toEqual([]);
+	});
+
+	it('PASS — socios as null → empty socios', () => {
+		const raw = { socios: null };
+		const result = normalizeCnpj(raw, 'opencnpjcom');
+		expect(result.socios).toEqual([]);
+	});
+
+	it('PASS — capitalSocial as "abc" → safeCapital returns 0', () => {
+		const raw = { capitalSocial: 'abc' };
+		const result = normalizeCnpj(raw, 'opencnpjcom');
+		expect(result.capital_social).toBe(0);
+	});
+
+	it('PASS — data_abertura always empty (field not mapped)', () => {
+		const raw = { dataAbertura: '2020-01-01' };
+		const result = normalizeCnpj(raw, 'opencnpjcom');
+		// opencnpjcom normalizer hardcodes data_abertura: ''
+		expect(result.data_abertura).toBe('');
+	});
+
+	it('PASS — porte always empty (field not mapped)', () => {
+		const raw = { porte: 'ME' };
+		const result = normalizeCnpj(raw, 'opencnpjcom');
+		// opencnpjcom normalizer hardcodes porte: ''
+		expect(result.porte).toBe('');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// CNPJ NEW PROVIDERS VECTOR 5: CNPJA deeply nested nulls
+// ─────────────────────────────────────────────────────────────
+describe('CNPJ NEW PROVIDERS VECTOR 5: CNPJA deeply nested nulls', () => {
+	it('PASS — all nested objects null (company, status, address, mainActivity) → safe defaults', () => {
+		const data = {
+			company: null,
+			status: null,
+			address: null,
+			mainActivity: null,
+			phones: null,
+			emails: null,
+		};
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.cnpj).toBe('');
+		expect(result.razao_social).toBe('');
+		expect(result.nome_fantasia).toBe('');
+		expect(result.situacao).toBe('');
+		expect(result.data_abertura).toBe('');
+		expect(result.porte).toBe('');
+		expect(result.natureza_juridica).toBe('');
+		expect(result.capital_social).toBe(0);
+		expect(result.atividade_principal.codigo).toBe('');
+		expect(result.atividade_principal.descricao).toBe('');
+		expect(result.endereco.logradouro).toBe('');
+		expect(result.endereco.numero).toBe('');
+		expect(result.endereco.complemento).toBe('');
+		expect(result.endereco.bairro).toBe('');
+		expect(result.endereco.cep).toBe('');
+		expect(result.endereco.municipio).toBe('');
+		expect(result.endereco.uf).toBe('');
+		expect(result.contato.telefone).toBe('');
+		expect(result.contato.email).toBe('');
+		expect(result.socios).toEqual([]);
+	});
+
+	it('PASS — company.members with empty person/role objects → empty socio fields', () => {
+		const data = {
+			company: {
+				members: [
+					{ person: {}, role: {}, since: '' },
+					{ person: null, role: null, since: null },
+				],
+			},
+		};
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.socios).toHaveLength(2);
+		expect(result.socios[0]).toEqual({
+			nome: '',
+			cpf_cnpj: '',
+			qualificacao: '',
+			data_entrada: '',
+		});
+		expect(result.socios[1]).toEqual({
+			nome: '',
+			cpf_cnpj: '',
+			qualificacao: '',
+			data_entrada: '',
+		});
+	});
+
+	it('PASS — company.members with missing person/role keys → empty socio fields', () => {
+		const data = {
+			company: {
+				members: [
+					{},
+				],
+			},
+		};
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.socios).toHaveLength(1);
+		expect(result.socios[0]).toEqual({
+			nome: '',
+			cpf_cnpj: '',
+			qualificacao: '',
+			data_entrada: '',
+		});
+	});
+
+	it('PASS — phones as empty array → empty phone string', () => {
+		const data = { phones: [] };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.contato.telefone).toBe('');
+	});
+
+	it('PASS — emails as empty array → empty email', () => {
+		const data = { emails: [] };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.contato.email).toBe('');
+	});
+
+	it('PASS — phones with null area/number in first entry → empty phone', () => {
+		const data = { phones: [{ area: null, number: null }] };
+		const result = normalizeCnpj(data, 'cnpja');
+		// safeStr(null) → '' for both, phone = '' + '' = ''
+		expect(result.contato.telefone).toBe('');
+	});
+
+	it('PASS — emails with null address in first entry → empty email', () => {
+		const data = { emails: [{ address: null }] };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.contato.email).toBe('');
+	});
+
+	it('PASS — company.equity as null → capital_social 0', () => {
+		const data = { company: { equity: null } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.capital_social).toBe(0);
+	});
+
+	it('PASS — company.equity as 0 → capital_social 0', () => {
+		const data = { company: { equity: 0 } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.capital_social).toBe(0);
+	});
+
+	it('PASS — company.equity as negative number → kept as-is', () => {
+		const data = { company: { equity: -5000 } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.capital_social).toBe(-5000);
+	});
+
+	it('PASS — company.equity as "abc" → safeCapital returns 0', () => {
+		const data = { company: { equity: 'abc' } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.capital_social).toBe(0);
+	});
+
+	it('PASS — mainActivity.id as null → empty string', () => {
+		const data = { mainActivity: { id: null, text: 'Test' } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.atividade_principal.codigo).toBe('');
+	});
+
+	it('PASS — mainActivity.id as number → String() coerced', () => {
+		const data = { mainActivity: { id: 6201501, text: 'Dev' } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.atividade_principal.codigo).toBe('6201501');
+	});
+
+	it('PASS — mainActivity.id as 0 → String(0) = "0"', () => {
+		const data = { mainActivity: { id: 0, text: '' } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.atividade_principal.codigo).toBe('0');
+	});
+
+	it('PASS — company.size and company.nature as null → empty porte and natureza_juridica', () => {
+		const data = { company: { size: null, nature: null } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.porte).toBe('');
+		expect(result.natureza_juridica).toBe('');
+	});
+
+	it('PASS — phones/emails as strings instead of arrays → empty contact', () => {
+		const data = { phones: 'not an array', emails: 'not an array' };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.contato.telefone).toBe('');
+		expect(result.contato.email).toBe('');
+	});
+
+	it('PASS — company.members as string instead of array → empty socios', () => {
+		const data = { company: { members: 'not an array' } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.socios).toEqual([]);
+	});
+
+	it('PASS — company.members as null → empty socios', () => {
+		const data = { company: { members: null } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.socios).toEqual([]);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// NEW CEP PROVIDER ATTACK TESTS (ApiCEP)
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────
+// CEP APICEP VECTOR 1: Error detection and malformed responses
+// ─────────────────────────────────────────────────────────────
+describe('CEP APICEP VECTOR 1: Error detection and malformed responses', () => {
+	it('PASS — {ok: false, status: 404} throws "CEP not found"', () => {
+		expect(() => normalizeCep({ ok: false, status: 404 }, 'apicep')).toThrow('CEP not found');
+	});
+
+	it('PASS — {ok: false} without status throws "CEP not found"', () => {
+		expect(() => normalizeCep({ ok: false }, 'apicep')).toThrow('CEP not found');
+	});
+
+	it('PASS — {ok: 0} (falsy) throws "CEP not found"', () => {
+		expect(() => normalizeCep({ ok: 0 }, 'apicep')).toThrow('CEP not found');
+	});
+
+	it('PASS — {ok: ""} (empty string, falsy) throws "CEP not found"', () => {
+		expect(() => normalizeCep({ ok: '' }, 'apicep')).toThrow('CEP not found');
+	});
+
+	it('PASS — {ok: null} throws "CEP not found"', () => {
+		expect(() => normalizeCep({ ok: null }, 'apicep')).toThrow('CEP not found');
+	});
+
+	it('PASS — {ok: undefined} throws "CEP not found"', () => {
+		expect(() => normalizeCep({ ok: undefined }, 'apicep')).toThrow('CEP not found');
+	});
+
+	it('PASS — null input → {}.ok is undefined → throws "CEP not found"', () => {
+		expect(() => normalizeCep(null, 'apicep')).toThrow('CEP not found');
+	});
+
+	it('PASS — undefined input → {}.ok is undefined → throws "CEP not found"', () => {
+		expect(() => normalizeCep(undefined, 'apicep')).toThrow('CEP not found');
+	});
+
+	it('PASS — {} input → {}.ok is undefined → throws "CEP not found"', () => {
+		expect(() => normalizeCep({}, 'apicep')).toThrow('CEP not found');
+	});
+
+	it('PASS — {ok: true} but missing all fields → safe defaults', () => {
+		const result = normalizeCep({ ok: true }, 'apicep');
+		expect(result.cep).toBe('');
+		expect(result.logradouro).toBe('');
+		expect(result.complemento).toBe('');
+		expect(result.bairro).toBe('');
+		expect(result.cidade).toBe('');
+		expect(result.uf).toBe('');
+		expect(result.ibge).toBe('');
+		expect(result.ddd).toBe('');
+	});
+
+	it('PASS — {ok: true, code: "01001-000"} with hyphen → stripNonDigits removes it', () => {
+		const result = normalizeCep({ ok: true, code: '01001-000' }, 'apicep');
+		expect(result.cep).toBe('01001000');
+	});
+
+	it('PASS — {ok: true, code: "01001000"} without hyphen → works normally', () => {
+		const result = normalizeCep({ ok: true, code: '01001000' }, 'apicep');
+		expect(result.cep).toBe('01001000');
+	});
+
+	it('PASS — {ok: true, code: null} → empty cep', () => {
+		const result = normalizeCep({ ok: true, code: null }, 'apicep');
+		expect(result.cep).toBe('');
+	});
+
+	it('PASS — {ok: 1} (truthy number) does NOT throw → produces result', () => {
+		const result = normalizeCep({ ok: 1, code: '01001000', address: 'Praça da Sé' }, 'apicep');
+		expect(result.cep).toBe('01001000');
+		expect(result.logradouro).toBe('Praça da Sé');
+	});
+
+	it('PASS — {ok: "yes"} (truthy string) does NOT throw → produces result', () => {
+		const result = normalizeCep({ ok: 'yes', code: '01001000' }, 'apicep');
+		expect(result.cep).toBe('01001000');
+	});
+
+	it('PASS — complemento always empty (not in ApiCEP response)', () => {
+		const result = normalizeCep({
+			ok: true,
+			code: '01001000',
+			address: 'Praça da Sé',
+			district: 'Sé',
+			city: 'São Paulo',
+			state: 'SP',
+		}, 'apicep');
+		expect(result.complemento).toBe('');
+		expect(result.ibge).toBe('');
+		expect(result.ddd).toBe('');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// NEW PROVIDERS XSS/SQLi PASSTHROUGH
+// ─────────────────────────────────────────────────────────────
+describe('NEW PROVIDERS: XSS/SQLi passthrough (NOTED — expected for backend)', () => {
+	const xssPayload = '<script>alert("xss")</script>';
+	const sqli = "'; DROP TABLE empresas--";
+
+	it('NOTED — MinhaReceita: XSS in razao_social passes through', () => {
+		const data = { razao_social: xssPayload, nome_fantasia: xssPayload };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.razao_social).toBe(xssPayload);
+		expect(result.nome_fantasia).toBe(xssPayload);
+	});
+
+	it('NOTED — MinhaReceita: SQLi in email passes through', () => {
+		const data = { email: sqli };
+		const result = normalizeCnpj(data, 'minhareceita');
+		expect(result.contato.email).toBe(sqli);
+	});
+
+	it('NOTED — OpenCNPJ.org: XSS in razao_social passes through', () => {
+		const data = { razao_social: xssPayload };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.razao_social).toBe(xssPayload);
+	});
+
+	it('NOTED — OpenCNPJ.org: SQLi in municipio passes through', () => {
+		const data = { municipio: sqli };
+		const result = normalizeCnpj(data, 'opencnpjorg');
+		expect(result.endereco.municipio).toBe(sqli);
+	});
+
+	it('NOTED — OpenCNPJ.com: XSS in razaoSocial passes through', () => {
+		const data = { razaoSocial: xssPayload };
+		const result = normalizeCnpj(data, 'opencnpjcom');
+		expect(result.razao_social).toBe(xssPayload);
+	});
+
+	it('NOTED — OpenCNPJ.com: SQLi in nomeFantasia passes through', () => {
+		const data = { nomeFantasia: sqli };
+		const result = normalizeCnpj(data, 'opencnpjcom');
+		expect(result.nome_fantasia).toBe(sqli);
+	});
+
+	it('NOTED — CNPJA: XSS in company.name passes through', () => {
+		const data = { company: { name: xssPayload } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.razao_social).toBe(xssPayload);
+	});
+
+	it('NOTED — CNPJA: SQLi in alias passes through', () => {
+		const data = { alias: sqli };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.nome_fantasia).toBe(sqli);
+	});
+
+	it('NOTED — CNPJA: XSS in address.street passes through', () => {
+		const data = { address: { street: xssPayload } };
+		const result = normalizeCnpj(data, 'cnpja');
+		expect(result.endereco.logradouro).toBe(xssPayload);
+	});
+
+	it('NOTED — ApiCEP: XSS in city passes through', () => {
+		const data = { ok: true, city: xssPayload, address: xssPayload };
+		const result = normalizeCep(data, 'apicep');
+		expect(result.cidade).toBe(xssPayload);
+		expect(result.logradouro).toBe(xssPayload);
+	});
+
+	it('NOTED — ApiCEP: SQLi in district passes through', () => {
+		const data = { ok: true, district: sqli };
+		const result = normalizeCep(data, 'apicep');
+		expect(result.bairro).toBe(sqli);
+	});
+});
+
 // ─────────────────────────────────────────────────────────────
 // FERIADOS VECTOR 6: Empty types array, missing types field (nagerdate)
 // ─────────────────────────────────────────────────────────────

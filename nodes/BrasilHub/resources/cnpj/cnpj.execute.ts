@@ -1,7 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta } from '../../shared/utils';
+import { buildMeta, buildResultItem } from '../../shared/utils';
 import { validateCnpj, sanitizeCnpj } from '../../shared/validators';
 import { queryWithFallback } from '../../shared/fallback';
 import { normalizeCnpj } from './cnpj.normalize';
@@ -10,6 +10,10 @@ const CNPJ_PROVIDERS: IProvider[] = [
 	{ name: 'brasilapi', url: 'https://brasilapi.com.br/api/cnpj/v1/' },
 	{ name: 'cnpjws', url: 'https://publica.cnpj.ws/cnpj/' },
 	{ name: 'receitaws', url: 'https://receitaws.com.br/v1/cnpj/' },
+	{ name: 'minhareceita', url: 'https://minhareceita.org/' },
+	{ name: 'opencnpjorg', url: 'https://api.opencnpj.org/' },
+	{ name: 'opencnpjcom', url: 'https://kitana.opencnpj.com/cnpj/' },
+	{ name: 'cnpja', url: 'https://open.cnpja.com/office/' },
 ];
 
 /** Appends the sanitized CNPJ to each provider base URL. */
@@ -34,6 +38,7 @@ export async function cnpjQuery(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const cnpjInput = context.getNodeParameter('cnpj', itemIndex) as string;
+	const simplify = context.getNodeParameter('simplify', itemIndex, true) as boolean;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
 	const cnpj = sanitizeCnpj(cnpjInput);
 
@@ -48,18 +53,14 @@ export async function cnpjQuery(
 	const providers = buildProviders(cnpj);
 	const result = await queryWithFallback(context, providers);
 
-	const normalized = normalizeCnpj(result.data, result.provider);
-
+	const full = normalizeCnpj(result.data, result.provider);
 	const meta = buildMeta(result.provider, cnpj, result.errors);
 
-	return [{
-		json: {
-			...normalized,
-			_meta: meta,
-			...(includeRaw && { _raw: result.data as IDataObject }),
-		} as IDataObject,
-		pairedItem: { item: itemIndex },
-	}];
+	const normalized = simplify
+		? { cnpj: full.cnpj, razao_social: full.razao_social, nome_fantasia: full.nome_fantasia, situacao: full.situacao, data_abertura: full.data_abertura, porte: full.porte }
+		: full;
+
+	return buildResultItem(normalized as unknown as Record<string, unknown>, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
 }
 
 /**

@@ -1,6 +1,15 @@
 import type { IFipeBrand, IFipeModel, IFipeYear, IFipePrice } from '../../types';
 import { safeStr } from '../../shared/utils';
 
+/** Normalizes an array of {codigo, nome} items into {code, name} objects (shared by brands and years). */
+function normalizeCodeNameList(data: unknown): Array<{ code: string; name: string }> {
+	if (!Array.isArray(data)) return [];
+	return (data as unknown[]).filter((item) => item != null && typeof item === 'object').map((item) => ({
+		code: safeStr((item as Record<string, unknown>).codigo),
+		name: safeStr((item as Record<string, unknown>).nome),
+	}));
+}
+
 /**
  * Normalizes a parallelum brands array.
  *
@@ -8,11 +17,7 @@ import { safeStr } from '../../shared/utils';
  * @returns Array of normalized brand objects.
  */
 export function normalizeBrands(data: unknown): IFipeBrand[] {
-	if (!Array.isArray(data)) return [];
-	return (data as unknown[]).filter((item) => item != null && typeof item === 'object').map((item) => ({
-		code: safeStr((item as Record<string, unknown>).codigo),
-		name: safeStr((item as Record<string, unknown>).nome),
-	}));
+	return normalizeCodeNameList(data);
 }
 
 /**
@@ -42,11 +47,7 @@ export function normalizeModels(data: unknown): IFipeModel[] {
  * @returns Array of normalized year objects.
  */
 export function normalizeYears(data: unknown): IFipeYear[] {
-	if (!Array.isArray(data)) return [];
-	return (data as unknown[]).filter((item) => item != null && typeof item === 'object').map((item) => ({
-		code: safeStr((item as Record<string, unknown>).codigo),
-		name: safeStr((item as Record<string, unknown>).nome),
-	}));
+	return normalizeCodeNameList(data);
 }
 
 /**

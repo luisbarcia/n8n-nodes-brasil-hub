@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-03-16
+
+### Added
+- **4 new CNPJ providers** — total 7 (most of any community node):
+  BrasilAPI → CNPJ.ws → ReceitaWS → MinhaReceita → OpenCNPJ.org → OpenCNPJ.com → CNPJA
+  - MinhaReceita: flat snake_case, regime_tributario field
+  - OpenCNPJ.org: structured telefones array, capital_social as string
+  - OpenCNPJ.com: wrapped response, camelCase
+  - CNPJA: deeply nested, updated timestamp, suframa
+- **ApiCEP provider** — total 4 CEP providers:
+  BrasilAPI → ViaCEP → OpenCEP → ApiCEP
+  - English field names, hyphenated CEP format, ok-based error detection
+- **CNPJ Simplify parameter** — returns only top-level fields (cnpj, razao_social, nome_fantasia, situacao, data_abertura, porte) when enabled (default: true)
+- **HTTP status codes in error messages** — fallback errors now show `[404]`, `[500]` etc. when available
+- `buildResultItem` and `buildResultItems` shared helpers in utils.ts
+- 21 new provider tests, 709 total, 99%+ branch coverage
+
+### Changed
+- DRY refactor: all 10 execute handlers use shared `buildResultItem`/`buildResultItems`
+- Deduplicated `normalizeBrands`/`normalizeYears` via shared `normalizeCodeNameList` (SonarCloud S4144)
+- Node description updated to reflect 7 CNPJ + 4 CEP providers
+
 ## [0.6.0] - 2026-03-16
 
 ### Added
@@ -250,7 +272,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.3...v0.5.0
