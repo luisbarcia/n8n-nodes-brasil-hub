@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-03-16
+
+### Fixed
+- **FIPE normalizer crash**: `normalizeBrands`, `normalizeModels`, `normalizeYears` crashed with TypeError when API returned null/undefined items in arrays — now filtered out safely
+- **FIPE path traversal**: User-supplied `brandCode`, `modelCode`, `yearCode` were interpolated into URLs without validation — now validated with regex (`/^\d{1,6}$/`, `/^\d{1,5}-\d{1,2}$/`)
+- **FIPE SSRF via vehicleType**: `vehicleType` was not validated server-side — now checked against allowlist (carros, motos, caminhoes)
+- **FIPE URL encoding**: All user inputs now `encodeURIComponent()`-encoded before URL interpolation
+- **referenceTable float injection**: Applied `Math.floor()` to prevent decimal values in query string
+- Indentation of FIPE resource option in router
+
+### Added
+- 121 FIPE adversarial attack tests (normalizer + execute) via Testing Arsenal
+- Router completeness test: verifies every UI resource/operation has a handler
+- `buildMeta` unit tests: ISO 8601 timestamp validation, strategy logic, errors key presence
+- Testing Arsenal as mandatory Fase 3 in pre-release workflow (6 phases total)
+- 574 total tests, 99.5%+ branch coverage
+
+### Security
+- Input validation for all FIPE parameters prevents path traversal and SSRF
+- `encodeURIComponent()` applied as defense-in-depth on all URL path segments
+
+### Deprecated
+- v0.5.0 contains normalizer crash bugs and security vulnerabilities fixed in this release
+
 ## [0.5.0] - 2026-03-16
 
 ### Added
@@ -207,7 +231,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.3...v0.5.0
 [0.4.3]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.1...v0.4.2
