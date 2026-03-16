@@ -12,9 +12,10 @@ import { normalizeFeriados } from './feriados.normalize';
  * @returns Ordered list of providers (BrasilAPI → Nager.Date).
  */
 function buildProviders(year: number): IProvider[] {
+	const safeYear = encodeURIComponent(String(year));
 	return [
-		{ name: 'brasilapi', url: `https://brasilapi.com.br/api/feriados/v1/${year}` },
-		{ name: 'nagerdate', url: `https://date.nager.at/api/v3/PublicHolidays/${year}/BR` },
+		{ name: 'brasilapi', url: `https://brasilapi.com.br/api/feriados/v1/${safeYear}` },
+		{ name: 'nagerdate', url: `https://date.nager.at/api/v3/PublicHolidays/${safeYear}/BR` },
 	];
 }
 

@@ -13,7 +13,7 @@ function normalizeBrasilApi(item: Record<string, unknown>): IFeriado {
 /** Normalizes a single Nager.Date feriado entry, preferring localName over name. */
 function normalizeNager(item: Record<string, unknown>): IFeriado {
 	const types = Array.isArray(item.types)
-		? (item.types as string[]).join(', ')
+		? (item.types as unknown[]).map(safeStr).filter(Boolean).join(', ')
 		: '';
 	return {
 		date: safeStr(item.date),
