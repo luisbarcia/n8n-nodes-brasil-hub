@@ -17,6 +17,10 @@
 
 ---
 
+> **Development Status:** This package is in active development (v0.x). The API is stable but may receive breaking changes in minor versions. Please pin your version in `package.json`.
+
+---
+
 ## Why Brasil Hub?
 
 Most Brazilian public data APIs are free but unreliable. A single provider going down breaks your entire workflow. Brasil Hub solves this:
