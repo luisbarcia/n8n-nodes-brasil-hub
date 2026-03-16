@@ -111,7 +111,7 @@ export class BrasilHub implements INodeType {
 						? error
 						: new NodeOperationError(this.getNode(), error as Error, { itemIndex: i });
 					returnData.push({
-						json: { error: (error as Error).message },
+						json: { error: error instanceof Error ? error.message : String(error) },
 						error: nodeError,
 						pairedItem: { item: i },
 					});

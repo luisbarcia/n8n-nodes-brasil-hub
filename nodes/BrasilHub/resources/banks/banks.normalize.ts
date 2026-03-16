@@ -39,7 +39,7 @@ const normalizers: Record<string, (data: Record<string, unknown>) => IBank> = {
  */
 export function normalizeBank(data: unknown, provider: string, bankCode?: number): IBank {
 	if (provider === 'bancosbrasileiros') {
-		const banks = data as Array<Record<string, unknown>>;
+		const banks = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
 		const bank = banks.find((b) => Number.parseInt(safeStr(b.COMPE), 10) === bankCode);
 		if (!bank) {
 			throw new Error(`Bank code ${bankCode} not found`);
@@ -51,7 +51,7 @@ export function normalizeBank(data: unknown, provider: string, bankCode?: number
 	if (!normalizer) {
 		throw new Error(`Unknown bank provider: ${provider}`);
 	}
-	return normalizer(data as Record<string, unknown>);
+	return normalizer((data ?? {}) as Record<string, unknown>);
 }
 
 /**
@@ -66,6 +66,6 @@ export function normalizeBanks(data: unknown, provider: string): IBank[] {
 	if (!normalizer) {
 		throw new Error(`Unknown bank provider: ${provider}`);
 	}
-	const items = data as Array<Record<string, unknown>>;
+	const items = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
 	return items.map(normalizer);
 }
