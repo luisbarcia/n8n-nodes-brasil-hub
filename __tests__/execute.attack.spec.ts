@@ -946,12 +946,9 @@ describe('FIPE VECTOR 10: Empty string vs whitespace for code validation', () =>
 		await expect(fipeModels(ctx, 0)).rejects.toThrow('Brand code is required');
 	});
 
-	it('fipeModels does NOT throw when brandCode is whitespace " " (truthy)', async () => {
+	it('FIXED — fipeModels throws when brandCode is whitespace (regex validation rejects non-digits)', async () => {
 		const ctx = createFipeContext({ brandCode: ' ' });
-		// Whitespace is truthy — passes !brandCode check but is likely invalid
-		// OBSERVATION: No trim-then-validate — whitespace passes validation
-		const results = await fipeModels(ctx, 0);
-		expect(results).toEqual([]);
+		await expect(fipeModels(ctx, 0)).rejects.toThrow('Invalid Brand code');
 	});
 
 	it('fipeYears throws when brandCode is empty', async () => {
@@ -979,11 +976,9 @@ describe('FIPE VECTOR 10: Empty string vs whitespace for code validation', () =>
 		await expect(fipePrice(ctx, 0)).rejects.toThrow('Year code is required');
 	});
 
-	it('fipePrice does NOT throw when yearCode is whitespace " " (truthy)', async () => {
+	it('FIXED — fipePrice throws when yearCode is whitespace (regex validation rejects non-matching)', async () => {
 		const ctx = createFipeContext({ yearCode: ' ' });
-		const results = await fipePrice(ctx, 0);
-		expect(results).toHaveLength(1);
-		expect(results[0].json).toHaveProperty('vehicleType', 0);
+		await expect(fipePrice(ctx, 0)).rejects.toThrow('Invalid Year code');
 	});
 
 	it('fipeModels does NOT throw when brandCode is "0" (truthy)', async () => {
@@ -1031,7 +1026,8 @@ describe('FIPE VECTOR 11: referenceTable edge cases', () => {
 		const ctx = createFipeContext({ referenceTable: 0.5 });
 		await fipeBrands(ctx, 0);
 		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
-		expect(callUrl).toContain('tabela_referencia=0.5');
+		// FIXED: Math.floor(0.5) = 0, so no query param appended
+		expect(callUrl).not.toContain('tabela_referencia');
 	});
 
 	it('referenceTable = 301 → query param appended to all 4 operations', async () => {
@@ -1349,27 +1345,19 @@ describe('FIPE VECTOR 14: includeRaw alignment', () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe('FIPE VECTOR 15: URL construction attack vectors', () => {
-	it('NOTED — brandCode with path traversal "../" is passed to URL as-is', async () => {
+	it('FIXED — brandCode with path traversal "../" is rejected by regex validation', async () => {
 		const ctx = createFipeContext({ brandCode: '../../../etc/passwd' });
-		await fipeModels(ctx, 0);
-		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
-		// OBSERVATION: No URL sanitization — path traversal is passed through
-		// The API server should reject this, not the client node
-		expect(callUrl).toContain('../../../etc/passwd');
+		await expect(fipeModels(ctx, 0)).rejects.toThrow('Invalid Brand code');
 	});
 
-	it('NOTED — vehicleType with query injection is passed to URL as-is', async () => {
+	it('FIXED — vehicleType with query injection is rejected by allowlist', async () => {
 		const ctx = createFipeContext({ vehicleType: 'carros?injected=true&' });
-		await fipeBrands(ctx, 0);
-		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
-		expect(callUrl).toContain('carros?injected=true&');
+		await expect(fipeBrands(ctx, 0)).rejects.toThrow('Invalid vehicle type');
 	});
 
-	it('NOTED — yearCode with URL encoding bypasses', async () => {
+	it('FIXED — yearCode with URL encoding bypasses is rejected by regex', async () => {
 		const ctx = createFipeContext({ yearCode: '2024-1%00.html' });
-		await fipePrice(ctx, 0);
-		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
-		expect(callUrl).toContain('2024-1%00.html');
+		await expect(fipePrice(ctx, 0)).rejects.toThrow('Invalid Year code');
 	});
 
 	it('PASS — httpRequest is called with correct headers', async () => {
