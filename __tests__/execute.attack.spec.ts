@@ -22,6 +22,7 @@ import { cnpjQuery } from '../nodes/BrasilHub/resources/cnpj/cnpj.execute';
 import { banksList } from '../nodes/BrasilHub/resources/banks/banks.execute';
 import { dddQuery } from '../nodes/BrasilHub/resources/ddd/ddd.execute';
 import { fipeBrands, fipeModels, fipeYears, fipePrice } from '../nodes/BrasilHub/resources/fipe/fipe.execute';
+import { feriadosQuery } from '../nodes/BrasilHub/resources/feriados/feriados.execute';
 import { BrasilHub } from '../nodes/BrasilHub/BrasilHub.node';
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import type { IProvider } from '../nodes/BrasilHub/types';
@@ -1410,5 +1411,451 @@ describe('FIPE VECTOR 16: API returns error object instead of data', () => {
 		const ctx = createFipeContext({}, '<html><body>503 Service Unavailable</body></html>');
 		const results = await fipeBrands(ctx, 0);
 		expect(results).toEqual([]);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// FERIADOS EXECUTE ATTACK TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─── Feriados Helpers ────────────────────────────────────────────────
+
+function createFeriadosContext(
+	overrides: Record<string, unknown> = {},
+	httpResponse: unknown = [],
+) {
+	const params: Record<string, unknown> = {
+		year: 2026,
+		includeRaw: false,
+		...overrides,
+	};
+	return {
+		getNodeParameter: jest.fn((name: string, _index: number, fallback?: unknown) =>
+			params[name] ?? fallback,
+		),
+		getNode: jest.fn(() => ({ name: 'Brasil Hub' })),
+		helpers: {
+			httpRequest: jest.fn().mockResolvedValue(httpResponse),
+		},
+	} as unknown as Parameters<typeof feriadosQuery>[0];
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// FERIADOS VECTOR 17: Year validation (NaN, Infinity, -1, 0, 1899, 2200, 2026.5, "abc")
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('FERIADOS VECTOR 17: Year validation', () => {
+	it('NaN → throws NodeOperationError', async () => {
+		const ctx = createFeriadosContext({ year: NaN });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+
+	it('Infinity → throws NodeOperationError', async () => {
+		const ctx = createFeriadosContext({ year: Infinity });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+
+	it('-Infinity → throws NodeOperationError', async () => {
+		const ctx = createFeriadosContext({ year: -Infinity });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+
+	it('-1 → throws NodeOperationError (below 1900)', async () => {
+		const ctx = createFeriadosContext({ year: -1 });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+
+	it('0 → throws NodeOperationError (below 1900)', async () => {
+		const ctx = createFeriadosContext({ year: 0 });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+
+	it('1899 → throws NodeOperationError (just below range)', async () => {
+		const ctx = createFeriadosContext({ year: 1899 });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+
+	it('2200 → throws NodeOperationError (just above range)', async () => {
+		const ctx = createFeriadosContext({ year: 2200 });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+
+	it('2026.5 → throws NodeOperationError (not an integer)', async () => {
+		const ctx = createFeriadosContext({ year: 2026.5 });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+
+	it('"abc" → throws NodeOperationError (NaN after cast)', async () => {
+		const ctx = createFeriadosContext({ year: 'abc' });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+
+	it('1900 → passes validation (boundary: lower limit)', async () => {
+		const ctx = createFeriadosContext({ year: 1900 }, []);
+		const results = await feriadosQuery(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('2199 → passes validation (boundary: upper limit)', async () => {
+		const ctx = createFeriadosContext({ year: 2199 }, []);
+		const results = await feriadosQuery(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('null → throws NodeOperationError', async () => {
+		const ctx = createFeriadosContext({ year: null });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+
+	it('undefined → throws NodeOperationError', async () => {
+		const ctx = createFeriadosContext({ year: undefined });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+
+	it('Number.MAX_SAFE_INTEGER → throws NodeOperationError (above 2199)', async () => {
+		const ctx = createFeriadosContext({ year: Number.MAX_SAFE_INTEGER });
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('Invalid year');
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// FERIADOS VECTOR 18: HTTP errors for both operations
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('FERIADOS VECTOR 18: HTTP errors', () => {
+	describe('timeout errors', () => {
+		it('feriadosQuery — all providers timeout → throws combined error', async () => {
+			const ctx = createFeriadosContext({});
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(new Error('ETIMEDOUT'));
+			await expect(feriadosQuery(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+	});
+
+	describe('404 Not Found', () => {
+		it('feriadosQuery — all providers return 404 → throws combined error', async () => {
+			const ctx = createFeriadosContext({});
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(new Error('404 Not Found'));
+			await expect(feriadosQuery(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+	});
+
+	describe('500 Internal Server Error', () => {
+		it('feriadosQuery — all providers return 500 → throws combined error', async () => {
+			const ctx = createFeriadosContext({});
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(
+				new Error('Request failed with status code 500'),
+			);
+			await expect(feriadosQuery(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+	});
+
+	describe('non-Error throws', () => {
+		it('feriadosQuery — httpRequest throws string → fallback handles it', async () => {
+			const ctx = createFeriadosContext({});
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue('rate limited');
+			await expect(feriadosQuery(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+
+		it('feriadosQuery — httpRequest throws null → fallback handles it', async () => {
+			const ctx = createFeriadosContext({});
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(null);
+			await expect(feriadosQuery(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// FERIADOS VECTOR 19: End-to-end via BrasilHub.execute (continueOnFail)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('FERIADOS VECTOR 19: End-to-end via BrasilHub.execute (continueOnFail)', () => {
+	const node = new BrasilHub();
+
+	it('feriados/query — continueOnFail catches HTTP errors', async () => {
+		const ctx = createExecuteContext({
+			resource: 'feriados',
+			operation: 'query',
+			continueOnFail: true,
+			httpError: new Error('Service unavailable'),
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'feriados',
+				operation: 'query',
+				year: 2026,
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('error');
+		expect(typeof result.json.error).toBe('string');
+		expect(result.pairedItem).toEqual({ item: 0 });
+	});
+
+	it('feriados/query — continueOnFail catches invalid year', async () => {
+		const ctx = createExecuteContext({
+			resource: 'feriados',
+			operation: 'query',
+			continueOnFail: true,
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'feriados',
+				operation: 'query',
+				year: NaN,
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('error');
+		expect(result.json.error).toContain('Invalid year');
+	});
+
+	it('feriados/query — without continueOnFail throws on HTTP error', async () => {
+		const ctx = createExecuteContext({
+			resource: 'feriados',
+			operation: 'query',
+			continueOnFail: false,
+			httpError: new Error('Service down'),
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'feriados',
+				operation: 'query',
+				year: 2026,
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		await expect(node.execute.call(ctx)).rejects.toThrow();
+	});
+
+	it('feriados/query — multiple items with failure → all get errors', async () => {
+		const ctx = createExecuteContext({
+			resource: 'feriados',
+			operation: 'query',
+			continueOnFail: true,
+			items: [{ json: {} }, { json: {} }, { json: {} }],
+			httpError: new Error('Connection refused'),
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'feriados',
+				operation: 'query',
+				year: 2026,
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [results] = await node.execute.call(ctx);
+		expect(results).toHaveLength(3);
+		for (let i = 0; i < results.length; i++) {
+			expect(results[i].json).toHaveProperty('error');
+			expect(results[i].json.error).toContain('No provider could fulfill the request');
+			expect(results[i].pairedItem).toEqual({ item: i });
+		}
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// FERIADOS VECTOR 20: Fallback (first provider fails, second succeeds)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('FERIADOS VECTOR 20: Fallback behavior', () => {
+	it('brasilapi fails, nagerdate succeeds → returns nagerdate data with fallback strategy', async () => {
+		let callIndex = 0;
+		const nagerData = [
+			{ date: '2026-01-01', localName: 'Confraternização Universal', name: "New Year's Day", types: ['Public'] },
+			{ date: '2026-04-21', localName: 'Tiradentes', name: 'Tiradentes', types: ['Public'] },
+		];
+		const ctx = createFeriadosContext({});
+		(ctx.helpers.httpRequest as jest.Mock).mockImplementation(async () => {
+			callIndex++;
+			if (callIndex === 1) throw new Error('brasilapi down');
+			return nagerData;
+		});
+
+		const results = await feriadosQuery(ctx, 0);
+		expect(results).toHaveLength(2);
+		expect(results[0].json).toHaveProperty('date', '2026-01-01');
+		expect(results[0].json).toHaveProperty('name', 'Confraternização Universal');
+		expect(results[0].json).toHaveProperty('type', 'Public');
+		expect((results[0].json._meta as Record<string, unknown>).strategy).toBe('fallback');
+		expect((results[0].json._meta as Record<string, unknown>).provider).toBe('nagerdate');
+	});
+
+	it('brasilapi succeeds → returns brasilapi data with direct strategy', async () => {
+		const brasilData = [
+			{ date: '2026-01-01', name: 'Confraternização mundial', type: 'national' },
+		];
+		const ctx = createFeriadosContext({}, brasilData);
+
+		const results = await feriadosQuery(ctx, 0);
+		expect(results).toHaveLength(1);
+		expect(results[0].json).toHaveProperty('name', 'Confraternização mundial');
+		expect(results[0].json).toHaveProperty('type', 'national');
+		expect((results[0].json._meta as Record<string, unknown>).strategy).toBe('direct');
+		expect((results[0].json._meta as Record<string, unknown>).provider).toBe('brasilapi');
+	});
+
+	it('both providers fail → throws combined error with both provider names', async () => {
+		const ctx = createFeriadosContext({});
+		let callIndex = 0;
+		(ctx.helpers.httpRequest as jest.Mock).mockImplementation(async () => {
+			callIndex++;
+			if (callIndex === 1) throw new Error('brasilapi timeout');
+			throw new Error('nagerdate 500');
+		});
+
+		await expect(feriadosQuery(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		try {
+			await feriadosQuery(ctx, 0);
+		} catch (e) {
+			expect((e as Error).message).toContain('brasilapi');
+			expect((e as Error).message).toContain('nagerdate');
+		}
+	});
+
+	it('fallback: httpRequest called exactly 2 times (brasilapi + nagerdate)', async () => {
+		const ctx = createFeriadosContext({});
+		let callIndex = 0;
+		(ctx.helpers.httpRequest as jest.Mock).mockImplementation(async () => {
+			callIndex++;
+			if (callIndex === 1) throw new Error('brasilapi down');
+			return [];
+		});
+
+		await feriadosQuery(ctx, 0);
+		// First call to brasilapi, second to nagerdate
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledTimes(2);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// FERIADOS VECTOR 21: Empty API response ([]) → returns empty array
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('FERIADOS VECTOR 21: Empty API response', () => {
+	it('API returns [] → feriadosQuery returns empty array', async () => {
+		const ctx = createFeriadosContext({}, []);
+		const results = await feriadosQuery(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('API returns [] → no error thrown, no items produced', async () => {
+		const ctx = createFeriadosContext({ year: 1900 }, []);
+		const results = await feriadosQuery(ctx, 0);
+		expect(results).toHaveLength(0);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// FERIADOS VECTOR 22: API returns garbage (non-array) data
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('FERIADOS VECTOR 22: API returns garbage for feriadosQuery', () => {
+	it.each([
+		['null', null],
+		['undefined', undefined],
+		['empty string', ''],
+		['number 42', 42],
+		['boolean true', true],
+		['object {}', {}],
+	])('API returns %s → feriadosQuery returns empty array (normalizeFeriados guard)', async (_label, value) => {
+		const ctx = createFeriadosContext({}, value);
+		const results = await feriadosQuery(ctx, 0);
+		expect(results).toEqual([]);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// FERIADOS VECTOR 23: includeRaw alignment
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('FERIADOS VECTOR 23: includeRaw alignment', () => {
+	it('includeRaw=true → _raw[index] aligns with normalized[index]', async () => {
+		const rawData = [
+			{ date: '2026-01-01', name: 'Confraternização mundial', type: 'national' },
+			{ date: '2026-04-21', name: 'Tiradentes', type: 'national' },
+			{ date: '2026-12-25', name: 'Natal', type: 'national' },
+		];
+		const ctx = createFeriadosContext({ includeRaw: true }, rawData);
+		const results = await feriadosQuery(ctx, 0);
+
+		expect(results).toHaveLength(3);
+		for (let i = 0; i < results.length; i++) {
+			expect(results[i].json._raw).toBeDefined();
+			expect((results[i].json._raw as Record<string, unknown>).name).toBe(rawData[i].name);
+		}
+	});
+
+	it('includeRaw=false → no _raw field', async () => {
+		const rawData = [{ date: '2026-01-01', name: 'Ano Novo', type: 'national' }];
+		const ctx = createFeriadosContext({ includeRaw: false }, rawData);
+		const results = await feriadosQuery(ctx, 0);
+
+		expect(results).toHaveLength(1);
+		expect(results[0].json._raw).toBeUndefined();
+	});
+
+	it('includeRaw=true with non-array response → returns empty, no crash', async () => {
+		const ctx = createFeriadosContext({ includeRaw: true }, { unexpected: 'object' });
+		const results = await feriadosQuery(ctx, 0);
+		expect(results).toEqual([]);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// FERIADOS VECTOR 24: URL construction / year encoding
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('FERIADOS VECTOR 24: URL construction', () => {
+	it('year is properly encoded in provider URLs', async () => {
+		const ctx = createFeriadosContext({ year: 2026 }, []);
+		await feriadosQuery(ctx, 0);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toContain('2026');
+		expect(callUrl).toMatch(/brasilapi\.com\.br\/api\/feriados\/v1\/2026/);
+	});
+
+	it('httpRequest is called with correct headers and timeout', async () => {
+		const ctx = createFeriadosContext({}, []);
+		await feriadosQuery(ctx, 0);
+		const callArgs = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0];
+		expect(callArgs.headers).toHaveProperty('User-Agent', 'n8n-brasil-hub-node/1.0');
+		expect(callArgs.headers).toHaveProperty('Accept', 'application/json');
+		expect(callArgs.method).toBe('GET');
+		expect(callArgs.timeout).toBe(10000);
+	});
+
+	it('pairedItem is correctly set for each result', async () => {
+		const rawData = [
+			{ date: '2026-01-01', name: 'Ano Novo', type: 'national' },
+			{ date: '2026-04-21', name: 'Tiradentes', type: 'national' },
+		];
+		const ctx = createFeriadosContext({}, rawData);
+		const results = await feriadosQuery(ctx, 0);
+
+		expect(results).toHaveLength(2);
+		expect(results[0].pairedItem).toEqual({ item: 0 });
+		expect(results[1].pairedItem).toEqual({ item: 0 });
+	});
+
+	it('pairedItem uses correct itemIndex for batch processing', async () => {
+		const rawData = [{ date: '2026-01-01', name: 'Ano Novo', type: 'national' }];
+		const ctx = createFeriadosContext({}, rawData);
+		const results = await feriadosQuery(ctx, 5); // itemIndex = 5
+
+		expect(results[0].pairedItem).toEqual({ item: 5 });
 	});
 });

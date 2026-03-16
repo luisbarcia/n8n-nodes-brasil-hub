@@ -15,6 +15,7 @@ function createExecuteContext(overrides: {
 	modelCode?: string;
 	yearCode?: string;
 	referenceTable?: number;
+	year?: number;
 	includeRaw?: boolean;
 	items?: INodeExecutionData[];
 	continueOnFail?: boolean;
@@ -34,6 +35,7 @@ function createExecuteContext(overrides: {
 		modelCode: overrides.modelCode ?? '4828',
 		yearCode: overrides.yearCode ?? '2024-1',
 		referenceTable: overrides.referenceTable ?? 0,
+		year: overrides.year ?? 2026,
 		includeRaw: overrides.includeRaw ?? false,
 	};
 
@@ -126,6 +128,22 @@ describe('BrasilHub.execute()', () => {
 		expect(results).toHaveLength(2);
 		expect(results[0].json).toHaveProperty('code', 1);
 		expect(results[1].json).toHaveProperty('code', 70);
+	});
+
+	it('should dispatch feriados/query and return multiple items', async () => {
+		const ctx = createExecuteContext({
+			resource: 'feriados',
+			operation: 'query',
+			httpResponse: [
+				{ date: '2026-01-01', name: 'Confraternização mundial', type: 'national' },
+				{ date: '2026-04-21', name: 'Tiradentes', type: 'national' },
+			],
+		});
+		const [results] = await node.execute.call(ctx);
+		expect(results).toHaveLength(2);
+		expect(results[0].json).toHaveProperty('date', '2026-01-01');
+		expect(results[0].json).toHaveProperty('name', 'Confraternização mundial');
+		expect(results[0].json).toHaveProperty('_meta');
 	});
 
 	it('should dispatch ddd/query and return state with cities', async () => {

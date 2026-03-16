@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-03-16
+
+### Added
+- **Feriados resource** with Query operation and multi-provider fallback (BrasilAPI → Nager.Date)
+  - Returns one n8n item per holiday for a given year
+  - Nager.Date normalizer prefers `localName` (pt-BR) over `name` (English)
+  - Year validation: integer in range 1900–2199
+- IFeriado interface in types.ts
+- 121 adversarial attack tests for Feriados (normalizer + execute)
+- 688 total tests, 99.56% branch coverage
+
+### Security
+- `encodeURIComponent` on year in provider URLs (defense-in-depth)
+- `safeStr` sanitization on Nager.Date `types` array items
+
+### Changed
+- Node description updated to include Feriados
+- Resource options now include "Feriado" (alphabetical: Bank, CEP, CNPJ, CPF, DDD, Feriado, FIPE)
+
 ## [0.5.1] - 2026-03-16
 
 ### Fixed
@@ -231,7 +250,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.3...v0.5.0
 [0.4.3]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.4.2...v0.4.3
