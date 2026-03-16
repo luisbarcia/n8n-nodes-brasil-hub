@@ -36,6 +36,7 @@ const normalizers: Record<string, (data: Record<string, unknown>) => IBank> = {
  * @param provider - Provider name.
  * @param bankCode - Bank code to filter (required for BancosBrasileiros).
  * @returns Normalized bank result.
+ * @throws {Error} If provider is unknown or bank code is not found in BancosBrasileiros data.
  */
 export function normalizeBank(data: unknown, provider: string, bankCode?: number): IBank {
 	if (provider === 'bancosbrasileiros') {
@@ -60,6 +61,7 @@ export function normalizeBank(data: unknown, provider: string, bankCode?: number
  * @param data - Raw provider response (array of banks).
  * @param provider - Provider name.
  * @returns Array of normalized bank results.
+ * @throws {Error} If provider is unknown.
  */
 export function normalizeBanks(data: unknown, provider: string): IBank[] {
 	const normalizer = normalizers[provider];

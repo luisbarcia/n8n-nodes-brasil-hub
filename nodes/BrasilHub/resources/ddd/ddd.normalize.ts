@@ -66,6 +66,7 @@ function normalizeMunicipiosDdd(data: Array<Record<string, unknown>>, dddCode: n
  * @param provider - Provider name.
  * @param dddCode - DDD code to filter (required for municipios provider).
  * @returns Normalized DDD result.
+ * @throws {Error} If provider is unknown or DDD code is not found in municipios data.
  */
 export function normalizeDdd(data: unknown, provider: string, dddCode?: number): IDdd {
 	if (provider === 'brasilapi') {
