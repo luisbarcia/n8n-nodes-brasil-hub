@@ -14,6 +14,7 @@ import { normalizeCep } from '../nodes/BrasilHub/resources/cep/cep.normalize';
 import { normalizeBank, normalizeBanks } from '../nodes/BrasilHub/resources/banks/banks.normalize';
 import { normalizeDdd } from '../nodes/BrasilHub/resources/ddd/ddd.normalize';
 import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice } from '../nodes/BrasilHub/resources/fipe/fipe.normalize';
+import { normalizeFeriados } from '../nodes/BrasilHub/resources/feriados/feriados.normalize';
 import { safeStr } from '../nodes/BrasilHub/shared/utils';
 
 // ─────────────────────────────────────────────────────────────
@@ -1137,5 +1138,312 @@ describe('FIPE VECTOR 10: normalizePrice with empty/missing required fields', ()
 		expect(result.brand).toBe('Honda');
 		expect((result as unknown as Record<string, unknown>).UnknownField).toBeUndefined();
 		expect((result as unknown as Record<string, unknown>).AnotherField).toBeUndefined();
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// FERIADOS NORMALIZER ATTACK TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────
+// FERIADOS VECTOR 1: Malformed API responses (null, undefined, "", 42, {}, true)
+// ─────────────────────────────────────────────────────────────
+describe('FERIADOS VECTOR 1: Malformed API responses', () => {
+	describe('normalizeFeriados — non-array data returns empty array for both providers', () => {
+		for (const provider of ['brasilapi', 'nagerdate'] as const) {
+			it.each([
+				['null', null],
+				['undefined', undefined],
+				['""', ''],
+				['42', 42],
+				['{}', {}],
+				['true', true],
+			])(`PASS — normalizeFeriados(%s, "${provider}") → []`, (_label, value) => {
+				const result = normalizeFeriados(value, provider);
+				expect(result).toEqual([]);
+			});
+		}
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FERIADOS VECTOR 2: Null/undefined items in array
+// ─────────────────────────────────────────────────────────────
+describe('FERIADOS VECTOR 2: Null/undefined items in array', () => {
+	describe('normalizeFeriados — null/undefined entries are filtered out', () => {
+		for (const provider of ['brasilapi', 'nagerdate'] as const) {
+			it(`PASS — [null, undefined, null] (${provider}) → []`, () => {
+				const result = normalizeFeriados([null, undefined, null], provider);
+				expect(result).toEqual([]);
+			});
+
+			it(`PASS — [null, {date:"2026-01-01",name:"Ano Novo"}, undefined] (${provider}) → 1 item`, () => {
+				const validItem = provider === 'brasilapi'
+					? { date: '2026-01-01', name: 'Ano Novo', type: 'national' }
+					: { date: '2026-01-01', localName: 'Ano Novo', types: ['Public'] };
+				const result = normalizeFeriados([null, validItem, undefined], provider);
+				expect(result).toHaveLength(1);
+				expect(result[0].date).toBe('2026-01-01');
+				expect(result[0].name).toBe('Ano Novo');
+			});
+		}
+	});
+
+	describe('normalizeFeriados — non-object primitives in array are filtered out', () => {
+		for (const provider of ['brasilapi', 'nagerdate'] as const) {
+			it(`PASS — [42, "string", true, false] (${provider}) → []`, () => {
+				const result = normalizeFeriados([42, 'string', true, false], provider);
+				expect(result).toEqual([]);
+			});
+		}
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FERIADOS VECTOR 3: XSS/SQLi payloads in name/date fields (passthrough expected)
+// ─────────────────────────────────────────────────────────────
+describe('FERIADOS VECTOR 3: XSS/SQLi payloads (NOTED — passthrough expected for backend)', () => {
+	const xssPayload = '<script>alert("xss")</script>';
+	const sqli = "'; DROP TABLE feriados--";
+
+	it('NOTED — brasilapi: XSS in name and date passes through', () => {
+		const data = [{ date: xssPayload, name: xssPayload, type: 'national' }];
+		const result = normalizeFeriados(data, 'brasilapi');
+		expect(result[0].date).toBe(xssPayload);
+		expect(result[0].name).toBe(xssPayload);
+		expect(result[0].type).toBe('national');
+	});
+
+	it('NOTED — brasilapi: SQLi in all fields passes through', () => {
+		const data = [{ date: sqli, name: sqli, type: sqli }];
+		const result = normalizeFeriados(data, 'brasilapi');
+		expect(result[0].date).toBe(sqli);
+		expect(result[0].name).toBe(sqli);
+		expect(result[0].type).toBe(sqli);
+	});
+
+	it('NOTED — nagerdate: XSS in localName and date passes through', () => {
+		const data = [{ date: xssPayload, localName: xssPayload, types: [xssPayload] }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].date).toBe(xssPayload);
+		expect(result[0].name).toBe(xssPayload);
+		expect(result[0].type).toBe(xssPayload);
+	});
+
+	it('NOTED — nagerdate: SQLi in name (fallback from localName) passes through', () => {
+		const data = [{ date: '2026-01-01', name: sqli, types: ['Public'] }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].name).toBe(sqli);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FERIADOS VECTOR 4: types array with non-string items (nagerdate)
+// ─────────────────────────────────────────────────────────────
+describe('FERIADOS VECTOR 4: types array with non-string items (nagerdate)', () => {
+	it('PASS — types with numbers → safeStr coerces to string', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test', types: [42, 99] }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].type).toBe('42, 99');
+	});
+
+	it('PASS — types with objects → safeStr returns "" (filtered by Boolean)', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test', types: [{}, { a: 1 }] }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		// safeStr({}) → '', Boolean('') → false → filtered out
+		expect(result[0].type).toBe('');
+	});
+
+	it('PASS — types with null → safeStr returns "" (filtered by Boolean)', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test', types: [null, null] }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].type).toBe('');
+	});
+
+	it('PASS — types with undefined → safeStr returns "" (filtered by Boolean)', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test', types: [undefined, undefined] }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].type).toBe('');
+	});
+
+	it('PASS — types with booleans → safeStr coerces to "true"/"false"', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test', types: [true, false] }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		// safeStr(true) → "true", safeStr(false) → "false", both truthy strings
+		expect(result[0].type).toBe('true, false');
+	});
+
+	it('PASS — types with mixed: [null, "Public", 42, {}, "Optional"] → "Public, 42, Optional"', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test', types: [null, 'Public', 42, {}, 'Optional'] }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].type).toBe('Public, 42, Optional');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FERIADOS VECTOR 5: Unknown provider throws
+// ─────────────────────────────────────────────────────────────
+describe('FERIADOS VECTOR 5: Unknown provider throws', () => {
+	it('PASS — normalizeFeriados with unknown provider', () => {
+		expect(() => normalizeFeriados([], 'unknown')).toThrow('Unknown feriados provider: unknown');
+	});
+
+	it('PASS — normalizeFeriados with empty string provider', () => {
+		expect(() => normalizeFeriados([], '')).toThrow('Unknown feriados provider: ');
+	});
+
+	it('PASS — normalizeFeriados with provider name containing special chars', () => {
+		expect(() => normalizeFeriados([], 'brasil-api')).toThrow('Unknown feriados provider: brasil-api');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FERIADOS VECTOR 6: Empty types array, missing types field (nagerdate)
+// ─────────────────────────────────────────────────────────────
+describe('FERIADOS VECTOR 6: Empty types array and missing types field (nagerdate)', () => {
+	it('PASS — empty types array → type is ""', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test', types: [] }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].type).toBe('');
+	});
+
+	it('PASS — types field missing entirely → type is ""', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test' }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		// Array.isArray(undefined) → false → '' fallback
+		expect(result[0].type).toBe('');
+	});
+
+	it('PASS — types as string instead of array → type is ""', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test', types: 'Public' }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		// Array.isArray("Public") → false → '' fallback
+		expect(result[0].type).toBe('');
+	});
+
+	it('PASS — types as number instead of array → type is ""', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test', types: 42 }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].type).toBe('');
+	});
+
+	it('PASS — types as null → type is ""', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test', types: null }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].type).toBe('');
+	});
+
+	it('PASS — types as object → type is ""', () => {
+		const data = [{ date: '2026-01-01', localName: 'Test', types: { Public: true } }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].type).toBe('');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FERIADOS VECTOR 7: nagerdate localName vs name fallback
+// ─────────────────────────────────────────────────────────────
+describe('FERIADOS VECTOR 7: nagerdate localName vs name fallback', () => {
+	it('PASS — localName present → uses localName', () => {
+		const data = [{ date: '2026-01-01', localName: 'Ano Novo', name: 'New Year' }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].name).toBe('Ano Novo');
+	});
+
+	it('PASS — localName missing, name present → falls back to name', () => {
+		const data = [{ date: '2026-01-01', name: 'New Year' }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].name).toBe('New Year');
+	});
+
+	it('PASS — both localName and name missing → empty string', () => {
+		const data = [{ date: '2026-01-01' }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0].name).toBe('');
+	});
+
+	it('PASS — localName is "" (empty), name present → falls back to name', () => {
+		const data = [{ date: '2026-01-01', localName: '', name: 'New Year' }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		// safeStr('') → '', '' || safeStr('New Year') → 'New Year'
+		expect(result[0].name).toBe('New Year');
+	});
+
+	it('PASS — localName is null → falls back to name', () => {
+		const data = [{ date: '2026-01-01', localName: null, name: 'New Year' }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		// safeStr(null) → '', '' || 'New Year' → 'New Year'
+		expect(result[0].name).toBe('New Year');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FERIADOS VECTOR 8: Empty objects and missing fields
+// ─────────────────────────────────────────────────────────────
+describe('FERIADOS VECTOR 8: Empty objects and missing fields', () => {
+	it('PASS — brasilapi: empty object → all fields are ""', () => {
+		const result = normalizeFeriados([{}], 'brasilapi');
+		expect(result[0]).toEqual({ date: '', name: '', type: '' });
+	});
+
+	it('PASS — nagerdate: empty object → all fields are ""', () => {
+		const result = normalizeFeriados([{}], 'nagerdate');
+		expect(result[0]).toEqual({ date: '', name: '', type: '' });
+	});
+
+	it('PASS — brasilapi: all fields null → all empty strings', () => {
+		const data = [{ date: null, name: null, type: null }];
+		const result = normalizeFeriados(data, 'brasilapi');
+		expect(result[0]).toEqual({ date: '', name: '', type: '' });
+	});
+
+	it('PASS — nagerdate: all fields null → all empty strings', () => {
+		const data = [{ date: null, localName: null, name: null, types: null }];
+		const result = normalizeFeriados(data, 'nagerdate');
+		expect(result[0]).toEqual({ date: '', name: '', type: '' });
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FERIADOS VECTOR 9: Extremely large payloads
+// ─────────────────────────────────────────────────────────────
+describe('FERIADOS VECTOR 9: Extremely large payloads', () => {
+	it('PASS — normalizeFeriados handles 100,000 entries (brasilapi)', () => {
+		const large = Array.from({ length: 100_000 }, (_, i) => ({
+			date: `2026-01-${String(i % 28 + 1).padStart(2, '0')}`,
+			name: `Feriado ${i}`,
+			type: 'national',
+		}));
+		const result = normalizeFeriados(large, 'brasilapi');
+		expect(result).toHaveLength(100_000);
+		expect(result[0].name).toBe('Feriado 0');
+		expect(result[99_999].name).toBe('Feriado 99999');
+	});
+
+	it('PASS — normalizeFeriados handles very long string values', () => {
+		const longStr = 'A'.repeat(1_000_000);
+		const data = [{ date: longStr, name: longStr, type: longStr }];
+		const result = normalizeFeriados(data, 'brasilapi');
+		expect(result[0].date).toHaveLength(1_000_000);
+		expect(result[0].name).toHaveLength(1_000_000);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FERIADOS VECTOR 10: Prototype pollution attempts
+// ─────────────────────────────────────────────────────────────
+describe('FERIADOS VECTOR 10: Prototype pollution attempts', () => {
+	it('PASS — normalizeFeriados with __proto__ field does not pollute Object prototype', () => {
+		const malicious = [{ date: '2026-01-01', name: 'Test', __proto__: { polluted: true } }];
+		normalizeFeriados(malicious, 'brasilapi');
+		expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+	});
+
+	it('PASS — normalizeFeriados with constructor.prototype in items', () => {
+		const malicious = [
+			{ date: '2026-01-01', name: 'Test', constructor: { prototype: { hacked: true } } },
+		];
+		normalizeFeriados(malicious, 'nagerdate');
+		expect(({} as Record<string, unknown>).hacked).toBeUndefined();
 	});
 });
