@@ -212,12 +212,14 @@ gh run list --workflow=release.yml --limit 1
 Executar **antes de cada release**, na ordem abaixo. Cada fase usa skills específicas.
 
 **REGRAS INVIOLÁVEIS:**
+- **PROIBIDO publicar (tag/release/npm publish) sem completar TODAS as 5 fases E o Testing Arsenal.** Ambos são gates bloqueantes. Sem exceções.
 - **Executar TODAS as 5 fases**, na ordem. Nenhuma fase pode ser pulada.
+- **Testing Arsenal (`/testing-arsenal`) é obrigatório** — rodar ANTES da Fase 4 (Release). Mínimo: test-master, test-skeptic, code-reviewer, security-reviewer. Corrigir todos os findings CRITICAL/HIGH antes de prosseguir.
 - **Cada fase é um gate bloqueante** — não prosseguir para a próxima se houver findings Critical/High não resolvidos.
 - **Audits (Fase 1) devem COMPLETAR antes de fazer merge/tag/release** — rodar em background é OK, mas esperar resultado antes de prosseguir.
 - **Fase 2 (test-master, simplify, code-documenter) é OBRIGATÓRIA** — não pular por parecer redundante.
 - **Paralelizar é permitido DENTRO de cada fase** (ex: 3 agents da Fase 2 em paralelo), mas não ENTRE fases.
-- **Lição aprendida:** v0.2.0–v0.4.0 foram publicadas pulando Fase 2 inteira — isso não pode se repetir.
+- **Lição aprendida:** v0.2.0–v0.4.0 pularam Fase 2; v0.5.0 publicou antes do Testing Arsenal — bugs e vulnerabilidades de segurança foram encontrados após publicação. Isso não pode se repetir.
 
 ### Fase 1: Compliance & Segurança (bloqueia release)
 
@@ -239,67 +241,85 @@ Executar **antes de cada release**, na ordem abaixo. Cada fase usa skills espec�
 
 **Gate:** Coverage ≥ 90%, zero findings HIGH do simplify sem justificativa.
 
-### Fase 3: Build & CI (bloqueia release)
+### Fase 3: Testing Arsenal (bloqueia release)
+
+Rodar `/testing-arsenal` e executar no mínimo os 4 skills obrigatórios. Corrigir todos os findings antes de prosseguir.
+
+| # | Skill | O que faz | Obrigatório |
+|---|-------|-----------|----|
+| 7 | `test-master` | Attack tests adversariais (type confusion, null injection, XSS, overflow, unicode) | **SIM** |
+| 8 | `test-skeptic` | Auditar se os testes provam algo (false confidence, tautology, mock fidelity) | **SIM** |
+| 9 | `code-reviewer` | Code review (correctness, compliance, consistency, DRY) | **SIM** |
+| 10 | `security-reviewer` | Audit de segurança (SSRF, path traversal, input validation, URL encoding) | **SIM** |
+
+**Paralelização:** Steps 7+8 em paralelo (independentes), depois 9+10 em paralelo.
+
+**Gate:** Zero findings CRITICAL/HIGH. Todos os bugs encontrados devem ter regression tests.
+
+### Fase 4: Build & CI (bloqueia release)
 
 ```bash
-# 7. Build limpo
+# 11. Build limpo
 npx n8n-node build
 
-# 8. Lint limpo
+# 12. Lint limpo
 npx n8n-node lint
 
-# 9. Testes passando
+# 13. Testes passando
 npx jest --coverage
 
-# 10. npm audit
+# 14. npm audit
 npm audit --audit-level=critical
 
-# 11. Push e verificar CI verde
+# 15. Push e verificar CI verde
 git push
 gh run list --limit 3
 ```
 
 **Gate:** Tudo verde, zero erros.
 
-### Fase 4: Release (executar)
+### Fase 5: Release (executar)
 
 | # | Skill | O que faz |
 |---|-------|-----------|
-| 12 | `git-workflow-manager` | Conventional commits, CHANGELOG.md, tag semver |
-| 13 | `project-release` | Versioning, tag, gh release create |
-| 14 | `verification-before-completion` | Verificação final pós-release: CI verde, npm publicado, scan passou |
+| 16 | `git-workflow-manager` | Conventional commits, CHANGELOG.md, tag semver |
+| 17 | `project-release` | Versioning, tag, gh release create |
+| 18 | `verification-before-completion` | Verificação final pós-release: CI verde, npm publicado, scan passou |
 
-### Fase 5: Pós-Release (verificar + comunicar)
+### Fase 6: Pós-Release (verificar + comunicar)
 
 ```bash
-# 15. CI do release workflow passou
+# 19. CI do release workflow passou
 gh run list --workflow=release.yml --limit 1
 
-# 16. Scan de community package passou (roda no release workflow)
+# 20. Scan de community package passou (roda no release workflow)
 # Se falhar: corrigir e re-release
 
-# 17. Pacote no npm
+# 21. Pacote no npm
 npm view n8n-nodes-brasil-hub version
 ```
 
-**18. GitHub Discussions (OBRIGATÓRIO):**
+**22. GitHub Discussions (OBRIGATÓRIO):**
 - Criar **Announcement** em Discussions com resumo do release (o que mudou, breaking changes, upgrade instructions)
 - Atualizar **Roadmap discussion** (#63) com status atual dos recursos planejados
 - Se houve deprecação de versões, mencionar no announcement
 
-**19. Deprecação de versões bugadas (se aplicável):**
+**23. Deprecação de versões bugadas (se aplicável):**
 - `npm deprecate "n8n-nodes-brasil-hub@<X.Y.Z" "mensagem"` para versões com bugs críticos
 - Usar granular access token com bypass 2FA
 
 ### Resumo Rápido (copiar e colar)
 
 ```
-PRE-RELEASE CHECKLIST:
+PRE-RELEASE CHECKLIST (6 fases, TODAS obrigatórias):
 □ Fase 1: /n8n-node-dev → /n8n-validation → /security-reviewer
 □ Fase 2: /test-master → /simplify → /code-documenter
-□ Fase 3: build → lint → test → audit → push → CI verde
-□ Fase 4: changelog → tag → release
-□ Fase 5: CI release verde → npm publicado → discussions → deprecate
+□ Fase 3: /testing-arsenal → test-master + test-skeptic + code-reviewer + security-reviewer → fix findings
+□ Fase 4: build → lint → test → audit → push → CI verde
+□ Fase 5: changelog → tag → release
+□ Fase 6: CI release verde → npm publicado → discussions → deprecate
+
+⛔ PROIBIDO publicar sem completar TODAS as 6 fases.
 ```
 
 ## Living Docs — Atualizar em Mudanças Estruturais
