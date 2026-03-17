@@ -37,6 +37,7 @@ export async function banksQuery(
 ): Promise<INodeExecutionData[]> {
 	const bankCodeInput = context.getNodeParameter('bankCode', itemIndex) as string;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
 	const bankCode = Number.parseInt(bankCodeInput, 10);
 
 	if (!Number.isInteger(bankCode) || bankCode <= 0) {
@@ -48,7 +49,7 @@ export async function banksQuery(
 	}
 
 	const providers = buildQueryProviders(bankCode);
-	const result = await queryWithFallback(context, providers);
+	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const normalized = normalizeBank(result.data, result.provider, bankCode);
 
@@ -72,8 +73,9 @@ export async function banksList(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
 
-	const result = await queryWithFallback(context, BANKS_LIST_PROVIDERS);
+	const result = await queryWithFallback(context, BANKS_LIST_PROVIDERS, timeoutMs);
 
 	const rawItems = result.data as Array<Record<string, unknown>>;
 	const banks = normalizeBanks(result.data, result.provider);

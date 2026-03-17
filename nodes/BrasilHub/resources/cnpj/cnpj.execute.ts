@@ -40,6 +40,7 @@ export async function cnpjQuery(
 	const cnpjInput = context.getNodeParameter('cnpj', itemIndex) as string;
 	const simplify = context.getNodeParameter('simplify', itemIndex, true) as boolean;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
 	const cnpj = sanitizeCnpj(cnpjInput);
 
 	if (cnpj.length !== 14) {
@@ -51,7 +52,7 @@ export async function cnpjQuery(
 	}
 
 	const providers = buildProviders(cnpj);
-	const result = await queryWithFallback(context, providers);
+	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const full = normalizeCnpj(result.data, result.provider);
 	const meta = buildMeta(result.provider, cnpj, result.errors);

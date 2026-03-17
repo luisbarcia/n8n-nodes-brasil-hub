@@ -39,6 +39,15 @@ describe('BrasilHub node', () => {
 		}
 	});
 
+	it('should have timeout property with correct defaults', () => {
+		const node = new BrasilHub();
+		const timeoutProp = node.description.properties.find((p) => p.name === 'timeout');
+		expect(timeoutProp).toBeDefined();
+		expect(timeoutProp!.type).toBe('number');
+		expect(timeoutProp!.default).toBe(10000);
+		expect(timeoutProp!.displayOptions).toBeUndefined();
+	});
+
 	it('should have a router handler for every resource/operation pair in the UI', async () => {
 		const node = new BrasilHub();
 		const resourceProp = node.description.properties.find((p) => p.name === 'resource');

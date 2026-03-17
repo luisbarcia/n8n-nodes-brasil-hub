@@ -45,12 +45,13 @@ function getCommonParams(context: IExecuteFunctions, itemIndex: number) {
 	const vehicleType = context.getNodeParameter('vehicleType', itemIndex) as string;
 	const referenceTable = context.getNodeParameter('referenceTable', itemIndex, 0) as number;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
 	validateVehicleType(context, vehicleType, itemIndex);
-	return { vehicleType, referenceTable, includeRaw };
+	return { vehicleType, referenceTable, includeRaw, timeoutMs };
 }
 
 /** Performs a single HTTP GET to parallelum. */
-async function fetchFipe(context: IExecuteFunctions, url: string): Promise<unknown> {
+async function fetchFipe(context: IExecuteFunctions, url: string, timeoutMs = 10000): Promise<unknown> {
 	return context.helpers.httpRequest({
 		method: 'GET',
 		url,
@@ -58,7 +59,7 @@ async function fetchFipe(context: IExecuteFunctions, url: string): Promise<unkno
 			Accept: 'application/json',
 			'User-Agent': 'n8n-brasil-hub-node/1.0',
 		},
-		timeout: 10000,
+		timeout: timeoutMs,
 	});
 }
 
@@ -73,10 +74,10 @@ export async function fipeBrands(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { vehicleType, referenceTable, includeRaw } = getCommonParams(context, itemIndex);
+	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getCommonParams(context, itemIndex);
 
 	const url = appendRefTable(`${BASE_URL}/${encodeURIComponent(vehicleType)}/marcas`, referenceTable);
-	const data = await fetchFipe(context, url);
+	const data = await fetchFipe(context, url, timeoutMs);
 
 	const brands = normalizeBrands(data);
 	const rawItems = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
@@ -97,7 +98,7 @@ export async function fipeModels(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { vehicleType, referenceTable, includeRaw } = getCommonParams(context, itemIndex);
+	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getCommonParams(context, itemIndex);
 	const brandCode = context.getNodeParameter('brandCode', itemIndex) as string;
 	validateCode(context, brandCode, 'Brand code', BRAND_MODEL_PATTERN, itemIndex);
 
@@ -105,7 +106,7 @@ export async function fipeModels(
 		`${BASE_URL}/${encodeURIComponent(vehicleType)}/marcas/${encodeURIComponent(brandCode)}/modelos`,
 		referenceTable,
 	);
-	const data = await fetchFipe(context, url);
+	const data = await fetchFipe(context, url, timeoutMs);
 
 	const models = normalizeModels(data);
 	const rawModelos = ((data as Record<string, unknown>)?.modelos ?? []) as Array<Record<string, unknown>>;
@@ -126,7 +127,7 @@ export async function fipeYears(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { vehicleType, referenceTable, includeRaw } = getCommonParams(context, itemIndex);
+	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getCommonParams(context, itemIndex);
 	const brandCode = context.getNodeParameter('brandCode', itemIndex) as string;
 	const modelCode = context.getNodeParameter('modelCode', itemIndex) as string;
 	validateCode(context, brandCode, 'Brand code', BRAND_MODEL_PATTERN, itemIndex);
@@ -136,7 +137,7 @@ export async function fipeYears(
 		`${BASE_URL}/${encodeURIComponent(vehicleType)}/marcas/${encodeURIComponent(brandCode)}/modelos/${encodeURIComponent(modelCode)}/anos`,
 		referenceTable,
 	);
-	const data = await fetchFipe(context, url);
+	const data = await fetchFipe(context, url, timeoutMs);
 
 	const years = normalizeYears(data);
 	const rawItems = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
@@ -157,7 +158,7 @@ export async function fipePrice(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { vehicleType, referenceTable, includeRaw } = getCommonParams(context, itemIndex);
+	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getCommonParams(context, itemIndex);
 	const brandCode = context.getNodeParameter('brandCode', itemIndex) as string;
 	const modelCode = context.getNodeParameter('modelCode', itemIndex) as string;
 	const yearCode = context.getNodeParameter('yearCode', itemIndex) as string;
@@ -169,7 +170,7 @@ export async function fipePrice(
 		`${BASE_URL}/${encodeURIComponent(vehicleType)}/marcas/${encodeURIComponent(brandCode)}/modelos/${encodeURIComponent(modelCode)}/anos/${encodeURIComponent(yearCode)}`,
 		referenceTable,
 	);
-	const data = await fetchFipe(context, url);
+	const data = await fetchFipe(context, url, timeoutMs);
 
 	const price = normalizePrice(data);
 	const meta = buildMeta('parallelum', `${vehicleType}/${brandCode}/${modelCode}/${yearCode}`, []);

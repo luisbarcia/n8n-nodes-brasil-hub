@@ -119,6 +119,17 @@ export class BrasilHub implements INodeType {
 			...fipeDescription,
 			...ibgeDescription,
 			...ncmDescription,
+			{
+				displayName: 'Timeout (ms)',
+				name: 'timeout',
+				type: 'number',
+				default: 10000,
+				typeOptions: {
+					minValue: 1000,
+					maxValue: 60000,
+				},
+				description: 'HTTP request timeout in milliseconds for each provider attempt',
+			},
 		],
 	};
 

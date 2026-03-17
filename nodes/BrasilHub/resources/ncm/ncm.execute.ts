@@ -18,6 +18,7 @@ export async function ncmQuery(
 ): Promise<INodeExecutionData[]> {
 	const ncmCode = (context.getNodeParameter('ncmCode', itemIndex) as string).trim();
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
 
 	if (!ncmCode) {
 		throw new NodeOperationError(context.getNode(), 'NCM code is required', { itemIndex });
@@ -26,7 +27,7 @@ export async function ncmQuery(
 	const providers = [
 		{ name: 'brasilapi', url: `https://brasilapi.com.br/api/ncm/v1/${encodeURIComponent(ncmCode)}` },
 	];
-	const result = await queryWithFallback(context, providers);
+	const result = await queryWithFallback(context, providers, timeoutMs);
 	const normalized = normalizeNcm(result.data);
 	const meta = buildMeta(result.provider, ncmCode, result.errors);
 
@@ -47,6 +48,7 @@ export async function ncmSearch(
 ): Promise<INodeExecutionData[]> {
 	const searchTerm = (context.getNodeParameter('searchTerm', itemIndex) as string).trim();
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
 
 	if (searchTerm.length < 3) {
 		throw new NodeOperationError(
@@ -59,7 +61,7 @@ export async function ncmSearch(
 	const providers = [
 		{ name: 'brasilapi', url: `https://brasilapi.com.br/api/ncm/v1?search=${encodeURIComponent(searchTerm)}` },
 	];
-	const result = await queryWithFallback(context, providers);
+	const result = await queryWithFallback(context, providers, timeoutMs);
 	const items = normalizeNcmList(result.data);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
 	const meta = buildMeta(result.provider, searchTerm, result.errors);
