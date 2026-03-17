@@ -1,6 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import { buildMeta, buildResultItem, buildResultItems } from '../../shared/utils';
+import { clampTimeout, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice } from './fipe.normalize';
 
 const BASE_URL = 'https://parallelum.com.br/fipe/api/v1';
@@ -45,13 +46,13 @@ function getCommonParams(context: IExecuteFunctions, itemIndex: number) {
 	const vehicleType = context.getNodeParameter('vehicleType', itemIndex) as string;
 	const referenceTable = context.getNodeParameter('referenceTable', itemIndex, 0) as number;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
 	validateVehicleType(context, vehicleType, itemIndex);
 	return { vehicleType, referenceTable, includeRaw, timeoutMs };
 }
 
 /** Performs a single HTTP GET to parallelum. */
-async function fetchFipe(context: IExecuteFunctions, url: string, timeoutMs = 10000): Promise<unknown> {
+async function fetchFipe(context: IExecuteFunctions, url: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<unknown> {
 	return context.helpers.httpRequest({
 		method: 'GET',
 		url,
@@ -59,7 +60,7 @@ async function fetchFipe(context: IExecuteFunctions, url: string, timeoutMs = 10
 			Accept: 'application/json',
 			'User-Agent': 'n8n-brasil-hub-node/1.0',
 		},
-		timeout: timeoutMs,
+		timeout: clampTimeout(timeoutMs),
 	});
 }
 

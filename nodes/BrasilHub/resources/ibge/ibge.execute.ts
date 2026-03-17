@@ -2,7 +2,7 @@ import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
 import { buildMeta, buildResultItems } from '../../shared/utils';
-import { queryWithFallback } from '../../shared/fallback';
+import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeStates, normalizeCities } from './ibge.normalize';
 
 const VALID_UFS = new Set([
@@ -42,7 +42,7 @@ export async function ibgeStates(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
 
 	const result = await queryWithFallback(context, STATES_PROVIDERS, timeoutMs);
 	const states = normalizeStates(result.data, result.provider);
@@ -66,7 +66,7 @@ export async function ibgeCities(
 ): Promise<INodeExecutionData[]> {
 	const ufInput = (context.getNodeParameter('uf', itemIndex) as string).toUpperCase().trim();
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
 
 	if (!VALID_UFS.has(ufInput)) {
 		throw new NodeOperationError(

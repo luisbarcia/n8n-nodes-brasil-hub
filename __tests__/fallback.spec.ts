@@ -1,4 +1,4 @@
-import { queryWithFallback } from '../nodes/BrasilHub/shared/fallback';
+import { queryWithFallback, clampTimeout, DEFAULT_TIMEOUT_MS, MIN_TIMEOUT_MS, MAX_TIMEOUT_MS } from '../nodes/BrasilHub/shared/fallback';
 import { buildMeta } from '../nodes/BrasilHub/shared/utils';
 import type { IProvider } from '../nodes/BrasilHub/types';
 
@@ -106,6 +106,62 @@ describe('queryWithFallback', () => {
 		);
 	});
 
+	it('should clamp timeout=0 to MIN_TIMEOUT_MS', async () => {
+		const ctx = createMockContext([{ success: true, data: { ok: true } }]);
+		await queryWithFallback(ctx, providers, 0);
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ timeout: MIN_TIMEOUT_MS }),
+		);
+	});
+
+	it('should clamp negative timeout to MIN_TIMEOUT_MS', async () => {
+		const ctx = createMockContext([{ success: true, data: { ok: true } }]);
+		await queryWithFallback(ctx, providers, -1);
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ timeout: MIN_TIMEOUT_MS }),
+		);
+	});
+
+	it('should clamp timeout exceeding MAX to MAX_TIMEOUT_MS', async () => {
+		const ctx = createMockContext([{ success: true, data: { ok: true } }]);
+		await queryWithFallback(ctx, providers, 999999);
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ timeout: MAX_TIMEOUT_MS }),
+		);
+	});
+
+	it('should clamp NaN timeout to DEFAULT_TIMEOUT_MS', async () => {
+		const ctx = createMockContext([{ success: true, data: { ok: true } }]);
+		await queryWithFallback(ctx, providers, NaN);
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ timeout: DEFAULT_TIMEOUT_MS }),
+		);
+	});
+
+	it('should clamp Infinity timeout to DEFAULT_TIMEOUT_MS', async () => {
+		const ctx = createMockContext([{ success: true, data: { ok: true } }]);
+		await queryWithFallback(ctx, providers, Infinity);
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ timeout: DEFAULT_TIMEOUT_MS }),
+		);
+	});
+
+	it('should accept MIN_TIMEOUT_MS boundary value', async () => {
+		const ctx = createMockContext([{ success: true, data: { ok: true } }]);
+		await queryWithFallback(ctx, providers, MIN_TIMEOUT_MS);
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ timeout: MIN_TIMEOUT_MS }),
+		);
+	});
+
+	it('should accept MAX_TIMEOUT_MS boundary value', async () => {
+		const ctx = createMockContext([{ success: true, data: { ok: true } }]);
+		await queryWithFallback(ctx, providers, MAX_TIMEOUT_MS);
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ timeout: MAX_TIMEOUT_MS }),
+		);
+	});
+
 	it('should collect all error messages from failed providers', async () => {
 		const ctx = createMockContext([
 			{ success: false, error: 'Timeout' },
@@ -118,6 +174,37 @@ describe('queryWithFallback', () => {
 			'provider1: Timeout',
 			'provider2: 404 Not Found',
 		]);
+	});
+});
+
+describe('clampTimeout', () => {
+	it('should return value within valid range unchanged', () => {
+		expect(clampTimeout(5000)).toBe(5000);
+	});
+
+	it('should clamp below minimum to MIN_TIMEOUT_MS', () => {
+		expect(clampTimeout(500)).toBe(MIN_TIMEOUT_MS);
+		expect(clampTimeout(0)).toBe(MIN_TIMEOUT_MS);
+		expect(clampTimeout(-100)).toBe(MIN_TIMEOUT_MS);
+	});
+
+	it('should clamp above maximum to MAX_TIMEOUT_MS', () => {
+		expect(clampTimeout(100000)).toBe(MAX_TIMEOUT_MS);
+		expect(clampTimeout(60001)).toBe(MAX_TIMEOUT_MS);
+	});
+
+	it('should return DEFAULT for NaN', () => {
+		expect(clampTimeout(NaN)).toBe(DEFAULT_TIMEOUT_MS);
+	});
+
+	it('should return DEFAULT for Infinity', () => {
+		expect(clampTimeout(Infinity)).toBe(DEFAULT_TIMEOUT_MS);
+		expect(clampTimeout(-Infinity)).toBe(DEFAULT_TIMEOUT_MS);
+	});
+
+	it('should accept exact boundary values', () => {
+		expect(clampTimeout(MIN_TIMEOUT_MS)).toBe(MIN_TIMEOUT_MS);
+		expect(clampTimeout(MAX_TIMEOUT_MS)).toBe(MAX_TIMEOUT_MS);
 	});
 });
 
