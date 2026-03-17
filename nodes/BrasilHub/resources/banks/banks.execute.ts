@@ -2,7 +2,7 @@ import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
 import { buildMeta, buildResultItem, buildResultItems } from '../../shared/utils';
-import { queryWithFallback } from '../../shared/fallback';
+import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeBank, normalizeBanks } from './banks.normalize';
 
 const BANKS_LIST_PROVIDERS: IProvider[] = [
@@ -37,7 +37,7 @@ export async function banksQuery(
 ): Promise<INodeExecutionData[]> {
 	const bankCodeInput = context.getNodeParameter('bankCode', itemIndex) as string;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
 	const bankCode = Number.parseInt(bankCodeInput, 10);
 
 	if (!Number.isInteger(bankCode) || bankCode <= 0) {
@@ -73,7 +73,7 @@ export async function banksList(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
 
 	const result = await queryWithFallback(context, BANKS_LIST_PROVIDERS, timeoutMs);
 

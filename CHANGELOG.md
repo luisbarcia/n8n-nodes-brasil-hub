@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-03-17
+
+### Fixed
+- **Runtime timeout clamping** — timeout values are now clamped to [1000, 60000] ms at runtime, not just UI
+  - Prevents `timeout: 0` (infinite wait in axios) via expressions or AI tool usage
+  - NaN/Infinity values fall back to DEFAULT_TIMEOUT_MS (10000)
+  - `clampTimeout()` guard applied in both `queryWithFallback` and `fetchFipe`
+
+### Changed
+- Exported `DEFAULT_TIMEOUT_MS` constant — all 9 resource handlers now import it instead of hardcoding `10000` (single source of truth)
+- 13 new boundary tests for `clampTimeout` + `queryWithFallback` edge cases
+- 1154 tests total (was 1141)
+
 ## [0.10.0] - 2026-03-17
 
 ### Added
@@ -315,7 +328,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.7.0...v0.8.0

@@ -3,7 +3,7 @@ import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
 import { buildMeta, buildResultItem } from '../../shared/utils';
 import { validateCep, sanitizeCep } from '../../shared/validators';
-import { queryWithFallback } from '../../shared/fallback';
+import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeCep } from './cep.normalize';
 
 const CEP_PROVIDERS: IProvider[] = [
@@ -43,7 +43,7 @@ export async function cepQuery(
 ): Promise<INodeExecutionData[]> {
 	const cepInput = context.getNodeParameter('cep', itemIndex) as string;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
 	const cep = sanitizeCep(cepInput);
 
 	if (cep.length !== 8) {

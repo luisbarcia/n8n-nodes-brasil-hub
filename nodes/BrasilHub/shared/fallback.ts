@@ -2,7 +2,19 @@ import type { IExecuteFunctions } from 'n8n-workflow';
 import type { IProvider, IFallbackResult } from '../types';
 
 /** Default HTTP request timeout in milliseconds per provider attempt. */
-const DEFAULT_TIMEOUT_MS = 10000;
+export const DEFAULT_TIMEOUT_MS = 10000;
+
+/** Minimum allowed timeout in milliseconds. */
+export const MIN_TIMEOUT_MS = 1000;
+
+/** Maximum allowed timeout in milliseconds. */
+export const MAX_TIMEOUT_MS = 60000;
+
+/** Clamps a timeout value to the allowed range [MIN_TIMEOUT_MS, MAX_TIMEOUT_MS]. */
+export function clampTimeout(value: number): number {
+	const n = Number.isFinite(value) ? value : DEFAULT_TIMEOUT_MS;
+	return Math.max(MIN_TIMEOUT_MS, Math.min(MAX_TIMEOUT_MS, n));
+}
 
 /**
  * Queries multiple providers in sequence until one succeeds (fallback strategy).
@@ -22,6 +34,7 @@ export async function queryWithFallback(
 	providers: IProvider[],
 	timeoutMs: number = DEFAULT_TIMEOUT_MS,
 ): Promise<IFallbackResult> {
+	const safeTimeout = clampTimeout(timeoutMs);
 	const errors: string[] = [];
 
 	for (const provider of providers) {
@@ -33,7 +46,7 @@ export async function queryWithFallback(
 					Accept: 'application/json',
 					'User-Agent': 'n8n-brasil-hub-node/1.0',
 				},
-				timeout: timeoutMs,
+				timeout: safeTimeout,
 			});
 
 			return { data, provider: provider.name, errors };
