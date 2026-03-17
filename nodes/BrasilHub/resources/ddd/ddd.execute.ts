@@ -41,7 +41,7 @@ export async function dddQuery(
 	const result = await queryWithFallback(context, providers, timeoutMs);
 	const normalized = normalizeDdd(result.data, result.provider, ddd);
 
-	const meta = buildMeta(result.provider, String(ddd), result.errors);
+	const meta = buildMeta(result.provider, String(ddd), result.errors, result.rateLimited, result.retryAfterMs);
 
 	return buildResultItem(normalized as unknown as Record<string, unknown>, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
 }

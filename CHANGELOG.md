@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-03-17
+
+### Added
+- **Rate Limit Awareness** — HTTP 429 detection in fallback engine
+  - Detects 429 status from any provider, moves to next immediately
+  - Extracts `Retry-After` header when present (seconds → milliseconds)
+  - Adds `rate_limited: true` and `retry_after_ms` to `_meta` output
+  - Specific error message when all providers are rate-limited: "All providers rate-limited or failed"
+  - Works across all 9 resources via shared `queryWithFallback`
+- 9 new rate limit tests (429 detection, Retry-After parsing, error messages, edge cases)
+
+### Changed
+- `IFallbackResult` now includes `rateLimited` and `retryAfterMs` fields
+- `IMeta` now includes optional `rate_limited` and `retry_after_ms` fields
+- `buildMeta` accepts optional `rateLimited` and `retryAfterMs` params
+- All 10 execute handlers pass rate limit info through to `_meta`
+- 1167 tests total (was 1158)
+
 ## [0.11.0] - 2026-03-17
 
 ### Added
@@ -341,7 +359,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.9.0...v0.10.0

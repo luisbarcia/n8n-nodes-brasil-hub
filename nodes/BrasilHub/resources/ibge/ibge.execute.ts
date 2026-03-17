@@ -47,7 +47,7 @@ export async function ibgeStates(
 	const result = await queryWithFallback(context, STATES_PROVIDERS, timeoutMs);
 	const states = normalizeStates(result.data, result.provider);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta(result.provider, 'all', result.errors);
+	const meta = buildMeta(result.provider, 'all', result.errors, result.rateLimited, result.retryAfterMs);
 
 	return buildResultItems(states as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
 }
@@ -80,7 +80,7 @@ export async function ibgeCities(
 	const result = await queryWithFallback(context, providers, timeoutMs);
 	const cities = normalizeCities(result.data, result.provider);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta(result.provider, ufInput, result.errors);
+	const meta = buildMeta(result.provider, ufInput, result.errors, result.rateLimited, result.retryAfterMs);
 
 	return buildResultItems(cities as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
 }

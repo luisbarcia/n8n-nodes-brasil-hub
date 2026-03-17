@@ -58,7 +58,7 @@ export async function cepQuery(
 	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const normalized = normalizeCep(result.data, result.provider);
-	const meta = buildMeta(result.provider, cep, result.errors);
+	const meta = buildMeta(result.provider, cep, result.errors, result.rateLimited, result.retryAfterMs);
 
 	return buildResultItem(normalized as unknown as Record<string, unknown>, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
 }

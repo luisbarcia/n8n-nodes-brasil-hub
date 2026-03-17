@@ -53,7 +53,7 @@ export async function banksQuery(
 
 	const normalized = normalizeBank(result.data, result.provider, bankCode);
 
-	const meta = buildMeta(result.provider, String(bankCode), result.errors);
+	const meta = buildMeta(result.provider, String(bankCode), result.errors, result.rateLimited, result.retryAfterMs);
 
 	return buildResultItem(normalized as unknown as Record<string, unknown>, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
 }
@@ -80,7 +80,7 @@ export async function banksList(
 	const rawItems = result.data as Array<Record<string, unknown>>;
 	const banks = normalizeBanks(result.data, result.provider);
 
-	const meta = buildMeta(result.provider, 'all', result.errors);
+	const meta = buildMeta(result.provider, 'all', result.errors, result.rateLimited, result.retryAfterMs);
 
 	return buildResultItems(banks as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
 }

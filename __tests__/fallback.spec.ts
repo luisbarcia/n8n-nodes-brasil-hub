@@ -162,6 +162,99 @@ describe('queryWithFallback', () => {
 		);
 	});
 
+	it('should set rateLimited=true when a provider returns 429', async () => {
+		const err429 = Object.assign(new Error('Too Many Requests'), { httpCode: 429 });
+		let callIndex = 0;
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callIndex++;
+					if (callIndex === 1) throw err429;
+					return { ok: true };
+				}),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+		const result = await queryWithFallback(ctx, providers);
+		expect(result.rateLimited).toBe(true);
+		expect(result.provider).toBe('provider2');
+		expect(result.errors).toEqual(['provider1: [429] Too Many Requests']);
+	});
+
+	it('should extract Retry-After header from 429 response', async () => {
+		const err429 = Object.assign(new Error('Too Many Requests'), {
+			httpCode: 429,
+			headers: { 'retry-after': '3' },
+		});
+		let callIndex = 0;
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callIndex++;
+					if (callIndex === 1) throw err429;
+					return { ok: true };
+				}),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+		const result = await queryWithFallback(ctx, providers);
+		expect(result.rateLimited).toBe(true);
+		expect(result.retryAfterMs).toBe(3000);
+	});
+
+	it('should throw rate-limit-specific error when all providers 429', async () => {
+		const make429 = () => Object.assign(new Error('Too Many Requests'), { httpCode: 429 });
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockRejectedValue(make429()),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+		await expect(queryWithFallback(ctx, providers)).rejects.toThrow(
+			'All providers rate-limited or failed',
+		);
+	});
+
+	it('should set rateLimited=false when no 429 occurs', async () => {
+		const ctx = createMockContext([{ success: true, data: { ok: true } }]);
+		const result = await queryWithFallback(ctx, providers);
+		expect(result.rateLimited).toBe(false);
+		expect(result.retryAfterMs).toBeUndefined();
+	});
+
+	it('should handle 429 as string httpCode', async () => {
+		const err429 = Object.assign(new Error('Rate limited'), { httpCode: '429' });
+		let callIndex = 0;
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callIndex++;
+					if (callIndex === 1) throw err429;
+					return { ok: true };
+				}),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+		const result = await queryWithFallback(ctx, providers);
+		expect(result.rateLimited).toBe(true);
+	});
+
+	it('should ignore invalid Retry-After values', async () => {
+		const err429 = Object.assign(new Error('Rate limited'), {
+			httpCode: 429,
+			headers: { 'retry-after': 'invalid' },
+		});
+		let callIndex = 0;
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callIndex++;
+					if (callIndex === 1) throw err429;
+					return { ok: true };
+				}),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+		const result = await queryWithFallback(ctx, providers);
+		expect(result.rateLimited).toBe(true);
+		expect(result.retryAfterMs).toBeUndefined();
+	});
+
 	it('should collect all error messages from failed providers', async () => {
 		const ctx = createMockContext([
 			{ success: false, error: 'Timeout' },
@@ -233,5 +326,23 @@ describe('buildMeta', () => {
 	it('should not include errors key when errors array is empty', () => {
 		const meta = buildMeta('brasilapi', 'test', []);
 		expect(Object.keys(meta)).not.toContain('errors');
+	});
+
+	it('should include rate_limited when rateLimited=true', () => {
+		const meta = buildMeta('cnpjws', '11222333000181', ['brasilapi: [429] Too Many Requests'], true, 3000);
+		expect(meta.rate_limited).toBe(true);
+		expect(meta.retry_after_ms).toBe(3000);
+	});
+
+	it('should not include rate_limited when rateLimited=false', () => {
+		const meta = buildMeta('brasilapi', 'test', []);
+		expect(Object.keys(meta)).not.toContain('rate_limited');
+		expect(Object.keys(meta)).not.toContain('retry_after_ms');
+	});
+
+	it('should include rate_limited without retry_after_ms when no Retry-After', () => {
+		const meta = buildMeta('cnpjws', 'test', ['brasilapi: [429]'], true);
+		expect(meta.rate_limited).toBe(true);
+		expect(Object.keys(meta)).not.toContain('retry_after_ms');
 	});
 });
