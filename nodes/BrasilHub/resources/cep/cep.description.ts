@@ -43,6 +43,21 @@ export const cepDescription: INodeProperties[] = [
 		description: 'The CEP number to query or validate (with or without formatting)',
 	},
 	{
+		displayName: 'Primary Provider',
+		name: 'primaryProvider',
+		type: 'options',
+		displayOptions: { show: showForCepQuery },
+		options: [
+			{ name: 'ApiCEP', value: 'apicep' },
+			{ name: 'Auto (BrasilAPI First)', value: 'auto' },
+			{ name: 'BrasilAPI', value: 'brasilapi' },
+			{ name: 'OpenCEP', value: 'opencep' },
+			{ name: 'ViaCEP', value: 'viacep' },
+		],
+		default: 'auto',
+		description: 'Choose which provider to try first for CEP queries',
+	},
+	{
 		displayName: 'Include Raw Response',
 		name: 'includeRaw',
 		type: 'boolean',

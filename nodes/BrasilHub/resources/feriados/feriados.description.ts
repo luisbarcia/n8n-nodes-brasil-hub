@@ -40,6 +40,19 @@ export const feriadosDescription: INodeProperties[] = [
 		},
 	},
 	{
+		displayName: 'Primary Provider',
+		name: 'primaryProvider',
+		type: 'options',
+		displayOptions: { show: showForFeriados },
+		options: [
+			{ name: 'Auto (BrasilAPI First)', value: 'auto' },
+			{ name: 'BrasilAPI', value: 'brasilapi' },
+			{ name: 'Nager.Date', value: 'nagerdate' },
+		],
+		default: 'auto',
+		description: 'Choose which provider to try first for holiday queries',
+	},
+	{
 		displayName: 'Include Raw Response',
 		name: 'includeRaw',
 		type: 'boolean',

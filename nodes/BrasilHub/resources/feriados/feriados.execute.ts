@@ -1,7 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItems } from '../../shared/utils';
+import { buildMeta, buildResultItems, reorderProviders } from '../../shared/utils';
 import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeFeriados } from './feriados.normalize';
 
@@ -46,7 +46,8 @@ export async function feriadosQuery(
 		);
 	}
 
-	const providers = buildProviders(year);
+	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
+	const providers = reorderProviders(buildProviders(year), primaryProvider);
 	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const feriados = normalizeFeriados(result.data, result.provider);

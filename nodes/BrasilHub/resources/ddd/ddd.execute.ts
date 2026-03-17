@@ -1,7 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItem } from '../../shared/utils';
+import { buildMeta, buildResultItem, reorderProviders } from '../../shared/utils';
 import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeDdd } from './ddd.normalize';
 
@@ -33,12 +33,13 @@ export async function dddQuery(
 		);
 	}
 
+	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
 	const providers: IProvider[] = [
 		{ name: 'brasilapi', url: `https://brasilapi.com.br/api/ddd/v1/${ddd}` },
 		{ name: 'municipios', url: 'https://raw.githubusercontent.com/kelvins/municipios-brasileiros/main/json/municipios.json' },
 	];
 
-	const result = await queryWithFallback(context, providers, timeoutMs);
+	const result = await queryWithFallback(context, reorderProviders(providers, primaryProvider), timeoutMs);
 	const normalized = normalizeDdd(result.data, result.provider, ddd);
 
 	const meta = buildMeta(result.provider, String(ddd), result.errors, result.rateLimited, result.retryAfterMs);

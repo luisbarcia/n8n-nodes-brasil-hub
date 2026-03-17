@@ -35,7 +35,7 @@ Each new resource ships as its own MINOR release for faster iteration and easier
 
 ## v1.0.0 — Power User Features + Stable Release
 
-- [ ] **Configurable Provider Order** — User chooses primary provider per resource
+- [x] **Configurable Provider Order** — User chooses primary provider per resource
 - [x] **Configurable Timeout** — Override default 10s timeout per operation
 - [x] **Rate Limit Awareness** — Detect HTTP 429, skip to next provider, expose in _meta
 - [x] **CNPJ Output Mode** — Simplified (default), Full, AI Summary

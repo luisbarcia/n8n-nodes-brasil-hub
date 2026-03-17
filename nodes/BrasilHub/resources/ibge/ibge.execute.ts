@@ -1,7 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItems } from '../../shared/utils';
+import { buildMeta, buildResultItems, reorderProviders } from '../../shared/utils';
 import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeStates, normalizeCities } from './ibge.normalize';
 
@@ -44,7 +44,8 @@ export async function ibgeStates(
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
 	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
 
-	const result = await queryWithFallback(context, STATES_PROVIDERS, timeoutMs);
+	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
+	const result = await queryWithFallback(context, reorderProviders(STATES_PROVIDERS, primaryProvider), timeoutMs);
 	const states = normalizeStates(result.data, result.provider);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
 	const meta = buildMeta(result.provider, 'all', result.errors, result.rateLimited, result.retryAfterMs);
@@ -67,6 +68,7 @@ export async function ibgeCities(
 	const ufInput = (context.getNodeParameter('uf', itemIndex) as string).toUpperCase().trim();
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
 	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
 
 	if (!VALID_UFS.has(ufInput)) {
 		throw new NodeOperationError(
@@ -76,7 +78,7 @@ export async function ibgeCities(
 		);
 	}
 
-	const providers = buildCitiesProviders(ufInput);
+	const providers = reorderProviders(buildCitiesProviders(ufInput), primaryProvider);
 	const result = await queryWithFallback(context, providers, timeoutMs);
 	const cities = normalizeCities(result.data, result.provider);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];

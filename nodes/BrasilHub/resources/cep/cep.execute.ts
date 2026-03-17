@@ -1,7 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItem } from '../../shared/utils';
+import { buildMeta, buildResultItem, reorderProviders } from '../../shared/utils';
 import { validateCep, sanitizeCep } from '../../shared/validators';
 import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeCep } from './cep.normalize';
@@ -54,7 +54,8 @@ export async function cepQuery(
 		throw new NodeOperationError(context.getNode(), 'Invalid CEP', { itemIndex });
 	}
 
-	const providers = buildProviders(cep);
+	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
+	const providers = reorderProviders(buildProviders(cep), primaryProvider);
 	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const normalized = normalizeCep(result.data, result.provider);

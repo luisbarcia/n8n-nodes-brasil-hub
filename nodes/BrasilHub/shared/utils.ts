@@ -120,3 +120,19 @@ export function stripNonDigits(value: string): string {
 	if (typeof value !== 'string') return String(value ?? '').replaceAll(/\D/g, '');
 	return value.replaceAll(/\D/g, '');
 }
+
+/**
+ * Reorders a provider array so that the chosen primary provider is first.
+ *
+ * If `primary` is `'auto'` or not found in the list, returns the original order.
+ *
+ * @param providers - Original ordered provider list.
+ * @param primary - Name of the provider to move to position 0.
+ * @returns New array with the primary provider first, rest in original order.
+ */
+export function reorderProviders<T extends { name: string }>(providers: T[], primary: string): T[] {
+	if (!primary || primary === 'auto') return providers;
+	const idx = providers.findIndex((p) => p.name === primary);
+	if (idx <= 0) return providers;
+	return [providers[idx], ...providers.slice(0, idx), ...providers.slice(idx + 1)];
+}

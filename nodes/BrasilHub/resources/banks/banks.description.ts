@@ -43,6 +43,19 @@ export const banksDescription: INodeProperties[] = [
 		description: 'The COMPE bank code (e.g. 1 for Banco do Brasil, 237 for Bradesco)',
 	},
 	{
+		displayName: 'Primary Provider',
+		name: 'primaryProvider',
+		type: 'options',
+		displayOptions: { show: showForBanks },
+		options: [
+			{ name: 'Auto (BrasilAPI First)', value: 'auto' },
+			{ name: 'BrasilAPI', value: 'brasilapi' },
+			{ name: 'BancosBrasileiros', value: 'bancosbrasileiros' },
+		],
+		default: 'auto',
+		description: 'Choose which provider to try first for bank queries',
+	},
+	{
 		displayName: 'Include Raw Response',
 		name: 'includeRaw',
 		type: 'boolean',

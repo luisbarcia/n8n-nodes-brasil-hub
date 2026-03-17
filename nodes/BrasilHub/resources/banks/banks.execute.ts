@@ -1,7 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItem, buildResultItems } from '../../shared/utils';
+import { buildMeta, buildResultItem, buildResultItems, reorderProviders } from '../../shared/utils';
 import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeBank, normalizeBanks } from './banks.normalize';
 
@@ -48,7 +48,8 @@ export async function banksQuery(
 		);
 	}
 
-	const providers = buildQueryProviders(bankCode);
+	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
+	const providers = reorderProviders(buildQueryProviders(bankCode), primaryProvider);
 	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const normalized = normalizeBank(result.data, result.provider, bankCode);
@@ -75,7 +76,8 @@ export async function banksList(
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
 	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
 
-	const result = await queryWithFallback(context, BANKS_LIST_PROVIDERS, timeoutMs);
+	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
+	const result = await queryWithFallback(context, reorderProviders(BANKS_LIST_PROVIDERS, primaryProvider), timeoutMs);
 
 	const rawItems = result.data as Array<Record<string, unknown>>;
 	const banks = normalizeBanks(result.data, result.provider);
