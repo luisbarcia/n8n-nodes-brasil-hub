@@ -36,6 +36,7 @@ export async function feriadosQuery(
 ): Promise<INodeExecutionData[]> {
 	const year = context.getNodeParameter('year', itemIndex) as number;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
 
 	if (!Number.isInteger(year) || year < 1900 || year > 2199) {
 		throw new NodeOperationError(
@@ -46,7 +47,7 @@ export async function feriadosQuery(
 	}
 
 	const providers = buildProviders(year);
-	const result = await queryWithFallback(context, providers);
+	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const feriados = normalizeFeriados(result.data, result.provider);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];

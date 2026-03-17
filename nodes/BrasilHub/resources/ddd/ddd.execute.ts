@@ -22,6 +22,7 @@ export async function dddQuery(
 ): Promise<INodeExecutionData[]> {
 	const dddInput = context.getNodeParameter('ddd', itemIndex) as string;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
 	const ddd = Number.parseInt(dddInput, 10);
 
 	if (!Number.isInteger(ddd) || ddd < 11 || ddd > 99) {
@@ -37,7 +38,7 @@ export async function dddQuery(
 		{ name: 'municipios', url: 'https://raw.githubusercontent.com/kelvins/municipios-brasileiros/main/json/municipios.json' },
 	];
 
-	const result = await queryWithFallback(context, providers);
+	const result = await queryWithFallback(context, providers, timeoutMs);
 	const normalized = normalizeDdd(result.data, result.provider, ddd);
 
 	const meta = buildMeta(result.provider, String(ddd), result.errors);

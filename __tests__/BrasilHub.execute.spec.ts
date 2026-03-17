@@ -333,6 +333,34 @@ describe('BrasilHub.execute()', () => {
 		);
 	});
 
+	it('should pass custom timeout to httpRequest', async () => {
+		const ctx = createExecuteContext({
+			resource: 'cnpj',
+			operation: 'query',
+		});
+		// Override params to include custom timeout
+		(ctx.getNodeParameter as jest.Mock).mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'cnpj', operation: 'query', cnpj: '11222333000181',
+				simplify: true, includeRaw: false, timeout: 5000,
+			};
+			return params[name] ?? fallback;
+		});
+
+		await node.execute.call(ctx);
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ timeout: 5000 }),
+		);
+	});
+
+	it('should use default timeout (10000) when not explicitly set', async () => {
+		const ctx = createExecuteContext({ resource: 'cep', operation: 'query' });
+		await node.execute.call(ctx);
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ timeout: 10000 }),
+		);
+	});
+
 	it('should process multiple items', async () => {
 		const ctx = createExecuteContext({
 			resource: 'cnpj',

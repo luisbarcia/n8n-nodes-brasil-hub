@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-03-17
+
+### Added
+- **Configurable Timeout** — global "Timeout (Ms)" parameter (1s–60s, default 10s)
+  - Exposed in node UI after all resource-specific fields
+  - Passed to `queryWithFallback` and `fetchFipe` for all 9 resources
+  - Replaces hardcoded `REQUEST_TIMEOUT_MS` constant
+- 5 new tests for timeout behavior (fallback, node metadata, execute integration)
+
+### Changed
+- Renamed `REQUEST_TIMEOUT_MS` → `DEFAULT_TIMEOUT_MS` in fallback.ts
+- All resource handlers now read timeout from node parameter instead of constant
+- 1141 tests total, 24 suites, 99%+ branch coverage
+
 ## [0.9.0] - 2026-03-17
 
 ### Added
@@ -301,7 +315,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.6.0...v0.7.0

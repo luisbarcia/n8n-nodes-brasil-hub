@@ -42,8 +42,9 @@ export async function ibgeStates(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
 
-	const result = await queryWithFallback(context, STATES_PROVIDERS);
+	const result = await queryWithFallback(context, STATES_PROVIDERS, timeoutMs);
 	const states = normalizeStates(result.data, result.provider);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
 	const meta = buildMeta(result.provider, 'all', result.errors);
@@ -65,6 +66,7 @@ export async function ibgeCities(
 ): Promise<INodeExecutionData[]> {
 	const ufInput = (context.getNodeParameter('uf', itemIndex) as string).toUpperCase().trim();
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
 
 	if (!VALID_UFS.has(ufInput)) {
 		throw new NodeOperationError(
@@ -75,7 +77,7 @@ export async function ibgeCities(
 	}
 
 	const providers = buildCitiesProviders(ufInput);
-	const result = await queryWithFallback(context, providers);
+	const result = await queryWithFallback(context, providers, timeoutMs);
 	const cities = normalizeCities(result.data, result.provider);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
 	const meta = buildMeta(result.provider, ufInput, result.errors);

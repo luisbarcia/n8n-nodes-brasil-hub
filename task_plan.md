@@ -404,8 +404,10 @@ Each new resource ships as its own MINOR release:
 - [ ] Fallback segue nova ordem
 
 #### 24.2 Configurable Timeout
-- [ ] Param numérico "Timeout (ms)" (default 10000)
-- [ ] Passar para queryWithFallback/fetchFipe
+- [x] Param numérico "Timeout (Ms)" (default 10000, min 1000, max 60000)
+- [x] Passar para queryWithFallback/fetchFipe
+- [x] 5 testes (fallback custom/default, node metadata, execute custom/default)
+- [x] Released as v0.10.0
 
 #### 24.3 Rate Limit Awareness
 - [ ] Detectar HTTP 429 no fallback engine

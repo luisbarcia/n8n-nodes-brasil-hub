@@ -43,6 +43,7 @@ export async function cepQuery(
 ): Promise<INodeExecutionData[]> {
 	const cepInput = context.getNodeParameter('cep', itemIndex) as string;
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, 10000) as number;
 	const cep = sanitizeCep(cepInput);
 
 	if (cep.length !== 8) {
@@ -54,7 +55,7 @@ export async function cepQuery(
 	}
 
 	const providers = buildProviders(cep);
-	const result = await queryWithFallback(context, providers);
+	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const normalized = normalizeCep(result.data, result.provider);
 	const meta = buildMeta(result.provider, cep, result.errors);

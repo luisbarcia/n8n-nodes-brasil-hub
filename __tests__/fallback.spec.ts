@@ -88,6 +88,24 @@ describe('queryWithFallback', () => {
 		expect(result.provider).toBe('provider2');
 	});
 
+	it('should use custom timeout when provided', async () => {
+		const ctx = createMockContext([{ success: true, data: { ok: true } }]);
+		await queryWithFallback(ctx, providers, 5000);
+
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ timeout: 5000 }),
+		);
+	});
+
+	it('should use default timeout (10000) when not provided', async () => {
+		const ctx = createMockContext([{ success: true, data: { ok: true } }]);
+		await queryWithFallback(ctx, providers);
+
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ timeout: 10000 }),
+		);
+	});
+
 	it('should collect all error messages from failed providers', async () => {
 		const ctx = createMockContext([
 			{ success: false, error: 'Timeout' },
