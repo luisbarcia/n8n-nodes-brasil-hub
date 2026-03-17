@@ -24,6 +24,7 @@ import { dddQuery } from '../nodes/BrasilHub/resources/ddd/ddd.execute';
 import { fipeBrands, fipeModels, fipeYears, fipePrice } from '../nodes/BrasilHub/resources/fipe/fipe.execute';
 import { feriadosQuery } from '../nodes/BrasilHub/resources/feriados/feriados.execute';
 import { ibgeStates, ibgeCities } from '../nodes/BrasilHub/resources/ibge/ibge.execute';
+import { ncmQuery, ncmSearch } from '../nodes/BrasilHub/resources/ncm/ncm.execute';
 import { BrasilHub } from '../nodes/BrasilHub/BrasilHub.node';
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import type { IProvider } from '../nodes/BrasilHub/types';
@@ -105,6 +106,8 @@ function createExecuteContext(overrides: {
 	cpf?: string;
 	bankCode?: string;
 	ddd?: string;
+	ncmCode?: string;
+	searchTerm?: string;
 	includeRaw?: boolean;
 	items?: INodeExecutionData[];
 	continueOnFail?: boolean;
@@ -119,6 +122,8 @@ function createExecuteContext(overrides: {
 		cpf: overrides.cpf ?? '52998224725',
 		bankCode: overrides.bankCode ?? '1',
 		ddd: overrides.ddd ?? '11',
+		ncmCode: overrides.ncmCode ?? '8504.40.10',
+		searchTerm: overrides.searchTerm ?? 'computador',
 		includeRaw: overrides.includeRaw ?? false,
 	};
 
@@ -2514,5 +2519,578 @@ describe('IBGE VECTOR 34: URL construction', () => {
 		const results = await ibgeCities(ctx, 3); // itemIndex = 3
 
 		expect(results[0].pairedItem).toEqual({ item: 3 });
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// NCM ATTACK TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+function createNcmContext(
+	overrides: Record<string, unknown> = {},
+	httpResponse: unknown = {},
+) {
+	const params: Record<string, unknown> = {
+		ncmCode: '8504.40.10',
+		searchTerm: 'computador',
+		includeRaw: false,
+		...overrides,
+	};
+	return {
+		getNodeParameter: jest.fn((name: string, _index: number, fallback?: unknown) =>
+			params[name] ?? fallback,
+		),
+		getNode: jest.fn(() => ({ name: 'Brasil Hub' })),
+		helpers: {
+			httpRequest: jest.fn().mockResolvedValue(httpResponse),
+		},
+	} as unknown as Parameters<typeof ncmQuery>[0];
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// NCM VECTOR 35: ncmCode validation
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('NCM VECTOR 35: ncmCode validation', () => {
+	it('empty ncmCode → throws NodeOperationError', async () => {
+		const ctx = createNcmContext({ ncmCode: '' });
+		await expect(ncmQuery(ctx, 0)).rejects.toThrow('NCM code is required');
+	});
+
+	it('whitespace-only ncmCode → throws NodeOperationError (trimmed to empty)', async () => {
+		const ctx = createNcmContext({ ncmCode: '   ' });
+		await expect(ncmQuery(ctx, 0)).rejects.toThrow('NCM code is required');
+	});
+
+	it('ncmCode with tabs and newlines → throws (trimmed to empty)', async () => {
+		const ctx = createNcmContext({ ncmCode: '\t\n  \r\n' });
+		await expect(ncmQuery(ctx, 0)).rejects.toThrow('NCM code is required');
+	});
+
+	it('ncmCode with dots (8504.40.10) → accepted, URL-encoded in API call', async () => {
+		const ncmData = { codigo: '8504.40.10', descricao: 'Carregadores' };
+		const ctx = createNcmContext({ ncmCode: '8504.40.10' }, ncmData);
+		const results = await ncmQuery(ctx, 0);
+		expect(results).toHaveLength(1);
+		expect(results[0].json).toHaveProperty('code', '8504.40.10');
+		// Verify the URL was called with encodeURIComponent
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toContain('8504.40.10');
+	});
+
+	it('ncmCode without dots (85044010) → accepted as-is', async () => {
+		const ncmData = { codigo: '85044010', descricao: 'Carregadores' };
+		const ctx = createNcmContext({ ncmCode: '85044010' }, ncmData);
+		const results = await ncmQuery(ctx, 0);
+		expect(results).toHaveLength(1);
+		expect(results[0].json).toHaveProperty('code', '85044010');
+	});
+
+	it('ncmCode with leading/trailing spaces → trimmed before use', async () => {
+		const ncmData = { codigo: '8504.40.10', descricao: 'Carregadores' };
+		const ctx = createNcmContext({ ncmCode: '  8504.40.10  ' }, ncmData);
+		await ncmQuery(ctx, 0);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toContain('8504.40.10');
+		expect(callUrl).not.toContain('%20');
+	});
+
+	it('ncmCode with special characters → URL-encoded safely', async () => {
+		const ctx = createNcmContext({ ncmCode: '8504/40&10' }, {});
+		const results = await ncmQuery(ctx, 0);
+		expect(results).toHaveLength(1);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toContain(encodeURIComponent('8504/40&10'));
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// NCM VECTOR 36: searchTerm validation (boundary testing)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('NCM VECTOR 36: searchTerm validation', () => {
+	it('empty searchTerm → throws (< 3 chars)', async () => {
+		const ctx = createNcmContext({ searchTerm: '' });
+		await expect(ncmSearch(ctx, 0)).rejects.toThrow('Search term must be at least 3 characters');
+	});
+
+	it('1-char searchTerm → throws (< 3 chars)', async () => {
+		const ctx = createNcmContext({ searchTerm: 'a' });
+		await expect(ncmSearch(ctx, 0)).rejects.toThrow('Search term must be at least 3 characters');
+	});
+
+	it('2-char searchTerm → throws (< 3 chars)', async () => {
+		const ctx = createNcmContext({ searchTerm: 'ab' });
+		await expect(ncmSearch(ctx, 0)).rejects.toThrow('Search term must be at least 3 characters');
+	});
+
+	it('3-char searchTerm → accepted (boundary)', async () => {
+		const ctx = createNcmContext({ searchTerm: 'abc' }, []);
+		const results = await ncmSearch(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('whitespace-only searchTerm " " → trimmed to empty → throws (< 3 chars)', async () => {
+		const ctx = createNcmContext({ searchTerm: '   ' });
+		await expect(ncmSearch(ctx, 0)).rejects.toThrow('Search term must be at least 3 characters');
+	});
+
+	it('2 chars + spaces "ab  " → trimmed to "ab" → throws (< 3 chars)', async () => {
+		const ctx = createNcmContext({ searchTerm: 'ab  ' });
+		await expect(ncmSearch(ctx, 0)).rejects.toThrow('Search term must be at least 3 characters');
+	});
+
+	it('3 chars + spaces "abc  " → trimmed to "abc" → accepted', async () => {
+		const ctx = createNcmContext({ searchTerm: 'abc  ' }, []);
+		const results = await ncmSearch(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('searchTerm with special characters → URL-encoded in API call', async () => {
+		const ctx = createNcmContext({ searchTerm: 'café & açúcar' }, []);
+		await ncmSearch(ctx, 0);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toContain(encodeURIComponent('café & açúcar'));
+	});
+
+	it('searchTerm with XSS payload → URL-encoded (not executed)', async () => {
+		const ctx = createNcmContext({ searchTerm: '<script>alert(1)</script>' }, []);
+		await ncmSearch(ctx, 0);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toContain(encodeURIComponent('<script>alert(1)</script>'));
+		expect(callUrl).not.toContain('<script>');
+	});
+
+	it('searchTerm with SQLi payload → URL-encoded (not executed)', async () => {
+		const ctx = createNcmContext({ searchTerm: "'; DROP TABLE ncm--" }, []);
+		await ncmSearch(ctx, 0);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toContain(encodeURIComponent("'; DROP TABLE ncm--"));
+	});
+
+	it('searchTerm with unicode → URL-encoded properly', async () => {
+		const ctx = createNcmContext({ searchTerm: '\u5145\u7535\u5668\u26A1' }, []);
+		await ncmSearch(ctx, 0);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toContain(encodeURIComponent('\u5145\u7535\u5668\u26A1'));
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// NCM VECTOR 37: HTTP errors for both operations
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('NCM VECTOR 37: HTTP errors', () => {
+	describe('ncmQuery — HTTP errors', () => {
+		it('timeout error → throws (all providers failed)', async () => {
+			const ctx = createNcmContext({ ncmCode: '8504.40.10' });
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(new Error('Timeout of 10000ms exceeded'));
+			await expect(ncmQuery(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+
+		it('404 error → throws (NCM not found)', async () => {
+			const ctx = createNcmContext({ ncmCode: '9999.99.99' });
+			const err = new Error('404 Not Found');
+			(err as unknown as Record<string, unknown>).httpCode = 404;
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(err);
+			await expect(ncmQuery(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+
+		it('500 error → throws (server error)', async () => {
+			const ctx = createNcmContext({ ncmCode: '8504.40.10' });
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(new Error('Internal Server Error'));
+			await expect(ncmQuery(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+
+		it('non-Error throw (string) → handled by fallback engine', async () => {
+			const ctx = createNcmContext({ ncmCode: '8504.40.10' });
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue('broken');
+			await expect(ncmQuery(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+
+		it('null throw → handled by fallback engine', async () => {
+			const ctx = createNcmContext({ ncmCode: '8504.40.10' });
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(null);
+			await expect(ncmQuery(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+	});
+
+	describe('ncmSearch — HTTP errors', () => {
+		it('timeout error → throws (all providers failed)', async () => {
+			const ctx = createNcmContext({ searchTerm: 'computador' });
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(new Error('Timeout of 10000ms exceeded'));
+			await expect(ncmSearch(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+
+		it('500 error → throws', async () => {
+			const ctx = createNcmContext({ searchTerm: 'computador' });
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(new Error('Internal Server Error'));
+			await expect(ncmSearch(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+
+		it('non-Error throw (object) → handled by fallback engine', async () => {
+			const ctx = createNcmContext({ searchTerm: 'computador' });
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue({ code: 'ECONNREFUSED' });
+			await expect(ncmSearch(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// NCM VECTOR 38: Garbage API responses (end-to-end through normalizer)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('NCM VECTOR 38: Garbage API responses', () => {
+	describe('ncmQuery — garbage data', () => {
+		it.each([
+			['null', null],
+			['empty object', {}],
+			['empty string', ''],
+			['number 42', 42],
+			['boolean true', true],
+			['empty array', []],
+		])('API returns %s → ncmQuery returns item with safe defaults', async (_label, value) => {
+			const ctx = createNcmContext({ ncmCode: '8504.40.10' });
+			(ctx.helpers.httpRequest as jest.Mock).mockResolvedValue(value);
+			const results = await ncmQuery(ctx, 0);
+			expect(results).toHaveLength(1);
+			expect(results[0].json).toHaveProperty('code', '');
+			expect(results[0].json).toHaveProperty('description', '');
+			expect(results[0].json).toHaveProperty('_meta');
+		});
+	});
+
+	describe('ncmSearch — garbage data', () => {
+		it.each([
+			['null', null],
+			['empty string', ''],
+			['number 42', 42],
+			['boolean true', true],
+			['empty object', {}],
+		])('API returns %s → ncmSearch returns empty array', async (_label, value) => {
+			const ctx = createNcmContext({ searchTerm: 'computador' });
+			(ctx.helpers.httpRequest as jest.Mock).mockResolvedValue(value);
+			const results = await ncmSearch(ctx, 0);
+			expect(results).toEqual([]);
+		});
+
+		it('API returns empty array → ncmSearch returns empty array', async () => {
+			const ctx = createNcmContext({ searchTerm: 'computador' }, []);
+			const results = await ncmSearch(ctx, 0);
+			expect(results).toEqual([]);
+		});
+
+		it('API returns array with null items → ncmSearch filters them out', async () => {
+			const ctx = createNcmContext({ searchTerm: 'computador' });
+			(ctx.helpers.httpRequest as jest.Mock).mockResolvedValue([null, undefined, 42, 'string']);
+			const results = await ncmSearch(ctx, 0);
+			expect(results).toEqual([]);
+		});
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// NCM VECTOR 39: Empty search results ([])
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('NCM VECTOR 39: Empty search results', () => {
+	it('ncmSearch with valid term but API returns [] → returns empty array', async () => {
+		const ctx = createNcmContext({ searchTerm: 'xyznonexistent' }, []);
+		const results = await ncmSearch(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('ncmSearch with valid term but API returns [{}] → returns item with defaults', async () => {
+		const ctx = createNcmContext({ searchTerm: 'test' }, [{}]);
+		const results = await ncmSearch(ctx, 0);
+		expect(results).toHaveLength(1);
+		expect(results[0].json).toHaveProperty('code', '');
+		expect(results[0].json).toHaveProperty('description', '');
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// NCM VECTOR 40: includeRaw alignment
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('NCM VECTOR 40: includeRaw alignment', () => {
+	it('ncmQuery — includeRaw=false → no _raw field', async () => {
+		const rawData = { codigo: '8504.40.10', descricao: 'Carregadores' };
+		const ctx = createNcmContext({ ncmCode: '8504.40.10', includeRaw: false }, rawData);
+		const results = await ncmQuery(ctx, 0);
+		expect(results[0].json._raw).toBeUndefined();
+	});
+
+	it('ncmQuery — includeRaw=true → _raw contains original data', async () => {
+		const rawData = { codigo: '8504.40.10', descricao: 'Carregadores', extra_field: 'extra' };
+		const ctx = createNcmContext({ ncmCode: '8504.40.10', includeRaw: true }, rawData);
+		const results = await ncmQuery(ctx, 0);
+		expect(results[0].json._raw).toEqual(rawData);
+	});
+
+	it('ncmSearch — includeRaw=false → no _raw field on any item', async () => {
+		const rawData = [
+			{ codigo: '8504.40.10', descricao: 'Carregadores' },
+			{ codigo: '8471.30.12', descricao: 'Notebooks' },
+		];
+		const ctx = createNcmContext({ searchTerm: 'computador', includeRaw: false }, rawData);
+		const results = await ncmSearch(ctx, 0);
+		expect(results).toHaveLength(2);
+		for (const r of results) {
+			expect(r.json._raw).toBeUndefined();
+		}
+	});
+
+	it('ncmSearch — includeRaw=true → _raw matches raw items by index', async () => {
+		const rawData = [
+			{ codigo: '8504.40.10', descricao: 'Carregadores', extra: 'a' },
+			{ codigo: '8471.30.12', descricao: 'Notebooks', extra: 'b' },
+		];
+		const ctx = createNcmContext({ searchTerm: 'computador', includeRaw: true }, rawData);
+		const results = await ncmSearch(ctx, 0);
+		expect(results).toHaveLength(2);
+		expect(results[0].json._raw).toEqual(rawData[0]);
+		expect(results[1].json._raw).toEqual(rawData[1]);
+	});
+
+	it('ncmSearch — includeRaw=true with mismatched array lengths (more raw than normalized)', async () => {
+		// normalizeNcmList filters out non-objects, but rawItems keeps all
+		const rawData = [
+			{ codigo: '8504.40.10', descricao: 'Carregadores' },
+			null,
+			{ codigo: '8471.30.12', descricao: 'Notebooks' },
+		];
+		const ctx = createNcmContext({ searchTerm: 'computador', includeRaw: true }, rawData);
+		const results = await ncmSearch(ctx, 0);
+		// normalizeNcmList filters null → 2 items, but rawItems has 3
+		// buildResultItems uses index alignment, so the _raw for the 2nd normalized
+		// item will map to rawData[1] (null) — this is a known mismatch
+		expect(results).toHaveLength(2);
+		expect(results[0].json._raw).toEqual(rawData[0]);
+		// The 2nd normalized item's _raw is rawData[1] (null) — not rawData[2]
+		// This is a NOTED index mismatch when normalizer filters out items
+		expect(results[1].json._raw).toBe(null);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// NCM VECTOR 41: continueOnFail via BrasilHub.execute
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('NCM VECTOR 41: continueOnFail via BrasilHub.execute', () => {
+	const node = new BrasilHub();
+
+	it('ncm/query — continueOnFail catches empty code error', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ncm',
+			operation: 'query',
+			ncmCode: '',
+			continueOnFail: true,
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'ncm',
+				operation: 'query',
+				ncmCode: '',
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('error');
+		expect(result.json.error).toContain('NCM code is required');
+		expect(result.pairedItem).toEqual({ item: 0 });
+	});
+
+	it('ncm/search — continueOnFail catches short search term error', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ncm',
+			operation: 'search',
+			searchTerm: 'ab',
+			continueOnFail: true,
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'ncm',
+				operation: 'search',
+				searchTerm: 'ab',
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('error');
+		expect(result.json.error).toContain('Search term must be at least 3 characters');
+		expect(result.pairedItem).toEqual({ item: 0 });
+	});
+
+	it('ncm/query — continueOnFail catches HTTP error', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ncm',
+			operation: 'query',
+			ncmCode: '8504.40.10',
+			continueOnFail: true,
+			httpError: new Error('Service unavailable'),
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'ncm',
+				operation: 'query',
+				ncmCode: '8504.40.10',
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('error');
+		expect(typeof result.json.error).toBe('string');
+		expect(result.pairedItem).toEqual({ item: 0 });
+	});
+
+	it('ncm/search — continueOnFail catches HTTP error', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ncm',
+			operation: 'search',
+			searchTerm: 'computador',
+			continueOnFail: true,
+			httpError: new Error('Connection refused'),
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'ncm',
+				operation: 'search',
+				searchTerm: 'computador',
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('error');
+		expect(result.json.error).toContain('No provider could fulfill the request');
+		expect(result.pairedItem).toEqual({ item: 0 });
+	});
+
+	it('ncm/query — without continueOnFail throws on validation error', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ncm',
+			operation: 'query',
+			ncmCode: '',
+			continueOnFail: false,
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'ncm',
+				operation: 'query',
+				ncmCode: '',
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		await expect(node.execute.call(ctx)).rejects.toThrow('NCM code is required');
+	});
+
+	it('ncm/query — multiple items with failure → all get error items', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ncm',
+			operation: 'query',
+			continueOnFail: true,
+			items: [{ json: {} }, { json: {} }, { json: {} }],
+			httpError: new Error('Server down'),
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'ncm',
+				operation: 'query',
+				ncmCode: '8504.40.10',
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [results] = await node.execute.call(ctx);
+		expect(results).toHaveLength(3);
+		for (let i = 0; i < 3; i++) {
+			expect(results[i].json).toHaveProperty('error');
+			expect(results[i].pairedItem).toEqual({ item: i });
+		}
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// NCM VECTOR 42: URL construction and pairedItem
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('NCM VECTOR 42: URL construction and pairedItem', () => {
+	it('ncmQuery — httpRequest called with correct headers and timeout', async () => {
+		const ctx = createNcmContext({}, { codigo: '8504.40.10', descricao: 'Test' });
+		await ncmQuery(ctx, 0);
+		const callArgs = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0];
+		expect(callArgs.headers).toHaveProperty('User-Agent', 'n8n-brasil-hub-node/1.0');
+		expect(callArgs.headers).toHaveProperty('Accept', 'application/json');
+		expect(callArgs.method).toBe('GET');
+		expect(callArgs.timeout).toBe(10000);
+	});
+
+	it('ncmQuery — URL contains brasilapi.com.br/api/ncm/v1/', async () => {
+		const ctx = createNcmContext({ ncmCode: '8504.40.10' }, {});
+		await ncmQuery(ctx, 0);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toMatch(/brasilapi\.com\.br\/api\/ncm\/v1\//);
+	});
+
+	it('ncmSearch — URL contains brasilapi.com.br/api/ncm/v1?search=', async () => {
+		const ctx = createNcmContext({ searchTerm: 'computador' }, []);
+		await ncmSearch(ctx, 0);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toMatch(/brasilapi\.com\.br\/api\/ncm\/v1\?search=/);
+	});
+
+	it('ncmQuery — pairedItem uses correct itemIndex', async () => {
+		const ctx = createNcmContext({}, { codigo: '8504.40.10', descricao: 'Test' });
+		const results = await ncmQuery(ctx, 7); // itemIndex = 7
+		expect(results[0].pairedItem).toEqual({ item: 7 });
+	});
+
+	it('ncmSearch — pairedItem uses correct itemIndex on all results', async () => {
+		const rawData = [
+			{ codigo: '8504.40.10', descricao: 'Carregadores' },
+			{ codigo: '8471.30.12', descricao: 'Notebooks' },
+		];
+		const ctx = createNcmContext({ searchTerm: 'computador' }, rawData);
+		const results = await ncmSearch(ctx, 5); // itemIndex = 5
+		expect(results).toHaveLength(2);
+		expect(results[0].pairedItem).toEqual({ item: 5 });
+		expect(results[1].pairedItem).toEqual({ item: 5 });
+	});
+
+	it('ncmQuery — _meta contains correct provider and query', async () => {
+		const ctx = createNcmContext({ ncmCode: '8504.40.10' }, { codigo: '8504.40.10', descricao: 'Test' });
+		const results = await ncmQuery(ctx, 0);
+		const meta = results[0].json._meta as Record<string, unknown>;
+		expect(meta.provider).toBe('brasilapi');
+		expect(meta.query).toBe('8504.40.10');
+		expect(meta.strategy).toBe('direct');
+		expect(meta.queried_at).toBeDefined();
+	});
+
+	it('ncmSearch — _meta contains correct provider and searchTerm as query', async () => {
+		const rawData = [{ codigo: '1234', descricao: 'Test' }];
+		const ctx = createNcmContext({ searchTerm: 'computador' }, rawData);
+		const results = await ncmSearch(ctx, 0);
+		const meta = results[0].json._meta as Record<string, unknown>;
+		expect(meta.provider).toBe('brasilapi');
+		expect(meta.query).toBe('computador');
+		expect(meta.strategy).toBe('direct');
 	});
 });

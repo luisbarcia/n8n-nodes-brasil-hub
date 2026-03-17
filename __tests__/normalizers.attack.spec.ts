@@ -16,6 +16,7 @@ import { normalizeDdd } from '../nodes/BrasilHub/resources/ddd/ddd.normalize';
 import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice } from '../nodes/BrasilHub/resources/fipe/fipe.normalize';
 import { normalizeFeriados } from '../nodes/BrasilHub/resources/feriados/feriados.normalize';
 import { normalizeStates, normalizeCities } from '../nodes/BrasilHub/resources/ibge/ibge.normalize';
+import { normalizeNcm, normalizeNcmList } from '../nodes/BrasilHub/resources/ncm/ncm.normalize';
 import { safeStr } from '../nodes/BrasilHub/shared/utils';
 
 // ─────────────────────────────────────────────────────────────
@@ -2641,6 +2642,355 @@ describe('IBGE VECTOR 10: Prototype pollution attempts', () => {
 	it('PASS — normalizeCities with constructor.prototype in items', () => {
 		const malicious = [{ id: 1, nome: 'Test', constructor: { prototype: { hacked: true } } }];
 		normalizeCities(malicious, 'ibge');
+		expect(({} as Record<string, unknown>).hacked).toBeUndefined();
+	});
+});
+
+// ═════════════════════════════════════════════════════════════════════════
+// NCM ATTACK TESTS
+// ═════════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────
+// NCM VECTOR 1: Malformed API responses (null, undefined, "", 42, {}, true)
+// ─────────────────────────────────────────────────────────────
+describe('NCM VECTOR 1: Malformed API responses', () => {
+	describe('normalizeNcm — non-object data produces safe defaults', () => {
+		it.each([
+			['null', null],
+			['undefined', undefined],
+			['""', ''],
+			['42', 42],
+			['true', true],
+			['[]', []],
+		])('PASS — normalizeNcm(%s) → safe defaults (no crash)', (_label, value) => {
+			const result = normalizeNcm(value);
+			expect(result.code).toBe('');
+			expect(result.description).toBe('');
+			expect(result.startDate).toBe('');
+			expect(result.endDate).toBe('');
+			expect(result.actType).toBe('');
+			expect(result.actNumber).toBe('');
+			expect(result.actYear).toBe('');
+		});
+
+		it('PASS — normalizeNcm({}) → all fields default to empty string', () => {
+			const result = normalizeNcm({});
+			expect(result.code).toBe('');
+			expect(result.description).toBe('');
+			expect(result.startDate).toBe('');
+			expect(result.endDate).toBe('');
+			expect(result.actType).toBe('');
+			expect(result.actNumber).toBe('');
+			expect(result.actYear).toBe('');
+		});
+	});
+
+	describe('normalizeNcmList — non-array data returns empty array', () => {
+		it.each([
+			['null', null],
+			['undefined', undefined],
+			['""', ''],
+			['42', 42],
+			['{}', {}],
+			['true', true],
+		])('PASS — normalizeNcmList(%s) → []', (_label, value) => {
+			expect(normalizeNcmList(value)).toEqual([]);
+		});
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// NCM VECTOR 2: Null/undefined items in search array
+// ─────────────────────────────────────────────────────────────
+describe('NCM VECTOR 2: Null/undefined items in search array', () => {
+	it('PASS — normalizeNcmList([null, undefined]) → []', () => {
+		expect(normalizeNcmList([null, undefined])).toEqual([]);
+	});
+
+	it('PASS — normalizeNcmList with mixed valid and null items → keeps valid only', () => {
+		const data = [
+			{ codigo: '8504.40.10', descricao: 'Carregadores' },
+			null,
+			undefined,
+			{ codigo: '8471.30.12', descricao: 'Notebooks' },
+		];
+		const result = normalizeNcmList(data);
+		expect(result).toHaveLength(2);
+		expect(result[0].code).toBe('8504.40.10');
+		expect(result[1].code).toBe('8471.30.12');
+	});
+
+	it('PASS — non-object primitives in array are filtered out', () => {
+		const data = [42, 'string', true, false, { codigo: '1234', descricao: 'Valid' }];
+		const result = normalizeNcmList(data);
+		expect(result).toHaveLength(1);
+		expect(result[0].code).toBe('1234');
+		expect(result[0].description).toBe('Valid');
+	});
+
+	it('PASS — nested arrays in list are filtered out (not objects)', () => {
+		const data = [[], [1, 2], { codigo: 'X', descricao: 'Y' }];
+		const result = normalizeNcmList(data);
+		// Arrays are typeof 'object' and != null, so they pass filter but produce empty strings
+		// because array has no .codigo/.descricao properties
+		expect(result).toHaveLength(3);
+		expect(result[0].code).toBe('');
+		expect(result[2].code).toBe('X');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// NCM VECTOR 3: XSS/SQLi in descricao and other fields
+// ─────────────────────────────────────────────────────────────
+describe('NCM VECTOR 3: XSS/SQLi payloads (NOTED — passthrough expected for backend)', () => {
+	const xssPayload = '<script>alert("xss")</script>';
+	const sqli = "'; DROP TABLE ncm--";
+	const imgXss = '<img src=x onerror=alert(1)>';
+
+	it('NOTED — normalizeNcm with XSS in descricao passes through', () => {
+		const data = { codigo: '1234', descricao: xssPayload };
+		const result = normalizeNcm(data);
+		expect(result.description).toBe(xssPayload);
+	});
+
+	it('NOTED — normalizeNcm with SQLi in descricao passes through', () => {
+		const data = { codigo: '1234', descricao: sqli };
+		const result = normalizeNcm(data);
+		expect(result.description).toBe(sqli);
+	});
+
+	it('NOTED — normalizeNcm with XSS in codigo passes through', () => {
+		const data = { codigo: xssPayload, descricao: 'Normal' };
+		const result = normalizeNcm(data);
+		expect(result.code).toBe(xssPayload);
+	});
+
+	it('NOTED — normalizeNcm with img/onerror XSS in descricao passes through', () => {
+		const data = { codigo: '1234', descricao: imgXss };
+		const result = normalizeNcm(data);
+		expect(result.description).toBe(imgXss);
+	});
+
+	it('NOTED — normalizeNcm with SQLi in all fields passes through', () => {
+		const data = {
+			codigo: sqli,
+			descricao: sqli,
+			data_inicio: sqli,
+			data_fim: sqli,
+			tipo_ato: sqli,
+			numero_ato: sqli,
+			ano_ato: sqli,
+		};
+		const result = normalizeNcm(data);
+		expect(result.code).toBe(sqli);
+		expect(result.description).toBe(sqli);
+		expect(result.startDate).toBe(sqli);
+		expect(result.endDate).toBe(sqli);
+		expect(result.actType).toBe(sqli);
+		expect(result.actNumber).toBe(sqli);
+		expect(result.actYear).toBe(sqli);
+	});
+
+	it('NOTED — normalizeNcmList with XSS in multiple items passes through', () => {
+		const data = [
+			{ codigo: xssPayload, descricao: sqli },
+			{ codigo: imgXss, descricao: xssPayload },
+		];
+		const result = normalizeNcmList(data);
+		expect(result).toHaveLength(2);
+		expect(result[0].code).toBe(xssPayload);
+		expect(result[0].description).toBe(sqli);
+		expect(result[1].code).toBe(imgXss);
+		expect(result[1].description).toBe(xssPayload);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// NCM VECTOR 4: Missing fields produce safe defaults
+// ─────────────────────────────────────────────────────────────
+describe('NCM VECTOR 4: Missing fields → safe defaults', () => {
+	it('PASS — normalizeNcm with only codigo → other fields default to ""', () => {
+		const result = normalizeNcm({ codigo: '8504.40.10' });
+		expect(result.code).toBe('8504.40.10');
+		expect(result.description).toBe('');
+		expect(result.startDate).toBe('');
+		expect(result.endDate).toBe('');
+		expect(result.actType).toBe('');
+		expect(result.actNumber).toBe('');
+		expect(result.actYear).toBe('');
+	});
+
+	it('PASS — normalizeNcm with only descricao → code defaults to ""', () => {
+		const result = normalizeNcm({ descricao: 'Carregadores de acumuladores' });
+		expect(result.code).toBe('');
+		expect(result.description).toBe('Carregadores de acumuladores');
+	});
+
+	it('PASS — normalizeNcm with extra unknown fields → ignores them', () => {
+		const data = { codigo: '1234', descricao: 'Test', unknown_field: 'ignored', nested: { deep: true } };
+		const result = normalizeNcm(data);
+		expect(result.code).toBe('1234');
+		expect(result.description).toBe('Test');
+		expect((result as unknown as Record<string, unknown>).unknown_field).toBeUndefined();
+		expect((result as unknown as Record<string, unknown>).nested).toBeUndefined();
+	});
+
+	it('PASS — normalizeNcmList with items missing some fields → defaults per item', () => {
+		const data = [
+			{ codigo: '1111' },
+			{ descricao: 'Only description' },
+			{},
+		];
+		const result = normalizeNcmList(data);
+		expect(result).toHaveLength(3);
+		expect(result[0].code).toBe('1111');
+		expect(result[0].description).toBe('');
+		expect(result[1].code).toBe('');
+		expect(result[1].description).toBe('Only description');
+		expect(result[2].code).toBe('');
+		expect(result[2].description).toBe('');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// NCM VECTOR 5: Unknown types for each field
+// ─────────────────────────────────────────────────────────────
+describe('NCM VECTOR 5: Unknown types for each field', () => {
+	it('PASS — numeric values for string fields → coerced via safeStr', () => {
+		const data = {
+			codigo: 85044010,
+			descricao: 42,
+			data_inicio: 20220401,
+			data_fim: 99991231,
+			tipo_ato: 0,
+			numero_ato: 272,
+			ano_ato: 2021,
+		};
+		const result = normalizeNcm(data);
+		expect(result.code).toBe('85044010');
+		expect(result.description).toBe('42');
+		expect(result.startDate).toBe('20220401');
+		expect(result.endDate).toBe('99991231');
+		expect(result.actType).toBe('0');
+		expect(result.actNumber).toBe('272');
+		expect(result.actYear).toBe('2021');
+	});
+
+	it('PASS — boolean values for string fields → coerced via safeStr', () => {
+		const data = {
+			codigo: true,
+			descricao: false,
+			data_inicio: true,
+			data_fim: false,
+			tipo_ato: true,
+			numero_ato: false,
+			ano_ato: true,
+		};
+		const result = normalizeNcm(data);
+		expect(result.code).toBe('true');
+		expect(result.description).toBe('false');
+		expect(result.startDate).toBe('true');
+		expect(result.endDate).toBe('false');
+		expect(result.actType).toBe('true');
+		expect(result.actNumber).toBe('false');
+		expect(result.actYear).toBe('true');
+	});
+
+	it('PASS — object values for string fields → safeStr returns ""', () => {
+		const data = {
+			codigo: { nested: true },
+			descricao: [1, 2, 3],
+			data_inicio: { date: '2022' },
+			data_fim: null,
+			tipo_ato: undefined,
+			numero_ato: { n: 272 },
+			ano_ato: [],
+		};
+		const result = normalizeNcm(data);
+		// safeStr returns '' for objects, null, undefined
+		expect(result.code).toBe('');
+		expect(result.description).toBe('');
+		expect(result.startDate).toBe('');
+		expect(result.endDate).toBe('');
+		expect(result.actType).toBe('');
+		expect(result.actNumber).toBe('');
+		expect(result.actYear).toBe('');
+	});
+
+	it('PASS — mixed types in normalizeNcmList items → each field handled by safeStr', () => {
+		const data = [
+			{ codigo: 12345, descricao: true, data_inicio: null },
+			{ codigo: { bad: true }, descricao: undefined, tipo_ato: [1] },
+		];
+		const result = normalizeNcmList(data);
+		expect(result).toHaveLength(2);
+		expect(result[0].code).toBe('12345');
+		expect(result[0].description).toBe('true');
+		expect(result[0].startDate).toBe('');
+		expect(result[1].code).toBe('');
+		expect(result[1].description).toBe('');
+		expect(result[1].actType).toBe('');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// NCM VECTOR 6: Large payloads
+// ─────────────────────────────────────────────────────────────
+describe('NCM VECTOR 6: Large payloads', () => {
+	it('PASS — normalizeNcmList with 100K items does not crash', () => {
+		const data = Array.from({ length: 100_000 }, (_, i) => ({
+			codigo: `${8000 + i}.00.00`,
+			descricao: `Item ${i}`,
+		}));
+		const result = normalizeNcmList(data);
+		expect(result).toHaveLength(100_000);
+		expect(result[0].code).toBe('8000.00.00');
+		expect(result[99_999].code).toBe('107999.00.00');
+	});
+
+	it('PASS — normalizeNcm with very long description does not crash', () => {
+		const longDesc = 'A'.repeat(1_000_000);
+		const result = normalizeNcm({ codigo: '1234', descricao: longDesc });
+		expect(result.description.length).toBe(1_000_000);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// NCM VECTOR 7: Unicode/emoji in NCM fields
+// ─────────────────────────────────────────────────────────────
+describe('NCM VECTOR 7: Unicode/emoji in NCM fields', () => {
+	it('PASS — normalizeNcm with emoji in description passes through', () => {
+		const data = { codigo: '8504.40.10', descricao: 'Carregadores \u{1F50C}\u{26A1}' };
+		const result = normalizeNcm(data);
+		expect(result.description).toBe('Carregadores \u{1F50C}\u{26A1}');
+	});
+
+	it('PASS — normalizeNcm with CJK characters in description', () => {
+		const data = { codigo: '1234', descricao: '\u5145\u7535\u5668' };
+		const result = normalizeNcm(data);
+		expect(result.description).toBe('\u5145\u7535\u5668');
+	});
+
+	it('PASS — normalizeNcm with zero-width characters in code', () => {
+		const data = { codigo: '8504\u200B.40\u200C.10', descricao: 'Test' };
+		const result = normalizeNcm(data);
+		expect(result.code).toBe('8504\u200B.40\u200C.10');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// NCM VECTOR 8: Prototype pollution attempts
+// ─────────────────────────────────────────────────────────────
+describe('NCM VECTOR 8: Prototype pollution attempts', () => {
+	it('PASS — normalizeNcm with __proto__ field does not pollute Object prototype', () => {
+		const malicious = { codigo: '1234', descricao: 'Test', __proto__: { polluted: true } };
+		normalizeNcm(malicious);
+		expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+	});
+
+	it('PASS — normalizeNcmList with constructor.prototype in items', () => {
+		const malicious = [{ codigo: '1234', descricao: 'Test', constructor: { prototype: { hacked: true } } }];
+		normalizeNcmList(malicious);
 		expect(({} as Record<string, unknown>).hacked).toBeUndefined();
 	});
 });
