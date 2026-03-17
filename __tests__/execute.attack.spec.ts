@@ -23,6 +23,7 @@ import { banksList } from '../nodes/BrasilHub/resources/banks/banks.execute';
 import { dddQuery } from '../nodes/BrasilHub/resources/ddd/ddd.execute';
 import { fipeBrands, fipeModels, fipeYears, fipePrice } from '../nodes/BrasilHub/resources/fipe/fipe.execute';
 import { feriadosQuery } from '../nodes/BrasilHub/resources/feriados/feriados.execute';
+import { ibgeStates, ibgeCities } from '../nodes/BrasilHub/resources/ibge/ibge.execute';
 import { BrasilHub } from '../nodes/BrasilHub/BrasilHub.node';
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import type { IProvider } from '../nodes/BrasilHub/types';
@@ -1857,5 +1858,661 @@ describe('FERIADOS VECTOR 24: URL construction', () => {
 		const results = await feriadosQuery(ctx, 5); // itemIndex = 5
 
 		expect(results[0].pairedItem).toEqual({ item: 5 });
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE EXECUTE ATTACK TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─── IBGE Helpers ────────────────────────────────────────────────────
+
+function createIbgeContext(
+	overrides: Record<string, unknown> = {},
+	httpResponse: unknown = [],
+) {
+	const params: Record<string, unknown> = {
+		uf: 'SP',
+		includeRaw: false,
+		...overrides,
+	};
+	return {
+		getNodeParameter: jest.fn((name: string, _index: number, fallback?: unknown) =>
+			params[name] ?? fallback,
+		),
+		getNode: jest.fn(() => ({ name: 'Brasil Hub' })),
+		helpers: {
+			httpRequest: jest.fn().mockResolvedValue(httpResponse),
+		},
+	} as unknown as Parameters<typeof ibgeStates>[0];
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE VECTOR 25: UF validation — invalid values
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('IBGE VECTOR 25: UF validation — invalid values', () => {
+	it('ibgeCities — "XX" (invalid UF) → throws NodeOperationError', async () => {
+		const ctx = createIbgeContext({ uf: 'XX' });
+		await expect(ibgeCities(ctx, 0)).rejects.toThrow('Invalid state');
+	});
+
+	it('ibgeCities — "" (empty string) → throws NodeOperationError', async () => {
+		const ctx = createIbgeContext({ uf: '' });
+		await expect(ibgeCities(ctx, 0)).rejects.toThrow('Invalid state');
+	});
+
+	it('ibgeCities — "123" (numeric string) → throws NodeOperationError', async () => {
+		const ctx = createIbgeContext({ uf: '123' });
+		await expect(ibgeCities(ctx, 0)).rejects.toThrow('Invalid state');
+	});
+
+	it('ibgeCities — "A" (single character) → throws NodeOperationError', async () => {
+		const ctx = createIbgeContext({ uf: 'A' });
+		await expect(ibgeCities(ctx, 0)).rejects.toThrow('Invalid state');
+	});
+
+	it('ibgeCities — "ABC" (3 characters) → throws NodeOperationError', async () => {
+		const ctx = createIbgeContext({ uf: 'ABC' });
+		await expect(ibgeCities(ctx, 0)).rejects.toThrow('Invalid state');
+	});
+
+	it('ibgeCities — "  " (whitespace) → throws NodeOperationError', async () => {
+		const ctx = createIbgeContext({ uf: '  ' });
+		await expect(ibgeCities(ctx, 0)).rejects.toThrow('Invalid state');
+	});
+
+	it('ibgeCities — "BR" (not a state) → throws NodeOperationError', async () => {
+		const ctx = createIbgeContext({ uf: 'BR' });
+		await expect(ibgeCities(ctx, 0)).rejects.toThrow('Invalid state');
+	});
+
+	it('ibgeCities — "São Paulo" (full state name) → throws NodeOperationError', async () => {
+		const ctx = createIbgeContext({ uf: 'São Paulo' });
+		await expect(ibgeCities(ctx, 0)).rejects.toThrow('Invalid state');
+	});
+
+	it('ibgeCities — XSS in UF → throws NodeOperationError', async () => {
+		const ctx = createIbgeContext({ uf: '<script>alert("xss")</script>' });
+		await expect(ibgeCities(ctx, 0)).rejects.toThrow('Invalid state');
+	});
+
+	it('ibgeCities — SQL injection in UF → throws NodeOperationError', async () => {
+		const ctx = createIbgeContext({ uf: "'; DROP TABLE--" });
+		await expect(ibgeCities(ctx, 0)).rejects.toThrow('Invalid state');
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE VECTOR 26: UF validation — valid values (all 27 states)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('IBGE VECTOR 26: UF validation — valid values', () => {
+	const ALL_UFS = [
+		'AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS',
+		'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC',
+		'SE', 'SP', 'TO',
+	];
+
+	it.each(ALL_UFS)('ibgeCities — "%s" passes validation', async (uf) => {
+		const ctx = createIbgeContext({ uf }, []);
+		// Should not throw — validation passes, empty result from mock
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('ibgeCities — boundary "AC" (first alphabetically) passes', async () => {
+		const ctx = createIbgeContext({ uf: 'AC' }, []);
+		await expect(ibgeCities(ctx, 0)).resolves.toBeDefined();
+	});
+
+	it('ibgeCities — boundary "TO" (last alphabetically) passes', async () => {
+		const ctx = createIbgeContext({ uf: 'TO' }, []);
+		await expect(ibgeCities(ctx, 0)).resolves.toBeDefined();
+	});
+
+	it('all 27 UFs are accepted', () => {
+		expect(ALL_UFS).toHaveLength(27);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE VECTOR 27: Lowercase UF acceptance
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('IBGE VECTOR 27: Lowercase UF acceptance', () => {
+	it('ibgeCities — "sp" (lowercase) is auto-uppercased → passes validation', async () => {
+		const ctx = createIbgeContext({ uf: 'sp' }, []);
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('ibgeCities — "Sp" (mixed case) is auto-uppercased → passes validation', async () => {
+		const ctx = createIbgeContext({ uf: 'Sp' }, []);
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('ibgeCities — "rj" (lowercase) is auto-uppercased → passes validation', async () => {
+		const ctx = createIbgeContext({ uf: 'rj' }, []);
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('ibgeCities — " sp " (with whitespace) is trimmed and uppercased → passes', async () => {
+		const ctx = createIbgeContext({ uf: ' sp ' }, []);
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('ibgeCities — "ac" (lowercase boundary) is auto-uppercased → passes', async () => {
+		const ctx = createIbgeContext({ uf: 'ac' }, []);
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('ibgeCities — "to" (lowercase boundary) is auto-uppercased → passes', async () => {
+		const ctx = createIbgeContext({ uf: 'to' }, []);
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toEqual([]);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE VECTOR 28: HTTP errors
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('IBGE VECTOR 28: HTTP errors', () => {
+	describe('timeout errors', () => {
+		it('ibgeStates — all providers timeout → throws combined error', async () => {
+			const ctx = createIbgeContext({});
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(new Error('ETIMEDOUT'));
+			await expect(ibgeStates(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+
+		it('ibgeCities — all providers timeout → throws combined error', async () => {
+			const ctx = createIbgeContext({ uf: 'SP' });
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(new Error('ETIMEDOUT'));
+			await expect(ibgeCities(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+	});
+
+	describe('404 Not Found', () => {
+		it('ibgeStates — all providers return 404 → throws combined error', async () => {
+			const ctx = createIbgeContext({});
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(new Error('404 Not Found'));
+			await expect(ibgeStates(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+
+		it('ibgeCities — all providers return 404 → throws combined error', async () => {
+			const ctx = createIbgeContext({ uf: 'SP' });
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(new Error('404 Not Found'));
+			await expect(ibgeCities(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+	});
+
+	describe('500 Internal Server Error', () => {
+		it('ibgeStates — all providers return 500 → throws combined error', async () => {
+			const ctx = createIbgeContext({});
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(
+				new Error('Request failed with status code 500'),
+			);
+			await expect(ibgeStates(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+
+		it('ibgeCities — all providers return 500 → throws combined error', async () => {
+			const ctx = createIbgeContext({ uf: 'SP' });
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(
+				new Error('Request failed with status code 500'),
+			);
+			await expect(ibgeCities(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+	});
+
+	describe('non-Error throws', () => {
+		it('ibgeStates — httpRequest throws string → fallback handles it', async () => {
+			const ctx = createIbgeContext({});
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue('rate limited');
+			await expect(ibgeStates(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+
+		it('ibgeCities — httpRequest throws null → fallback handles it', async () => {
+			const ctx = createIbgeContext({ uf: 'SP' });
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(null);
+			await expect(ibgeCities(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		});
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE VECTOR 29: End-to-end via BrasilHub.execute (continueOnFail)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('IBGE VECTOR 29: End-to-end via BrasilHub.execute (continueOnFail)', () => {
+	const node = new BrasilHub();
+
+	it('ibge/states — continueOnFail catches HTTP errors', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ibge',
+			operation: 'states',
+			continueOnFail: true,
+			httpError: new Error('Service unavailable'),
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'ibge',
+				operation: 'states',
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('error');
+		expect(typeof result.json.error).toBe('string');
+		expect(result.pairedItem).toEqual({ item: 0 });
+	});
+
+	it('ibge/cities — continueOnFail catches invalid UF', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ibge',
+			operation: 'cities',
+			continueOnFail: true,
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'ibge',
+				operation: 'cities',
+				uf: 'XX',
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('error');
+		expect(result.json.error).toContain('Invalid state');
+	});
+
+	it('ibge/cities — continueOnFail catches HTTP errors', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ibge',
+			operation: 'cities',
+			continueOnFail: true,
+			httpError: new Error('Connection refused'),
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'ibge',
+				operation: 'cities',
+				uf: 'SP',
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('error');
+		expect(result.json.error).toContain('No provider could fulfill the request');
+		expect(result.pairedItem).toEqual({ item: 0 });
+	});
+
+	it('ibge/states — without continueOnFail throws on HTTP error', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ibge',
+			operation: 'states',
+			continueOnFail: false,
+			httpError: new Error('Service down'),
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'ibge',
+				operation: 'states',
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		await expect(node.execute.call(ctx)).rejects.toThrow();
+	});
+
+	it('ibge/states — multiple items with failure → all get errors', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ibge',
+			operation: 'states',
+			continueOnFail: true,
+			items: [{ json: {} }, { json: {} }, { json: {} }],
+			httpError: new Error('Connection refused'),
+		});
+		const origGetParam = ctx.getNodeParameter as jest.Mock;
+		origGetParam.mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'ibge',
+				operation: 'states',
+				includeRaw: false,
+			};
+			return params[name] ?? fallback;
+		});
+
+		const [results] = await node.execute.call(ctx);
+		expect(results).toHaveLength(3);
+		for (let i = 0; i < results.length; i++) {
+			expect(results[i].json).toHaveProperty('error');
+			expect(results[i].json.error).toContain('No provider could fulfill the request');
+			expect(results[i].pairedItem).toEqual({ item: i });
+		}
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE VECTOR 30: Fallback behavior
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('IBGE VECTOR 30: Fallback behavior', () => {
+	it('ibgeStates — brasilapi fails, ibge succeeds → returns ibge data with fallback strategy', async () => {
+		let callIndex = 0;
+		const ibgeData = [
+			{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } },
+			{ id: 33, sigla: 'RJ', nome: 'Rio de Janeiro', regiao: { nome: 'Sudeste' } },
+		];
+		const ctx = createIbgeContext({});
+		(ctx.helpers.httpRequest as jest.Mock).mockImplementation(async () => {
+			callIndex++;
+			if (callIndex === 1) throw new Error('brasilapi down');
+			return ibgeData;
+		});
+
+		const results = await ibgeStates(ctx, 0);
+		expect(results).toHaveLength(2);
+		expect(results[0].json).toHaveProperty('abbreviation', 'SP');
+		expect(results[0].json).toHaveProperty('name', 'São Paulo');
+		expect(results[0].json).toHaveProperty('region', 'Sudeste');
+		expect((results[0].json._meta as Record<string, unknown>).strategy).toBe('fallback');
+		expect((results[0].json._meta as Record<string, unknown>).provider).toBe('ibge');
+	});
+
+	it('ibgeStates — brasilapi succeeds → returns brasilapi data with direct strategy', async () => {
+		const brasilData = [
+			{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } },
+		];
+		const ctx = createIbgeContext({}, brasilData);
+
+		const results = await ibgeStates(ctx, 0);
+		expect(results).toHaveLength(1);
+		expect(results[0].json).toHaveProperty('abbreviation', 'SP');
+		expect((results[0].json._meta as Record<string, unknown>).strategy).toBe('direct');
+		expect((results[0].json._meta as Record<string, unknown>).provider).toBe('brasilapi');
+	});
+
+	it('ibgeCities — brasilapi fails, ibge succeeds → returns ibge data with fallback strategy', async () => {
+		let callIndex = 0;
+		const ibgeData = [
+			{ id: 3550308, nome: 'São Paulo' },
+			{ id: 3518800, nome: 'Guarulhos' },
+		];
+		const ctx = createIbgeContext({ uf: 'SP' });
+		(ctx.helpers.httpRequest as jest.Mock).mockImplementation(async () => {
+			callIndex++;
+			if (callIndex === 1) throw new Error('brasilapi down');
+			return ibgeData;
+		});
+
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toHaveLength(2);
+		expect(results[0].json).toHaveProperty('name', 'São Paulo');
+		expect(results[0].json).toHaveProperty('code', 3550308);
+		expect((results[0].json._meta as Record<string, unknown>).strategy).toBe('fallback');
+		expect((results[0].json._meta as Record<string, unknown>).provider).toBe('ibge');
+	});
+
+	it('ibgeCities — brasilapi succeeds directly → direct strategy', async () => {
+		const brasilData = [
+			{ nome: 'São Paulo', codigo_ibge: '3550308' },
+		];
+		const ctx = createIbgeContext({ uf: 'SP' }, brasilData);
+
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toHaveLength(1);
+		expect(results[0].json).toHaveProperty('name', 'São Paulo');
+		expect(results[0].json).toHaveProperty('code', 3550308);
+		expect((results[0].json._meta as Record<string, unknown>).strategy).toBe('direct');
+		expect((results[0].json._meta as Record<string, unknown>).provider).toBe('brasilapi');
+	});
+
+	it('both providers fail for ibgeStates → throws combined error with both provider names', async () => {
+		const ctx = createIbgeContext({});
+		let callIndex = 0;
+		(ctx.helpers.httpRequest as jest.Mock).mockImplementation(async () => {
+			callIndex++;
+			if (callIndex === 1) throw new Error('brasilapi timeout');
+			throw new Error('ibge 500');
+		});
+
+		await expect(ibgeStates(ctx, 0)).rejects.toThrow('No provider could fulfill the request');
+		try {
+			await ibgeStates(ctx, 0);
+		} catch (e) {
+			expect((e as Error).message).toContain('brasilapi');
+			expect((e as Error).message).toContain('ibge');
+		}
+	});
+
+	it('fallback for ibgeStates: httpRequest called exactly 2 times', async () => {
+		const ctx = createIbgeContext({});
+		let callIndex = 0;
+		(ctx.helpers.httpRequest as jest.Mock).mockImplementation(async () => {
+			callIndex++;
+			if (callIndex === 1) throw new Error('brasilapi down');
+			return [];
+		});
+
+		await ibgeStates(ctx, 0);
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledTimes(2);
+	});
+
+	it('fallback for ibgeCities: httpRequest called exactly 2 times', async () => {
+		const ctx = createIbgeContext({ uf: 'SP' });
+		let callIndex = 0;
+		(ctx.helpers.httpRequest as jest.Mock).mockImplementation(async () => {
+			callIndex++;
+			if (callIndex === 1) throw new Error('brasilapi down');
+			return [];
+		});
+
+		await ibgeCities(ctx, 0);
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledTimes(2);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE VECTOR 31: API returns garbage (non-array) data
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('IBGE VECTOR 31: API returns garbage for ibge operations', () => {
+	describe('ibgeStates — garbage API responses return empty array', () => {
+		it.each([
+			['null', null],
+			['undefined', undefined],
+			['empty string', ''],
+			['number 42', 42],
+			['boolean true', true],
+			['object {}', {}],
+		])('API returns %s → ibgeStates returns empty array', async (_label, value) => {
+			const ctx = createIbgeContext({}, value);
+			const results = await ibgeStates(ctx, 0);
+			expect(results).toEqual([]);
+		});
+	});
+
+	describe('ibgeCities — garbage API responses return empty array', () => {
+		it.each([
+			['null', null],
+			['undefined', undefined],
+			['empty string', ''],
+			['number 42', 42],
+			['boolean true', true],
+			['object {}', {}],
+		])('API returns %s → ibgeCities returns empty array', async (_label, value) => {
+			const ctx = createIbgeContext({ uf: 'SP' }, value);
+			const results = await ibgeCities(ctx, 0);
+			expect(results).toEqual([]);
+		});
+	});
+
+	it('ibgeStates — HTML error page → returns empty (string is not array)', async () => {
+		const ctx = createIbgeContext({}, '<html><body>503 Service Unavailable</body></html>');
+		const results = await ibgeStates(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('ibgeCities — HTML error page → returns empty (string is not array)', async () => {
+		const ctx = createIbgeContext({ uf: 'SP' }, '<html><body>503 Service Unavailable</body></html>');
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('ibgeStates — error object → returns empty (normalization guard)', async () => {
+		const ctx = createIbgeContext({}, { error: 'service error', status: 500 });
+		const results = await ibgeStates(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('ibgeCities — error object → returns empty (normalization guard)', async () => {
+		const ctx = createIbgeContext({ uf: 'SP' }, { error: 'not found', status: 404 });
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toEqual([]);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE VECTOR 32: includeRaw alignment
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('IBGE VECTOR 32: includeRaw alignment', () => {
+	it('ibgeStates — includeRaw=true → _raw[index] aligns with normalized[index]', async () => {
+		const rawData = [
+			{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } },
+			{ id: 33, sigla: 'RJ', nome: 'Rio de Janeiro', regiao: { nome: 'Sudeste' } },
+			{ id: 31, sigla: 'MG', nome: 'Minas Gerais', regiao: { nome: 'Sudeste' } },
+		];
+		const ctx = createIbgeContext({ includeRaw: true }, rawData);
+		const results = await ibgeStates(ctx, 0);
+
+		expect(results).toHaveLength(3);
+		for (let i = 0; i < results.length; i++) {
+			expect(results[i].json._raw).toBeDefined();
+			expect((results[i].json._raw as Record<string, unknown>).sigla).toBe(rawData[i].sigla);
+		}
+	});
+
+	it('ibgeCities — includeRaw=true → _raw[index] aligns with normalized[index]', async () => {
+		const rawData = [
+			{ nome: 'São Paulo', codigo_ibge: '3550308' },
+			{ nome: 'Guarulhos', codigo_ibge: '3518800' },
+		];
+		const ctx = createIbgeContext({ uf: 'SP', includeRaw: true }, rawData);
+		const results = await ibgeCities(ctx, 0);
+
+		expect(results).toHaveLength(2);
+		for (let i = 0; i < results.length; i++) {
+			expect(results[i].json._raw).toBeDefined();
+			expect((results[i].json._raw as Record<string, unknown>).nome).toBe(rawData[i].nome);
+		}
+	});
+
+	it('ibgeStates — includeRaw=false → no _raw field', async () => {
+		const rawData = [
+			{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } },
+		];
+		const ctx = createIbgeContext({ includeRaw: false }, rawData);
+		const results = await ibgeStates(ctx, 0);
+
+		expect(results).toHaveLength(1);
+		expect(results[0].json._raw).toBeUndefined();
+	});
+
+	it('ibgeCities — includeRaw=false → no _raw field', async () => {
+		const rawData = [{ nome: 'São Paulo', codigo_ibge: '3550308' }];
+		const ctx = createIbgeContext({ uf: 'SP', includeRaw: false }, rawData);
+		const results = await ibgeCities(ctx, 0);
+
+		expect(results).toHaveLength(1);
+		expect(results[0].json._raw).toBeUndefined();
+	});
+
+	it('ibgeStates — includeRaw=true with non-array response → empty, no crash', async () => {
+		const ctx = createIbgeContext({ includeRaw: true }, { unexpected: 'object' });
+		const results = await ibgeStates(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('ibgeCities — includeRaw=true with non-array response → empty, no crash', async () => {
+		const ctx = createIbgeContext({ uf: 'SP', includeRaw: true }, 'not an array');
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toEqual([]);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE VECTOR 33: Empty API response ([]) → returns empty array
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('IBGE VECTOR 33: Empty API response', () => {
+	it('API returns [] → ibgeStates returns empty array', async () => {
+		const ctx = createIbgeContext({}, []);
+		const results = await ibgeStates(ctx, 0);
+		expect(results).toEqual([]);
+	});
+
+	it('API returns [] → ibgeCities returns empty array', async () => {
+		const ctx = createIbgeContext({ uf: 'SP' }, []);
+		const results = await ibgeCities(ctx, 0);
+		expect(results).toEqual([]);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE VECTOR 34: URL construction / UF encoding
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('IBGE VECTOR 34: URL construction', () => {
+	it('ibgeStates — httpRequest called with correct headers and timeout', async () => {
+		const ctx = createIbgeContext({}, []);
+		await ibgeStates(ctx, 0);
+		const callArgs = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0];
+		expect(callArgs.headers).toHaveProperty('User-Agent', 'n8n-brasil-hub-node/1.0');
+		expect(callArgs.headers).toHaveProperty('Accept', 'application/json');
+		expect(callArgs.method).toBe('GET');
+		expect(callArgs.timeout).toBe(10000);
+	});
+
+	it('ibgeCities — UF is properly encoded in provider URLs', async () => {
+		const ctx = createIbgeContext({ uf: 'SP' }, []);
+		await ibgeCities(ctx, 0);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toContain('SP');
+		expect(callUrl).toMatch(/brasilapi\.com\.br\/api\/ibge\/municipios\/v1\/SP/);
+	});
+
+	it('ibgeStates — pairedItem uses correct itemIndex', async () => {
+		const rawData = [
+			{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } },
+		];
+		const ctx = createIbgeContext({}, rawData);
+		const results = await ibgeStates(ctx, 7); // itemIndex = 7
+
+		expect(results[0].pairedItem).toEqual({ item: 7 });
+	});
+
+	it('ibgeCities — pairedItem uses correct itemIndex', async () => {
+		const rawData = [{ nome: 'São Paulo', codigo_ibge: '3550308' }];
+		const ctx = createIbgeContext({ uf: 'SP' }, rawData);
+		const results = await ibgeCities(ctx, 3); // itemIndex = 3
+
+		expect(results[0].pairedItem).toEqual({ item: 3 });
 	});
 });
