@@ -160,6 +160,28 @@ export interface ICity {
 	_raw?: unknown;
 }
 
+/** Normalized NCM (tax classification) result from BrasilAPI. */
+export interface INcm {
+	/** NCM code with dots (e.g. "8504.40.10"). */
+	code: string;
+	/** Description (e.g. "Carregadores de acumuladores"). */
+	description: string;
+	/** Effective start date (ISO, e.g. "2022-04-01"). */
+	startDate: string;
+	/** Effective end date (ISO, e.g. "9999-12-31"). */
+	endDate: string;
+	/** Act type (e.g. "Res Camex"). */
+	actType: string;
+	/** Act number (e.g. "272"). */
+	actNumber: string;
+	/** Act year (e.g. "2021"). */
+	actYear: string;
+	/** Query metadata. */
+	_meta?: IMeta;
+	/** Raw provider response. */
+	_raw?: unknown;
+}
+
 /** Normalized Brazilian public holiday result, unified across providers (BrasilAPI, Nager.Date). */
 export interface IFeriado {
 	/** ISO 8601 date string (e.g. "2026-01-01"). */

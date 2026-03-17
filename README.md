@@ -5,7 +5,7 @@
 <h1 align="center">Brasil Hub for n8n</h1>
 
 <p align="center">
-  Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Feriados, FIPE &amp; IBGE) with automatic multi-provider fallback — zero configuration, zero credentials.
+  Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Feriados, FIPE, IBGE &amp; NCM) with automatic multi-provider fallback — zero configuration, zero credentials.
 </p>
 
 <p align="center">
@@ -59,6 +59,8 @@ npm install n8n-nodes-brasil-hub
 | **FIPE** | Price | Get FIPE table price for a vehicle | parallelum |
 | **IBGE** | States | List all Brazilian states | BrasilAPI → IBGE API |
 | **IBGE** | Cities | List municipalities by state | BrasilAPI → IBGE API |
+| **NCM** | Query | Fetch tax classification by code | BrasilAPI |
+| **NCM** | Search | Search tax codes by description | BrasilAPI |
 
 ## Example Output
 
