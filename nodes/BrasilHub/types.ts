@@ -132,6 +132,34 @@ export interface IDdd {
 	_raw?: unknown;
 }
 
+/** Normalized Brazilian state (UF) result, unified across providers (BrasilAPI, IBGE). */
+export interface IState {
+	/** IBGE state code (e.g. 35 for SP). */
+	code: number;
+	/** Two-letter state abbreviation (e.g. "SP"). */
+	abbreviation: string;
+	/** Full state name (e.g. "São Paulo"). */
+	name: string;
+	/** Region name (e.g. "Sudeste"). */
+	region: string;
+	/** Query metadata. */
+	_meta?: IMeta;
+	/** Raw provider response. */
+	_raw?: unknown;
+}
+
+/** Normalized Brazilian municipality result, unified across providers (BrasilAPI, IBGE). */
+export interface ICity {
+	/** IBGE municipality code (e.g. 3500105). */
+	code: number;
+	/** Municipality name (e.g. "Adamantina"). */
+	name: string;
+	/** Query metadata. */
+	_meta?: IMeta;
+	/** Raw provider response. */
+	_raw?: unknown;
+}
+
 /** Normalized Brazilian public holiday result, unified across providers (BrasilAPI, Nager.Date). */
 export interface IFeriado {
 	/** ISO 8601 date string (e.g. "2026-01-01"). */

@@ -15,6 +15,7 @@ import { normalizeBank, normalizeBanks } from '../nodes/BrasilHub/resources/bank
 import { normalizeDdd } from '../nodes/BrasilHub/resources/ddd/ddd.normalize';
 import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice } from '../nodes/BrasilHub/resources/fipe/fipe.normalize';
 import { normalizeFeriados } from '../nodes/BrasilHub/resources/feriados/feriados.normalize';
+import { normalizeStates, normalizeCities } from '../nodes/BrasilHub/resources/ibge/ibge.normalize';
 import { safeStr } from '../nodes/BrasilHub/shared/utils';
 
 // ─────────────────────────────────────────────────────────────
@@ -2143,6 +2144,503 @@ describe('FERIADOS VECTOR 10: Prototype pollution attempts', () => {
 			{ date: '2026-01-01', name: 'Test', constructor: { prototype: { hacked: true } } },
 		];
 		normalizeFeriados(malicious, 'nagerdate');
+		expect(({} as Record<string, unknown>).hacked).toBeUndefined();
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// IBGE NORMALIZER ATTACK TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────
+// IBGE VECTOR 1: Malformed API responses (null, undefined, "", 42, {}, true)
+// ─────────────────────────────────────────────────────────────
+describe('IBGE VECTOR 1: Malformed API responses', () => {
+	describe('normalizeStates — non-array data returns empty array for both providers', () => {
+		for (const provider of ['brasilapi', 'ibge'] as const) {
+			it.each([
+				['null', null],
+				['undefined', undefined],
+				['""', ''],
+				['42', 42],
+				['{}', {}],
+				['true', true],
+			])(`PASS — normalizeStates(%s, "${provider}") → []`, (_label, value) => {
+				expect(normalizeStates(value, provider)).toEqual([]);
+			});
+		}
+	});
+
+	describe('normalizeCities — non-array data returns empty array for both providers', () => {
+		for (const provider of ['brasilapi', 'ibge'] as const) {
+			it.each([
+				['null', null],
+				['undefined', undefined],
+				['""', ''],
+				['42', 42],
+				['{}', {}],
+				['true', true],
+			])(`PASS — normalizeCities(%s, "${provider}") → []`, (_label, value) => {
+				expect(normalizeCities(value, provider)).toEqual([]);
+			});
+		}
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// IBGE VECTOR 2: Null/undefined items in array
+// ─────────────────────────────────────────────────────────────
+describe('IBGE VECTOR 2: Null/undefined items in array', () => {
+	describe('normalizeStates — filters out null/undefined items', () => {
+		for (const provider of ['brasilapi', 'ibge'] as const) {
+			it(`PASS — normalizeStates([null, undefined], "${provider}") → []`, () => {
+				expect(normalizeStates([null, undefined], provider)).toEqual([]);
+			});
+
+			it(`PASS — normalizeStates with mixed valid and null items (${provider}) → keeps valid only`, () => {
+				const data = [
+					{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } },
+					null,
+					undefined,
+					{ id: 33, sigla: 'RJ', nome: 'Rio de Janeiro', regiao: { nome: 'Sudeste' } },
+				];
+				const result = normalizeStates(data, provider);
+				expect(result).toHaveLength(2);
+				expect(result[0].abbreviation).toBe('SP');
+				expect(result[1].abbreviation).toBe('RJ');
+			});
+		}
+	});
+
+	describe('normalizeCities — filters out null/undefined items', () => {
+		it('PASS — normalizeCities([null, undefined], "brasilapi") → []', () => {
+			expect(normalizeCities([null, undefined], 'brasilapi')).toEqual([]);
+		});
+
+		it('PASS — normalizeCities([null, undefined], "ibge") → []', () => {
+			expect(normalizeCities([null, undefined], 'ibge')).toEqual([]);
+		});
+
+		it('PASS — normalizeCities with mixed valid and null items (brasilapi) → keeps valid only', () => {
+			const data = [
+				{ nome: 'São Paulo', codigo_ibge: '3550308' },
+				null,
+				undefined,
+				{ nome: 'Guarulhos', codigo_ibge: '3518800' },
+			];
+			const result = normalizeCities(data, 'brasilapi');
+			expect(result).toHaveLength(2);
+			expect(result[0].name).toBe('São Paulo');
+			expect(result[1].name).toBe('Guarulhos');
+		});
+
+		it('PASS — normalizeCities with mixed valid and null items (ibge) → keeps valid only', () => {
+			const data = [
+				{ id: 3550308, nome: 'São Paulo' },
+				null,
+				undefined,
+				{ id: 3518800, nome: 'Guarulhos' },
+			];
+			const result = normalizeCities(data, 'ibge');
+			expect(result).toHaveLength(2);
+			expect(result[0].name).toBe('São Paulo');
+			expect(result[1].name).toBe('Guarulhos');
+		});
+
+		it('PASS — non-object primitives in array are also filtered out', () => {
+			const data = [42, 'string', true, { nome: 'Valid', codigo_ibge: '1234567' }];
+			const result = normalizeCities(data, 'brasilapi');
+			expect(result).toHaveLength(1);
+			expect(result[0].name).toBe('Valid');
+		});
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// IBGE VECTOR 3: Missing regiao field for states
+// ─────────────────────────────────────────────────────────────
+describe('IBGE VECTOR 3: Missing regiao field for states', () => {
+	it('PASS — state with no regiao → region defaults to ""', () => {
+		const data = [{ id: 35, sigla: 'SP', nome: 'São Paulo' }];
+		const result = normalizeStates(data, 'brasilapi');
+		expect(result[0].region).toBe('');
+	});
+
+	it('PASS — state with regiao: null → region defaults to ""', () => {
+		const data = [{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: null }];
+		const result = normalizeStates(data, 'brasilapi');
+		expect(result[0].region).toBe('');
+	});
+
+	it('PASS — state with regiao: undefined → region defaults to ""', () => {
+		const data = [{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: undefined }];
+		const result = normalizeStates(data, 'ibge');
+		expect(result[0].region).toBe('');
+	});
+
+	it('PASS — state with regiao as string instead of object → region defaults to ""', () => {
+		const data = [{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: 'Sudeste' }];
+		const result = normalizeStates(data, 'brasilapi');
+		// regiao is cast to Record<string,unknown>, string has no .nome → safeStr(undefined) → ''
+		expect(result[0].region).toBe('');
+	});
+
+	it('PASS — state with regiao as number → region defaults to ""', () => {
+		const data = [{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: 42 }];
+		const result = normalizeStates(data, 'ibge');
+		expect(result[0].region).toBe('');
+	});
+
+	it('PASS — state with regiao: {} (empty object) → region defaults to ""', () => {
+		const data = [{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: {} }];
+		const result = normalizeStates(data, 'brasilapi');
+		expect(result[0].region).toBe('');
+	});
+
+	it('PASS — state with regiao.nome as number → region is coerced to string', () => {
+		const data = [{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 123 } }];
+		const result = normalizeStates(data, 'brasilapi');
+		expect(result[0].region).toBe('123');
+	});
+
+	it('PASS — state with regiao.nome as null → region defaults to ""', () => {
+		const data = [{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: { nome: null } }];
+		const result = normalizeStates(data, 'ibge');
+		expect(result[0].region).toBe('');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// IBGE VECTOR 4: Non-numeric id/codigo_ibge
+// ─────────────────────────────────────────────────────────────
+describe('IBGE VECTOR 4: Non-numeric id/codigo_ibge', () => {
+	describe('normalizeStates — id type coercion', () => {
+		it('PASS — id as string "35" → falls back to 0 (typeof !== "number")', () => {
+			const data = [{ id: '35', sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
+			const result = normalizeStates(data, 'brasilapi');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — id as null → falls back to 0', () => {
+			const data = [{ id: null, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
+			const result = normalizeStates(data, 'ibge');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — id as undefined → falls back to 0', () => {
+			const data = [{ sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
+			const result = normalizeStates(data, 'brasilapi');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — id as boolean true → falls back to 0', () => {
+			const data = [{ id: true, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
+			const result = normalizeStates(data, 'ibge');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — id as NaN → accepted as-is (typeof NaN === "number")', () => {
+			const data = [{ id: NaN, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
+			const result = normalizeStates(data, 'brasilapi');
+			expect(result[0].code).toBeNaN();
+		});
+
+		it('PASS — id as Infinity → accepted as-is (typeof Infinity === "number")', () => {
+			const data = [{ id: Infinity, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
+			const result = normalizeStates(data, 'ibge');
+			expect(result[0].code).toBe(Infinity);
+		});
+
+		it('PASS — id as negative number → accepted as-is', () => {
+			const data = [{ id: -1, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
+			const result = normalizeStates(data, 'brasilapi');
+			expect(result[0].code).toBe(-1);
+		});
+
+		it('PASS — id as object {} → falls back to 0', () => {
+			const data = [{ id: {}, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
+			const result = normalizeStates(data, 'ibge');
+			expect(result[0].code).toBe(0);
+		});
+	});
+
+	describe('normalizeCities (brasilapi) — codigo_ibge type coercion via parseInt', () => {
+		it('PASS — codigo_ibge as number 3550308 → parseInt("3550308") = 3550308', () => {
+			const data = [{ nome: 'São Paulo', codigo_ibge: 3550308 }];
+			const result = normalizeCities(data, 'brasilapi');
+			expect(result[0].code).toBe(3550308);
+		});
+
+		it('PASS — codigo_ibge as string "3550308" → parseInt works', () => {
+			const data = [{ nome: 'São Paulo', codigo_ibge: '3550308' }];
+			const result = normalizeCities(data, 'brasilapi');
+			expect(result[0].code).toBe(3550308);
+		});
+
+		it('PASS — codigo_ibge as null → parseInt("") = NaN → || 0 → 0', () => {
+			const data = [{ nome: 'São Paulo', codigo_ibge: null }];
+			const result = normalizeCities(data, 'brasilapi');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — codigo_ibge as undefined → parseInt("") = NaN → || 0 → 0', () => {
+			const data = [{ nome: 'São Paulo' }];
+			const result = normalizeCities(data, 'brasilapi');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — codigo_ibge as "abc" → parseInt("") = NaN → || 0 → 0', () => {
+			const data = [{ nome: 'São Paulo', codigo_ibge: 'abc' }];
+			const result = normalizeCities(data, 'brasilapi');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — codigo_ibge as boolean true → parseInt("true") = NaN → || 0 → 0', () => {
+			const data = [{ nome: 'São Paulo', codigo_ibge: true }];
+			const result = normalizeCities(data, 'brasilapi');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — codigo_ibge as object {} → parseInt("") = NaN → || 0 → 0', () => {
+			const data = [{ nome: 'São Paulo', codigo_ibge: {} }];
+			const result = normalizeCities(data, 'brasilapi');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — codigo_ibge as "3550308extra" → parseInt parses leading digits = 3550308', () => {
+			const data = [{ nome: 'São Paulo', codigo_ibge: '3550308extra' }];
+			const result = normalizeCities(data, 'brasilapi');
+			expect(result[0].code).toBe(3550308);
+		});
+	});
+
+	describe('normalizeCities (ibge) — id type coercion (same as states)', () => {
+		it('PASS — id as string "3550308" → falls back to 0 (typeof !== "number")', () => {
+			const data = [{ id: '3550308', nome: 'São Paulo' }];
+			const result = normalizeCities(data, 'ibge');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — id as null → falls back to 0', () => {
+			const data = [{ id: null, nome: 'São Paulo' }];
+			const result = normalizeCities(data, 'ibge');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — id as undefined → falls back to 0', () => {
+			const data = [{ nome: 'São Paulo' }];
+			const result = normalizeCities(data, 'ibge');
+			expect(result[0].code).toBe(0);
+		});
+
+		it('PASS — id as NaN → accepted as-is (typeof NaN === "number")', () => {
+			const data = [{ id: NaN, nome: 'São Paulo' }];
+			const result = normalizeCities(data, 'ibge');
+			expect(result[0].code).toBeNaN();
+		});
+
+		it('PASS — id as negative → accepted as-is', () => {
+			const data = [{ id: -999, nome: 'São Paulo' }];
+			const result = normalizeCities(data, 'ibge');
+			expect(result[0].code).toBe(-999);
+		});
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// IBGE VECTOR 5: Unknown provider throws
+// ─────────────────────────────────────────────────────────────
+describe('IBGE VECTOR 5: Unknown provider throws', () => {
+	it('PASS — normalizeStates with unknown provider throws', () => {
+		expect(() => normalizeStates([], 'unknown')).toThrow('Unknown IBGE states provider: unknown');
+	});
+
+	it('PASS — normalizeCities with unknown provider throws', () => {
+		expect(() => normalizeCities([], 'unknown')).toThrow('Unknown IBGE cities provider: unknown');
+	});
+
+	it('PASS — normalizeStates with empty string provider throws', () => {
+		expect(() => normalizeStates([], '')).toThrow('Unknown IBGE states provider: ');
+	});
+
+	it('PASS — normalizeCities with empty string provider throws', () => {
+		expect(() => normalizeCities([], '')).toThrow('Unknown IBGE cities provider: ');
+	});
+
+	it('PASS — normalizeStates with "BRASILAPI" (uppercase) throws (case-sensitive)', () => {
+		expect(() => normalizeStates([], 'BRASILAPI')).toThrow('Unknown IBGE states provider: BRASILAPI');
+	});
+
+	it('PASS — normalizeCities with "IBGE" (uppercase) throws (case-sensitive)', () => {
+		expect(() => normalizeCities([], 'IBGE')).toThrow('Unknown IBGE cities provider: IBGE');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// IBGE VECTOR 6: XSS in state/city names
+// ─────────────────────────────────────────────────────────────
+describe('IBGE VECTOR 6: XSS in state/city names (NOTED — passthrough expected for backend)', () => {
+	const xssPayload = '<script>alert("xss")</script>';
+	const sqli = "'; DROP TABLE states--";
+
+	it('NOTED — normalizeStates with XSS in state name passes through', () => {
+		const data = [{ id: 35, sigla: 'SP', nome: xssPayload, regiao: { nome: xssPayload } }];
+		const result = normalizeStates(data, 'brasilapi');
+		expect(result[0].name).toBe(xssPayload);
+		expect(result[0].region).toBe(xssPayload);
+	});
+
+	it('NOTED — normalizeStates with XSS in sigla passes through', () => {
+		const data = [{ id: 35, sigla: xssPayload, nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
+		const result = normalizeStates(data, 'ibge');
+		expect(result[0].abbreviation).toBe(xssPayload);
+	});
+
+	it('NOTED — normalizeCities (brasilapi) with XSS in city name passes through', () => {
+		const data = [{ nome: xssPayload, codigo_ibge: '3550308' }];
+		const result = normalizeCities(data, 'brasilapi');
+		expect(result[0].name).toBe(xssPayload);
+	});
+
+	it('NOTED — normalizeCities (ibge) with XSS in city name passes through', () => {
+		const data = [{ id: 3550308, nome: xssPayload }];
+		const result = normalizeCities(data, 'ibge');
+		expect(result[0].name).toBe(xssPayload);
+	});
+
+	it('NOTED — normalizeStates with SQL injection in state name passes through', () => {
+		const data = [{ id: 35, sigla: 'SP', nome: sqli, regiao: { nome: sqli } }];
+		const result = normalizeStates(data, 'brasilapi');
+		expect(result[0].name).toBe(sqli);
+		expect(result[0].region).toBe(sqli);
+	});
+
+	it('NOTED — normalizeCities with SQL injection in city name passes through', () => {
+		const data = [{ nome: sqli, codigo_ibge: '3550308' }];
+		const result = normalizeCities(data, 'brasilapi');
+		expect(result[0].name).toBe(sqli);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// IBGE VECTOR 7: Empty objects / missing fields
+// ─────────────────────────────────────────────────────────────
+describe('IBGE VECTOR 7: Empty objects / missing fields', () => {
+	it('PASS — normalizeStates with array of empty objects → defaults', () => {
+		const data = [{}];
+		const result = normalizeStates(data, 'brasilapi');
+		expect(result).toHaveLength(1);
+		expect(result[0].code).toBe(0);
+		expect(result[0].abbreviation).toBe('');
+		expect(result[0].name).toBe('');
+		expect(result[0].region).toBe('');
+	});
+
+	it('PASS — normalizeCities (brasilapi) with array of empty objects → defaults', () => {
+		const data = [{}];
+		const result = normalizeCities(data, 'brasilapi');
+		expect(result).toHaveLength(1);
+		expect(result[0].code).toBe(0);
+		expect(result[0].name).toBe('');
+	});
+
+	it('PASS — normalizeCities (ibge) with array of empty objects → defaults', () => {
+		const data = [{}];
+		const result = normalizeCities(data, 'ibge');
+		expect(result).toHaveLength(1);
+		expect(result[0].code).toBe(0);
+		expect(result[0].name).toBe('');
+	});
+
+	it('PASS — normalizeStates with empty array → []', () => {
+		expect(normalizeStates([], 'brasilapi')).toEqual([]);
+		expect(normalizeStates([], 'ibge')).toEqual([]);
+	});
+
+	it('PASS — normalizeCities with empty array → []', () => {
+		expect(normalizeCities([], 'brasilapi')).toEqual([]);
+		expect(normalizeCities([], 'ibge')).toEqual([]);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// IBGE VECTOR 8: Extremely large payloads
+// ─────────────────────────────────────────────────────────────
+describe('IBGE VECTOR 8: Extremely large payloads', () => {
+	it('PASS — normalizeStates handles 100,000 entries', () => {
+		const large = Array.from({ length: 100_000 }, (_, i) => ({
+			id: i,
+			sigla: `U${i}`,
+			nome: `State ${i}`,
+			regiao: { nome: 'Region' },
+		}));
+		const result = normalizeStates(large, 'brasilapi');
+		expect(result).toHaveLength(100_000);
+		expect(result[0].code).toBe(0);
+		expect(result[99_999].code).toBe(99_999);
+	});
+
+	it('PASS — normalizeCities handles 100,000 entries (brasilapi)', () => {
+		const large = Array.from({ length: 100_000 }, (_, i) => ({
+			nome: `City ${i}`,
+			codigo_ibge: String(3500000 + i),
+		}));
+		const result = normalizeCities(large, 'brasilapi');
+		expect(result).toHaveLength(100_000);
+		expect(result[0].code).toBe(3500000);
+		expect(result[99_999].code).toBe(3599999);
+	});
+
+	it('PASS — normalizeCities handles 100,000 entries (ibge)', () => {
+		const large = Array.from({ length: 100_000 }, (_, i) => ({
+			id: 3500000 + i,
+			nome: `City ${i}`,
+		}));
+		const result = normalizeCities(large, 'ibge');
+		expect(result).toHaveLength(100_000);
+		expect(result[0].code).toBe(3500000);
+		expect(result[99_999].code).toBe(3599999);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// IBGE VECTOR 9: Unicode/emoji in state/city names
+// ─────────────────────────────────────────────────────────────
+describe('IBGE VECTOR 9: Unicode/emoji in state/city names', () => {
+	it('PASS — normalizeStates with emoji names passes through', () => {
+		const data = [{ id: 1, sigla: 'SP', nome: 'São Paulo \u{1F1E7}\u{1F1F7}', regiao: { nome: 'Sudeste \u2603\uFE0F' } }];
+		const result = normalizeStates(data, 'brasilapi');
+		expect(result[0].name).toBe('São Paulo \u{1F1E7}\u{1F1F7}');
+		expect(result[0].region).toBe('Sudeste \u2603\uFE0F');
+	});
+
+	it('PASS — normalizeCities with CJK characters', () => {
+		const data = [{ id: 1, nome: '\u4E30\u7530\u5361\u7F57\u62C9' }];
+		const result = normalizeCities(data, 'ibge');
+		expect(result[0].name).toBe('\u4E30\u7530\u5361\u7F57\u62C9');
+	});
+
+	it('PASS — normalizeStates with zero-width characters', () => {
+		const data = [{ id: 1, sigla: 'S\u200BP', nome: 'São\u200C Paulo', regiao: { nome: 'Sudeste' } }];
+		const result = normalizeStates(data, 'ibge');
+		expect(result[0].abbreviation).toBe('S\u200BP');
+		expect(result[0].name).toBe('São\u200C Paulo');
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// IBGE VECTOR 10: Prototype pollution attempts
+// ─────────────────────────────────────────────────────────────
+describe('IBGE VECTOR 10: Prototype pollution attempts', () => {
+	it('PASS — normalizeStates with __proto__ field does not pollute Object prototype', () => {
+		const malicious = [{ id: 1, sigla: 'SP', nome: 'Test', regiao: { nome: 'R' }, __proto__: { polluted: true } }];
+		normalizeStates(malicious, 'brasilapi');
+		expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+	});
+
+	it('PASS — normalizeCities with constructor.prototype in items', () => {
+		const malicious = [{ id: 1, nome: 'Test', constructor: { prototype: { hacked: true } } }];
+		normalizeCities(malicious, 'ibge');
 		expect(({} as Record<string, unknown>).hacked).toBeUndefined();
 	});
 });

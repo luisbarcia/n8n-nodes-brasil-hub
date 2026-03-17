@@ -332,69 +332,111 @@ Each new resource ships as its own MINOR release:
 **Goal:** Suplantar todos os concorrentes: 7 CNPJ providers, 4 CEP providers, Simplify, error messages.
 **Milestone:** https://github.com/luisbarcia/n8n-nodes-brasil-hub/milestone/6
 **Issues:** #36, #37, #38, #39, #48
-
-**Competitive gap analysis:**
-- cnpj-hub tem 6 CNPJ providers → nós teremos 7
-- brasilapi-dv tem DDD, FIPE, Feriados → nós já teremos todos
-- ninguém tem CPF validate, Banks, testes, AI ready → continuamos únicos
-
-#### 21.1 Additional CNPJ Providers (#36)
-- [ ] RED: testes para normalizers dos 4 novos providers
-- [ ] GREEN: adicionar normalizers em `cnpj.normalize.ts`
-- [ ] Adicionar providers ao array em `cnpj.execute.ts`
-- **Providers novos (appended após os 3 originais):**
-  - MinhaReceita: `https://minhareceita.org/{cnpj}` (flat, snake_case)
-  - OpenCNPJ.org: `https://api.opencnpj.org/{cnpj}` (flat, snake_case, 50 req/s)
-  - OpenCNPJ.com: `https://kitana.opencnpj.com/cnpj/{cnpj}` (wrapped, camelCase, 100 req/min)
-  - CNPJA: `https://open.cnpja.com/office/{cnpj}` (nested, camelCase, rate limit agressivo)
-- **Resultado:** 7 providers total (mais que qualquer concorrente)
-- **Status:** pending
-
-#### 21.2 Additional CEP Provider (#37)
-- [ ] RED: testes para normalizer ApiCEP
-- [ ] GREEN: adicionar normalizer em `cep.normalize.ts`
-- [ ] Adicionar provider ao array em `cep.execute.ts`
-- **Provider novo:** ApiCEP: `https://cdn.apicep.com/file/apicep/{XXXXX-XXX}.json`
-- **Atenção:** CEP precisa de hífen (format XXXXX-XXX) — normalizer deve formatar
-- **Resultado:** 4 providers CEP total
-- **Status:** pending
-
-#### 21.3 Simplify Parameter para CNPJ (#38)
-- [ ] Adicionar checkbox "Simplify" ao CNPJ query
-- [ ] Quando ativo: retornar top-level flat (razao_social, situacao, cnpj)
-- [ ] Quando desativo: retornar output completo (endereço, sócios, atividades)
-- **Ref:** UX guidelines recomendam Simplify para >10 campos
-- **Status:** pending
-
-#### 21.4 Error Messages com Contexto por Provider (#39)
-- [ ] Incluir qual provider falhou e HTTP status no erro
-- [ ] Melhorar mensagem final de fallback exhausted com lista de tentativas
-- **Status:** pending
-
-#### 21.5 Release v0.7.0 (#48)
-- [ ] CHANGELOG + bump + release + CI verde + package metadata update
-- **Status:** pending
+- [x] 4 CNPJ providers (MinhaReceita, OpenCNPJ.org, OpenCNPJ.com, CNPJA) — 7 total
+- [x] 1 CEP provider (ApiCEP) — 4 total
+- [x] CNPJ Simplify parameter (default: true)
+- [x] Error messages with HTTP status codes
+- [x] DRY refactor: buildResultItem/buildResultItems
+- [x] SonarCloud S4144 fix (normalizeBrands/normalizeYears)
+- [x] OpenCNPJ.org capital_social parsing fix
+- [x] 100+ attack tests for new providers
+- [x] Pre-release workflow 6 phases completed
+- [x] Released: npm 0.7.0, tag v0.7.0
+- **Status:** complete (PR #74, 815 tests)
 
 ---
 
-### Phase 22: v1.0 — Features Exclusivas (nenhum concorrente tem)
-**Goal:** Consolidar liderança com features que ninguém mais oferece.
+### Phase 22: v0.8.0 — IBGE Resource
+**Goal:** Consultar dados geográficos brasileiros (estados e municípios).
 
-#### 22.1 IBGE Resource
-- [ ] Cities, states, regions via BrasilAPI (`/api/ibge/municipios/v1/{siglaUF}`, `/uf/v1`)
-- [ ] Operations: states (listar UFs), cities (listar municípios por UF)
+#### 22.1 IBGE States
+- [ ] RED: testes para normalizers (2 providers)
+- [ ] GREEN: `ibge.description.ts` + `ibge.execute.ts` + `ibge.normalize.ts`
+- [ ] Registrar no router
+- **Providers:** BrasilAPI (`/api/ibge/uf/v1`) → IBGE API oficial (`servicodados.ibge.gov.br/api/v1/localidades/estados`)
+- **Operation:** states (listar UFs, multi-item)
+- **Interface:** IState { code, name, abbreviation }
 
-#### 22.2 NCM Resource
-- [ ] Tax classification codes via BrasilAPI (`/api/ncm/v1/{code}`, `/api/ncm/v1?search=`)
-- [ ] Operations: query (por código), search (por descrição)
+#### 22.2 IBGE Cities
+- [ ] Operation: cities (listar municípios por UF, multi-item)
+- [ ] Param: uf (dropdown com 27 UFs)
+- **Providers:** BrasilAPI (`/api/ibge/municipios/v1/{siglaUF}`) → IBGE API oficial
+- **Interface:** ICity { code, name }
+- **Validação:** UF deve ser 2 letras válidas (allowlist)
 
-#### 22.3 Configurable Provider Order
-- [ ] Param para usuário escolher provider primário
-- [ ] Fallback segue ordem custom
+#### 22.3 Release v0.8.0
+- [ ] Pre-release workflow 6 fases + Testing Arsenal
+- [ ] CHANGELOG + tag + release + npm
 
-#### 22.4 Configurable Timeout + Rate Limiting
-- [ ] Timeout customizável por provider
-- [ ] Respeitar HTTP 429 com backoff
+**Status:** pending
+
+---
+
+### Phase 23: v0.9.0 — NCM Resource
+**Goal:** Consultar códigos fiscais de classificação de mercadorias.
+
+#### 23.1 NCM Query
+- [ ] RED: testes para normalizer (BrasilAPI)
+- [ ] GREEN: `ncm.description.ts` + `ncm.execute.ts` + `ncm.normalize.ts`
+- **Provider:** BrasilAPI (`/api/ncm/v1/{code}`) — único público
+- **Operation:** query (por código, single-item)
+- **Interface:** INcm { code, description, startDate, endDate, unitOfMeasure }
+
+#### 23.2 NCM Search
+- [ ] Operation: search (por descrição, multi-item)
+- **Provider:** BrasilAPI (`/api/ncm/v1?search={term}`)
+- **Validação:** termo não vazio, mínimo 3 caracteres
+
+#### 23.3 Release v0.9.0
+- [ ] Pre-release workflow 6 fases + Testing Arsenal
+- [ ] CHANGELOG + tag + release + npm
+
+**Status:** pending
+
+---
+
+### Phase 24: v1.0.0 — Power User Features + Stable Release
+**Goal:** Consolidar liderança com features configuráveis e release estável.
+
+#### 24.1 Configurable Provider Order
+- [ ] Param dropdown "Primary Provider" por resource
+- [ ] Reordenar array de providers baseado na escolha
+- [ ] Fallback segue nova ordem
+
+#### 24.2 Configurable Timeout
+- [ ] Param numérico "Timeout (ms)" (default 10000)
+- [ ] Passar para queryWithFallback/fetchFipe
+
+#### 24.3 Rate Limit Awareness
+- [ ] Detectar HTTP 429 no fallback engine
+- [ ] Retry com backoff exponencial (sem setTimeout — loop com delay via n8n helpers)
+- [ ] Respeitar header `Retry-After` se presente
+
+#### 24.4 CNPJ Output Mode
+- [ ] Param "Output Mode": Simplified (default), Full, AI Summary
+- [ ] AI Summary: campos otimizados para usableAsTool (1-liner por campo)
+
+#### 24.5 Creator Portal Resubmission
+- [ ] Submeter v1.0.0 estável no n8n Creator Portal
+- [ ] Badge "Verified" para acesso ao n8n Cloud
+
+#### 24.6 Release v1.0.0
+- [ ] Pre-release workflow 6 fases + Testing Arsenal
+- [ ] CHANGELOG + tag + release + npm
+- [ ] GitHub Discussions announcement
+- [ ] Deprecate all pre-1.0 versions
+
+**Status:** future
+
+---
+
+### Phase 25: v1.1.0+ — Expansion (ideas, not committed)
+
+#### Potential resources
+- [ ] **PIX Directory** — Participantes do PIX (BCB API)
+- [ ] **CNES** — Estabelecimentos de saúde (DataSUS)
+- [ ] **Historical FIPE** — Tabelas de referência passadas
+- [ ] **Correios Tracking** — Rastreamento (se API pública disponível)
 
 **Status:** future
 

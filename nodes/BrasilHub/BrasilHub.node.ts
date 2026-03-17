@@ -18,6 +18,8 @@ import { dddDescription } from './resources/ddd/ddd.description';
 import { dddQuery } from './resources/ddd/ddd.execute';
 import { feriadosDescription } from './resources/feriados/feriados.description';
 import { feriadosQuery } from './resources/feriados/feriados.execute';
+import { ibgeDescription } from './resources/ibge/ibge.description';
+import { ibgeStates, ibgeCities } from './resources/ibge/ibge.execute';
 import { fipeDescription } from './resources/fipe/fipe.description';
 import { fipeBrands, fipeModels, fipeYears, fipePrice } from './resources/fipe/fipe.execute';
 
@@ -59,6 +61,7 @@ const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
 	banks: { query: banksQuery, list: banksList },
 	ddd: { query: dddQuery },
 	feriados: { query: feriadosQuery },
+	ibge: { states: ibgeStates, cities: ibgeCities },
 	fipe: { brands: fipeBrands, models: fipeModels, years: fipeYears, price: fipePrice },
 };
 
@@ -78,7 +81,7 @@ export class BrasilHub implements INodeType {
 		group: [],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Feriados, FIPE) with multi-provider fallback',
+		description: 'Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Feriados, FIPE, IBGE) with multi-provider fallback',
 		defaults: {
 			name: 'Brasil Hub',
 		},
@@ -99,6 +102,7 @@ export class BrasilHub implements INodeType {
 					{ name: 'DDD', value: 'ddd', description: 'Query Brazilian area codes and their cities' },
 					{ name: 'Feriado', value: 'feriados', description: 'Query Brazilian public holidays by year' },
 					{ name: 'FIPE', value: 'fipe', description: 'Query vehicle prices from the FIPE table' },
+					{ name: 'IBGE', value: 'ibge', description: 'Query Brazilian states and municipalities' },
 				],
 				default: 'cnpj',
 			},
@@ -109,6 +113,7 @@ export class BrasilHub implements INodeType {
 			...dddDescription,
 			...feriadosDescription,
 			...fipeDescription,
+			...ibgeDescription,
 		],
 	};
 

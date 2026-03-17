@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-03-16
+
+### Added
+- **IBGE resource** with States and Cities operations and multi-provider fallback (BrasilAPI → IBGE API oficial)
+  - **States**: List all 27 Brazilian states with region info
+  - **Cities**: List all municipalities for a given state
+- UF validation via allowlist (27 valid abbreviations, case-insensitive)
+- IState and ICity interfaces in types.ts
+- IBGE and states/cities aliases added to codex
+- Attack tests for IBGE resource
+
+### Changed
+- Node description updated to include IBGE
+- Resource options now include IBGE (8 resources total)
+
 ## [0.7.0] - 2026-03-16
 
 ### Added
@@ -272,7 +287,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.5.0...v0.5.1
