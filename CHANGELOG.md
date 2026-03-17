@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-03-17
+
+### Added
+- **Configurable Provider Order** — "Primary Provider" dropdown for 6 resources with 2+ providers
+  - CNPJ: 7 providers (Auto, BrasilAPI, CNPJ.ws, CNPJA, MinhaReceita, OpenCNPJ.com, OpenCNPJ.org, ReceitaWS)
+  - CEP: 4 providers (ApiCEP, Auto, BrasilAPI, OpenCEP, ViaCEP)
+  - Banks: 2 providers (Auto, BrasilAPI, BancosBrasileiros)
+  - DDD: 2 providers (Auto, BrasilAPI, Municipios-BR)
+  - Feriados: 2 providers (Auto, BrasilAPI, Nager.Date)
+  - IBGE: 2 providers (Auto, BrasilAPI, IBGE API)
+- `reorderProviders()` helper in shared/utils.ts — moves chosen provider to position 0
+- 7 new tests for reorderProviders (move, keep order, edge cases, immutability)
+
+### Changed
+- Options alphabetized per n8n lint rules
+- Default "Auto (BrasilAPI First)" preserves existing behavior
+- 1174 tests total (was 1167)
+
 ## [0.12.0] - 2026-03-17
 
 ### Added
@@ -359,7 +377,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.0...v0.10.1

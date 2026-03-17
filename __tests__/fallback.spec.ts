@@ -1,5 +1,5 @@
 import { queryWithFallback, clampTimeout, DEFAULT_TIMEOUT_MS, MIN_TIMEOUT_MS, MAX_TIMEOUT_MS } from '../nodes/BrasilHub/shared/fallback';
-import { buildMeta } from '../nodes/BrasilHub/shared/utils';
+import { buildMeta, reorderProviders } from '../nodes/BrasilHub/shared/utils';
 import type { IProvider } from '../nodes/BrasilHub/types';
 
 function createMockContext(responses: Array<{ success: boolean; data?: unknown; error?: string }>) {
@@ -344,5 +344,49 @@ describe('buildMeta', () => {
 		const meta = buildMeta('cnpjws', 'test', ['brasilapi: [429]'], true);
 		expect(meta.rate_limited).toBe(true);
 		expect(Object.keys(meta)).not.toContain('retry_after_ms');
+	});
+});
+
+describe('reorderProviders', () => {
+	const providers = [
+		{ name: 'brasilapi', url: 'https://a' },
+		{ name: 'cnpjws', url: 'https://b' },
+		{ name: 'receitaws', url: 'https://c' },
+	];
+
+	it('should move chosen provider to first position', () => {
+		const result = reorderProviders(providers, 'cnpjws');
+		expect(result.map((p) => p.name)).toEqual(['cnpjws', 'brasilapi', 'receitaws']);
+	});
+
+	it('should keep order when primary is "auto"', () => {
+		const result = reorderProviders(providers, 'auto');
+		expect(result).toBe(providers);
+	});
+
+	it('should keep order when primary is empty string', () => {
+		const result = reorderProviders(providers, '');
+		expect(result).toBe(providers);
+	});
+
+	it('should keep order when primary not found', () => {
+		const result = reorderProviders(providers, 'unknown');
+		expect(result).toBe(providers);
+	});
+
+	it('should keep order when primary is already first', () => {
+		const result = reorderProviders(providers, 'brasilapi');
+		expect(result).toBe(providers);
+	});
+
+	it('should move last provider to first', () => {
+		const result = reorderProviders(providers, 'receitaws');
+		expect(result.map((p) => p.name)).toEqual(['receitaws', 'brasilapi', 'cnpjws']);
+	});
+
+	it('should not mutate the original array', () => {
+		const original = [...providers];
+		reorderProviders(providers, 'cnpjws');
+		expect(providers).toEqual(original);
 	});
 });

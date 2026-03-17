@@ -36,6 +36,19 @@ export const dddDescription: INodeProperties[] = [
 		description: 'The 2-digit area code (DDD) to query (range 11–99)',
 	},
 	{
+		displayName: 'Primary Provider',
+		name: 'primaryProvider',
+		type: 'options',
+		displayOptions: { show: showForDdd },
+		options: [
+			{ name: 'Auto (BrasilAPI First)', value: 'auto' },
+			{ name: 'BrasilAPI', value: 'brasilapi' },
+			{ name: 'Municipios-BR', value: 'municipios' },
+		],
+		default: 'auto',
+		description: 'Choose which provider to try first for DDD queries',
+	},
+	{
 		displayName: 'Include Raw Response',
 		name: 'includeRaw',
 		type: 'boolean',

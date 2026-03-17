@@ -399,9 +399,11 @@ Each new resource ships as its own MINOR release:
 **Goal:** Consolidar liderança com features configuráveis e release estável.
 
 #### 24.1 Configurable Provider Order
-- [ ] Param dropdown "Primary Provider" por resource
-- [ ] Reordenar array de providers baseado na escolha
-- [ ] Fallback segue nova ordem
+- [x] Param dropdown "Primary Provider" por resource (6 resources com 2+ providers)
+- [x] `reorderProviders()` helper move provider escolhido para posição 0
+- [x] Fallback segue nova ordem, default "Auto" preserva comportamento existente
+- [x] Options alfabetizadas per n8n lint rules
+- [x] 7 novos testes, released as v0.13.0
 
 #### 24.2 Configurable Timeout
 - [x] Param numérico "Timeout (Ms)" (default 10000, min 1000, max 60000)

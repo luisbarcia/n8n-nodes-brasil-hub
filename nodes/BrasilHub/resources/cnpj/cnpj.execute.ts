@@ -1,7 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItem } from '../../shared/utils';
+import { buildMeta, buildResultItem, reorderProviders } from '../../shared/utils';
 import { validateCnpj, sanitizeCnpj } from '../../shared/validators';
 import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeCnpj } from './cnpj.normalize';
@@ -51,7 +51,8 @@ export async function cnpjQuery(
 		throw new NodeOperationError(context.getNode(), 'Invalid CNPJ checksum', { itemIndex });
 	}
 
-	const providers = buildProviders(cnpj);
+	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
+	const providers = reorderProviders(buildProviders(cnpj), primaryProvider);
 	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const full = normalizeCnpj(result.data, result.provider);

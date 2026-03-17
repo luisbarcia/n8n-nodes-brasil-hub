@@ -43,6 +43,19 @@ export const ibgeDescription: INodeProperties[] = [
 		description: 'The two-letter state abbreviation to query cities for',
 	},
 	{
+		displayName: 'Primary Provider',
+		name: 'primaryProvider',
+		type: 'options',
+		displayOptions: { show: showForIbge },
+		options: [
+			{ name: 'Auto (BrasilAPI First)', value: 'auto' },
+			{ name: 'BrasilAPI', value: 'brasilapi' },
+			{ name: 'IBGE API', value: 'ibge' },
+		],
+		default: 'auto',
+		description: 'Choose which provider to try first for IBGE queries',
+	},
+	{
 		displayName: 'Include Raw Response',
 		name: 'includeRaw',
 		type: 'boolean',
