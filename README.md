@@ -141,7 +141,7 @@ Request → Provider 1 (BrasilAPI)
                                           └─ Fail → Return error with all failures
 ```
 
-Each provider has a **10-second timeout**. The `_meta.strategy` field tells you if the response came from the primary provider (`direct`) or a fallback.
+Each provider has a **configurable timeout** (default: 10 seconds, range: 1–60s). The `_meta.strategy` field tells you if the response came from the primary provider (`direct`) or a fallback.
 
 ## Compatibility
 
@@ -156,7 +156,7 @@ Each provider has a **10-second timeout**. The `_meta.strategy` field tells you 
 git clone https://github.com/luisbarcia/n8n-nodes-brasil-hub.git
 cd n8n-nodes-brasil-hub
 npm install
-npm test          # 709 tests, 99%+ coverage
+npm test          # 1141 tests, 99%+ coverage
 npm run build
 npm run lint
 ```

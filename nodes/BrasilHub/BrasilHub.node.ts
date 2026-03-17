@@ -120,7 +120,7 @@ export class BrasilHub implements INodeType {
 			...ibgeDescription,
 			...ncmDescription,
 			{
-				displayName: 'Timeout (ms)',
+				displayName: 'Timeout (Ms)',
 				name: 'timeout',
 				type: 'number',
 				default: 10000,

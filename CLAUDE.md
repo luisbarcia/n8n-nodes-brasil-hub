@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.9.x ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Feriados, FIPE, IBGE, and NCM — 9 resources, 17 operations, 22 providers. Next milestone: v1.0 (configurable providers, timeout, rate limiting).
+Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.10.x ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Feriados, FIPE, IBGE, and NCM — 9 resources, 17 operations, 22 providers, configurable timeout. Next milestone: v1.0 (configurable providers, rate limiting, CNPJ output mode).
 
 - **License:** MIT
 - **Tech Stack:** TypeScript, n8n-workflow, Jest + ts-jest
@@ -108,7 +108,7 @@ Zero changes to existing resource files — only the router registration.
 **Feriados:** BrasilAPI → Nager.Date
 **FIPE:** parallelum (single provider — hierarchy API)
 
-Fallback is automatic. BrasilAPI is always primary. Headers include `User-Agent: n8n-brasil-hub-node/1.0`.
+Fallback is automatic. BrasilAPI is always primary. Headers include `User-Agent: n8n-brasil-hub-node/1.0`. Timeout is configurable per-node (default 10s, range 1–60s).
 
 ## Key Design Decisions
 
