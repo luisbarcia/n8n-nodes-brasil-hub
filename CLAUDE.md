@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.7.x ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Feriados, and FIPE. Next milestone: v1.0 (IBGE, NCM, configurable providers).
+Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.9.x ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Feriados, FIPE, IBGE, and NCM — 9 resources, 17 operations, 22 providers. Next milestone: v1.0 (configurable providers, timeout, rate limiting).
 
 - **License:** MIT
 - **Tech Stack:** TypeScript, n8n-workflow, Jest + ts-jest
@@ -279,35 +279,53 @@ gh run list --limit 3
 
 **Gate:** Tudo verde, zero erros.
 
-### Fase 5: Release (executar)
+### Fase 5: Docs & Release (executar)
+
+**16. Atualizar TODOS os living docs (OBRIGATÓRIO):**
+- CHANGELOG.md — Nova entry [X.Y.Z] + links
+- package.json — version, description, keywords
+- README.md — Operations table, description, test count
+- CLAUDE.md — Overview, provider list, architecture
+- BrasilHub.node.json — Codex aliases
+- .github/copilot-instructions.md — Resource list, version
+- .github/SECURITY.md — Supported versions, provider list
+- ROADMAP.md — Marcar items como done
+- task_plan.md — Current Phase, checkboxes, status
+- progress.md — Session log, test results
 
 | # | Skill | O que faz |
 |---|-------|-----------|
-| 16 | `git-workflow-manager` | Conventional commits, CHANGELOG.md, tag semver |
-| 17 | `project-release` | Versioning, tag, gh release create |
-| 18 | `verification-before-completion` | Verificação final pós-release: CI verde, npm publicado, scan passou |
+| 17 | `git-workflow-manager` | Conventional commits, CHANGELOG.md, tag semver |
+| 18 | `project-release` | Versioning, tag, gh release create |
+| 19 | `verification-before-completion` | Verificação final: CI verde, npm publicado |
 
 ### Fase 6: Pós-Release (verificar + comunicar)
 
 ```bash
-# 19. CI do release workflow passou
+# 20. CI do release workflow passou
 gh run list --workflow=release.yml --limit 1
 
-# 20. Scan de community package passou (roda no release workflow)
+# 21. Scan de community package passou (roda no release workflow)
 # Se falhar: corrigir e re-release
 
-# 21. Pacote no npm
+# 22. Pacote no npm
 npm view n8n-nodes-brasil-hub version
 ```
 
-**22. GitHub Discussions (OBRIGATÓRIO):**
+**23. GitHub Discussions (OBRIGATÓRIO):**
 - Criar **Announcement** em Discussions com resumo do release (o que mudou, breaking changes, upgrade instructions)
 - Atualizar **Roadmap discussion** (#63) com status atual dos recursos planejados
 - Se houve deprecação de versões, mencionar no announcement
 
-**23. Deprecação de versões bugadas (se aplicável):**
+**24. Living Docs verificação final:**
+- Grep por versão antiga no repo — confirmar que TODOS os docs refletem a nova versão
+- Se algum doc ficou desatualizado, corrigir e commitar antes de considerar release concluído
+
+**25. Deprecação de versões bugadas (se aplicável):**
 - `npm deprecate "n8n-nodes-brasil-hub@<X.Y.Z" "mensagem"` para versões com bugs críticos
 - Usar granular access token com bypass 2FA
+
+**Checklist detalhado: ver [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md)**
 
 ### Resumo Rápido (copiar e colar)
 
@@ -317,10 +335,11 @@ PRE-RELEASE CHECKLIST (6 fases, TODAS obrigatórias):
 □ Fase 2: /test-master → /simplify → /code-documenter
 □ Fase 3: /testing-arsenal → test-master + test-skeptic + code-reviewer + security-reviewer → fix findings
 □ Fase 4: build → lint → test → audit → push → CI verde
-□ Fase 5: changelog → tag → release
-□ Fase 6: CI release verde → npm publicado → discussions → deprecate
+□ Fase 5: ATUALIZAR TODOS OS DOCS → changelog → tag → release
+□ Fase 6: CI release verde → npm publicado → discussions → docs verification → deprecate
 
 ⛔ PROIBIDO publicar sem completar TODAS as 6 fases.
+📋 Checklist detalhado: RELEASE_CHECKLIST.md
 ```
 
 ## Living Docs — Atualizar em Mudanças Estruturais

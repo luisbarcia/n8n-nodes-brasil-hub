@@ -4,7 +4,7 @@
 Implementar o community node n8n "Brasil Hub" que consulta dados públicos brasileiros (CNPJ e CEP) com fallback multi-provider, seguindo todos os padrões oficiais n8n.
 
 ## Current Phase
-Phase 19 (complete) — v0.5.0: FIPE (Brands, Models, Years, Price)
+Phase 24 (pending) — v1.0.0: Power User Features + Stable Release
 
 ## Release Strategy
 Each new resource ships as its own MINOR release:
@@ -350,25 +350,25 @@ Each new resource ships as its own MINOR release:
 **Goal:** Consultar dados geográficos brasileiros (estados e municípios).
 
 #### 22.1 IBGE States
-- [ ] RED: testes para normalizers (2 providers)
-- [ ] GREEN: `ibge.description.ts` + `ibge.execute.ts` + `ibge.normalize.ts`
-- [ ] Registrar no router
+- [x] RED: testes para normalizers (2 providers)
+- [x] GREEN: `ibge.description.ts` + `ibge.execute.ts` + `ibge.normalize.ts`
+- [x] Registrar no router
 - **Providers:** BrasilAPI (`/api/ibge/uf/v1`) → IBGE API oficial (`servicodados.ibge.gov.br/api/v1/localidades/estados`)
 - **Operation:** states (listar UFs, multi-item)
 - **Interface:** IState { code, name, abbreviation }
 
 #### 22.2 IBGE Cities
-- [ ] Operation: cities (listar municípios por UF, multi-item)
-- [ ] Param: uf (dropdown com 27 UFs)
+- [x] Operation: cities (listar municípios por UF, multi-item)
+- [x] Param: uf (dropdown com 27 UFs)
 - **Providers:** BrasilAPI (`/api/ibge/municipios/v1/{siglaUF}`) → IBGE API oficial
 - **Interface:** ICity { code, name }
 - **Validação:** UF deve ser 2 letras válidas (allowlist)
 
 #### 22.3 Release v0.8.0
-- [ ] Pre-release workflow 6 fases + Testing Arsenal
-- [ ] CHANGELOG + tag + release + npm
+- [x] Pre-release workflow 6 fases + Testing Arsenal
+- [x] CHANGELOG + tag + release + npm
 
-**Status:** pending
+**Status:** complete (PR #75, #77, tag v0.8.0, npm 0.8.0)
 
 ---
 
@@ -376,22 +376,22 @@ Each new resource ships as its own MINOR release:
 **Goal:** Consultar códigos fiscais de classificação de mercadorias.
 
 #### 23.1 NCM Query
-- [ ] RED: testes para normalizer (BrasilAPI)
-- [ ] GREEN: `ncm.description.ts` + `ncm.execute.ts` + `ncm.normalize.ts`
+- [x] RED: testes para normalizer (BrasilAPI)
+- [x] GREEN: `ncm.description.ts` + `ncm.execute.ts` + `ncm.normalize.ts`
 - **Provider:** BrasilAPI (`/api/ncm/v1/{code}`) — único público
 - **Operation:** query (por código, single-item)
 - **Interface:** INcm { code, description, startDate, endDate, unitOfMeasure }
 
 #### 23.2 NCM Search
-- [ ] Operation: search (por descrição, multi-item)
+- [x] Operation: search (por descrição, multi-item)
 - **Provider:** BrasilAPI (`/api/ncm/v1?search={term}`)
 - **Validação:** termo não vazio, mínimo 3 caracteres
 
 #### 23.3 Release v0.9.0
-- [ ] Pre-release workflow 6 fases + Testing Arsenal
-- [ ] CHANGELOG + tag + release + npm
+- [x] Pre-release workflow 6 fases + Testing Arsenal
+- [x] CHANGELOG + tag + release + npm
 
-**Status:** pending
+**Status:** complete (PR #78, tag v0.9.0, npm 0.9.0, Discussions #79)
 
 ---
 

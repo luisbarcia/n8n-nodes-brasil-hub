@@ -20,18 +20,18 @@ Each new resource ships as its own MINOR release for faster iteration and easier
 - [x] AI Agent ready (`usableAsTool: true`)
 - [x] npm provenance + build attestation
 
-## v0.8.0 — IBGE Resource
+## v0.8.0 — IBGE Resource ✅
 
-- [ ] **IBGE States** — List all Brazilian states/UFs (BrasilAPI + IBGE API oficial)
-- [ ] **IBGE Cities** — List municipalities by state (BrasilAPI + IBGE API oficial)
-- [ ] Operations: `states`, `cities`
-- [ ] Multi-item output (one item per state/city)
+- [x] **IBGE States** — List all Brazilian states/UFs (BrasilAPI + IBGE API oficial)
+- [x] **IBGE Cities** — List municipalities by state (BrasilAPI + IBGE API oficial)
+- [x] Operations: `states`, `cities`
+- [x] Multi-item output (one item per state/city)
 
-## v0.9.0 — NCM Resource
+## v0.9.0 — NCM Resource ✅
 
-- [ ] **NCM Query** — Look up tax classification by code (BrasilAPI)
-- [ ] **NCM Search** — Search codes by description (BrasilAPI, multi-item)
-- [ ] Operations: `query`, `search`
+- [x] **NCM Query** — Look up tax classification by code (BrasilAPI)
+- [x] **NCM Search** — Search codes by description (BrasilAPI, multi-item)
+- [x] Operations: `query`, `search`
 
 ## v1.0.0 — Power User Features + Stable Release
 

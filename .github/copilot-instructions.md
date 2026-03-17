@@ -2,7 +2,7 @@
 
 ## Project
 
-n8n community node (`n8n-nodes-brasil-hub`) for querying Brazilian public data. Single "Brasil Hub" node with resource/operation routing pattern. Currently ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Feriados, and FIPE resources (v0.7.x).
+n8n community node (`n8n-nodes-brasil-hub`) for querying Brazilian public data. Single "Brasil Hub" node with resource/operation routing pattern. Currently ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Feriados, FIPE, IBGE, and NCM resources (v0.9.x) — 9 resources, 17 operations, 22 providers.
 
 ## Tech Stack
 
@@ -23,7 +23,7 @@ nodes/BrasilHub/
 ├── shared/validators.ts         # CNPJ/CPF checksum, CEP format (local, no API)
 ├── shared/fallback.ts           # Generic multi-provider fallback
 ├── shared/utils.ts              # Shared utilities (stripNonDigits, safeStr)
-└── resources/{cnpj,cep,cpf,banks,ddd,feriados,fipe}/  # description, execute, normalize per resource
+└── resources/{cnpj,cep,cpf,banks,ddd,feriados,fipe,ibge,ncm}/  # description, execute, normalize per resource
 ```
 
 ## n8n Node Conventions (MUST follow)
