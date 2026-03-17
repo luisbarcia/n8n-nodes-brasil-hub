@@ -2339,19 +2339,19 @@ describe('IBGE VECTOR 4: Non-numeric id/codigo_ibge', () => {
 			expect(result[0].code).toBe(0);
 		});
 
-		it('PASS — id as NaN → accepted as-is (typeof NaN === "number")', () => {
+		it('FIXED — id as NaN → falls back to 0 (Number.isFinite guard)', () => {
 			const data = [{ id: NaN, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
 			const result = normalizeStates(data, 'brasilapi');
-			expect(result[0].code).toBeNaN();
+			expect(result[0].code).toBe(0);
 		});
 
-		it('PASS — id as Infinity → accepted as-is (typeof Infinity === "number")', () => {
+		it('FIXED — id as Infinity → falls back to 0 (Number.isFinite guard)', () => {
 			const data = [{ id: Infinity, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
 			const result = normalizeStates(data, 'ibge');
-			expect(result[0].code).toBe(Infinity);
+			expect(result[0].code).toBe(0);
 		});
 
-		it('PASS — id as negative number → accepted as-is', () => {
+		it('PASS — id as negative number → accepted as-is (finite)', () => {
 			const data = [{ id: -1, sigla: 'SP', nome: 'São Paulo', regiao: { nome: 'Sudeste' } }];
 			const result = normalizeStates(data, 'brasilapi');
 			expect(result[0].code).toBe(-1);
@@ -2433,10 +2433,10 @@ describe('IBGE VECTOR 4: Non-numeric id/codigo_ibge', () => {
 			expect(result[0].code).toBe(0);
 		});
 
-		it('PASS — id as NaN → accepted as-is (typeof NaN === "number")', () => {
+		it('FIXED — id as NaN → falls back to 0 (Number.isFinite guard)', () => {
 			const data = [{ id: NaN, nome: 'São Paulo' }];
 			const result = normalizeCities(data, 'ibge');
-			expect(result[0].code).toBeNaN();
+			expect(result[0].code).toBe(0);
 		});
 
 		it('PASS — id as negative → accepted as-is', () => {

@@ -9,7 +9,7 @@ import { safeStr } from '../../shared/utils';
 function normalizeState(item: Record<string, unknown>): IState {
 	const regiao = (item.regiao ?? {}) as Record<string, unknown>;
 	return {
-		code: typeof item.id === 'number' ? item.id : 0,
+		code: Number.isFinite(item.id) ? item.id as number : 0,
 		abbreviation: safeStr(item.sigla),
 		name: safeStr(item.nome),
 		region: safeStr(regiao.nome),
@@ -27,7 +27,7 @@ function normalizeBrasilApiCity(item: Record<string, unknown>): ICity {
 /** Normalizes an IBGE API city entry: `{ id, nome }`. */
 function normalizeIbgeCity(item: Record<string, unknown>): ICity {
 	return {
-		code: typeof item.id === 'number' ? item.id : 0,
+		code: Number.isFinite(item.id) ? item.id as number : 0,
 		name: safeStr(item.nome),
 	};
 }
