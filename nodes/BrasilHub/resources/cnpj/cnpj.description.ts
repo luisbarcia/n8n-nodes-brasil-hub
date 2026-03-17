@@ -51,6 +51,26 @@ export const cnpjDescription: INodeProperties[] = [
 		description: 'Whether to return a simplified response with only the most important fields',
 	},
 	{
+		displayName: 'Output Mode',
+		name: 'outputMode',
+		type: 'options',
+		displayOptions: { show: { resource: ['cnpj'], operation: ['query'], simplify: [false] } },
+		options: [
+			{
+				name: 'Full',
+				value: 'full',
+				description: 'All normalized fields including address, contacts, and partners',
+			},
+			{
+				name: 'AI Summary',
+				value: 'aiSummary',
+				description: 'Flat key-value object optimized for AI Agent tool usage',
+			},
+		],
+		default: 'full',
+		description: 'Output format when Simplify is disabled',
+	},
+	{
 		displayName: 'Include Raw Response',
 		name: 'includeRaw',
 		type: 'boolean',

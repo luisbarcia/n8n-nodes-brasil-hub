@@ -415,8 +415,10 @@ Each new resource ships as its own MINOR release:
 - [ ] Respeitar header `Retry-After` se presente
 
 #### 24.4 CNPJ Output Mode
-- [ ] Param "Output Mode": Simplified (default), Full, AI Summary
-- [ ] AI Summary: campos otimizados para usableAsTool (1-liner por campo)
+- [x] Param "Output Mode": Full (default), AI Summary — appears when Simplify is disabled
+- [x] AI Summary: 8 flat English key-value fields (cnpj, company, trade_name, status, since, size, activity, city)
+- [x] Backward-compatible: simplify=true/false unchanged
+- [x] 4 new tests, released as v0.11.0
 
 #### 24.5 Creator Portal Resubmission
 - [ ] Submeter v1.0.0 estável no n8n Creator Portal

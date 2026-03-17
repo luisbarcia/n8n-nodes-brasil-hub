@@ -68,6 +68,54 @@ describe('cnpjQuery', () => {
 	});
 });
 
+describe('cnpjQuery output modes', () => {
+	it('should return simplified output when simplify=true (default)', async () => {
+		const ctx = createMockContext({ simplify: true });
+		const [result] = await cnpjQuery(ctx, 0);
+		expect(result.json).toHaveProperty('cnpj');
+		expect(result.json).toHaveProperty('razao_social');
+		expect(result.json).toHaveProperty('situacao');
+		expect(result.json).not.toHaveProperty('endereco');
+		expect(result.json).not.toHaveProperty('socios');
+		expect(result.json).not.toHaveProperty('company');
+	});
+
+	it('should return full output when simplify=false and outputMode=full', async () => {
+		const ctx = createMockContext({ simplify: false, outputMode: 'full' });
+		const [result] = await cnpjQuery(ctx, 0);
+		expect(result.json).toHaveProperty('cnpj');
+		expect(result.json).toHaveProperty('razao_social');
+		expect(result.json).toHaveProperty('endereco');
+		expect(result.json).toHaveProperty('contato');
+		expect(result.json).toHaveProperty('socios');
+	});
+
+	it('should return AI Summary when simplify=false and outputMode=aiSummary', async () => {
+		const ctx = createMockContext({ simplify: false, outputMode: 'aiSummary' });
+		const [result] = await cnpjQuery(ctx, 0);
+		expect(result.json).toHaveProperty('cnpj', '11222333000181');
+		expect(result.json).toHaveProperty('company', 'EMPRESA TESTE');
+		expect(result.json).toHaveProperty('trade_name', '');
+		expect(result.json).toHaveProperty('status', 'ATIVA');
+		expect(result.json).toHaveProperty('since', '2020-01-01');
+		expect(result.json).toHaveProperty('size', 'ME');
+		expect(result.json).toHaveProperty('activity', 'Desenvolvimento de software (6201501)');
+		expect(result.json).toHaveProperty('city', 'SAO PAULO/SP');
+		// Should NOT have nested objects
+		expect(result.json).not.toHaveProperty('endereco');
+		expect(result.json).not.toHaveProperty('socios');
+		expect(result.json).not.toHaveProperty('razao_social');
+		expect(result.json).toHaveProperty('_meta');
+	});
+
+	it('should default to full when simplify=false and outputMode not set', async () => {
+		const ctx = createMockContext({ simplify: false });
+		const [result] = await cnpjQuery(ctx, 0);
+		expect(result.json).toHaveProperty('endereco');
+		expect(result.json).toHaveProperty('socios');
+	});
+});
+
 describe('cnpjQuery with fallback', () => {
 	it('should set strategy to fallback when first provider fails', async () => {
 		let callCount = 0;

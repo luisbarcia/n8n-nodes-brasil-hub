@@ -56,12 +56,27 @@ export async function cnpjQuery(
 
 	const full = normalizeCnpj(result.data, result.provider);
 	const meta = buildMeta(result.provider, cnpj, result.errors);
+	const outputMode = simplify ? 'simplified' : (context.getNodeParameter('outputMode', itemIndex, 'full') as string);
 
-	const normalized = simplify
-		? { cnpj: full.cnpj, razao_social: full.razao_social, nome_fantasia: full.nome_fantasia, situacao: full.situacao, data_abertura: full.data_abertura, porte: full.porte }
-		: full;
+	let normalized: Record<string, unknown>;
+	if (outputMode === 'simplified') {
+		normalized = { cnpj: full.cnpj, razao_social: full.razao_social, nome_fantasia: full.nome_fantasia, situacao: full.situacao, data_abertura: full.data_abertura, porte: full.porte };
+	} else if (outputMode === 'aiSummary') {
+		normalized = {
+			cnpj: full.cnpj,
+			company: full.razao_social,
+			trade_name: full.nome_fantasia,
+			status: full.situacao,
+			since: full.data_abertura,
+			size: full.porte,
+			activity: full.atividade_principal ? `${full.atividade_principal.descricao} (${full.atividade_principal.codigo})` : '',
+			city: full.endereco ? `${full.endereco.municipio}/${full.endereco.uf}` : '',
+		};
+	} else {
+		normalized = full as unknown as Record<string, unknown>;
+	}
 
-	return buildResultItem(normalized as unknown as Record<string, unknown>, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
+	return buildResultItem(normalized, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
 }
 
 /**

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-03-17
+
+### Added
+- **CNPJ Output Mode** — new `Output Mode` dropdown when Simplify is disabled
+  - **Full** (default): all normalized fields (address, contacts, partners)
+  - **AI Summary**: 8 flat English key-value fields optimized for AI Agent tool usage
+    (`cnpj`, `company`, `trade_name`, `status`, `since`, `size`, `activity`, `city`)
+- 4 new output mode tests in cnpj.execute.spec.ts
+
+### Changed
+- 1158 tests total (was 1154)
+- Backward-compatible: existing workflows with `simplify: true/false` keep working identically
+
 ## [0.10.1] - 2026-03-17
 
 ### Fixed
@@ -328,7 +341,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.1...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.8.0...v0.9.0
