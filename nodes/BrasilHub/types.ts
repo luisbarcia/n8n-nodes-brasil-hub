@@ -102,6 +102,10 @@ export interface IMeta {
 	strategy: 'fallback' | 'direct';
 	/** Error messages from providers that failed before the successful one. */
 	errors?: string[];
+	/** Whether at least one provider returned HTTP 429 (rate limited). */
+	rate_limited?: boolean;
+	/** Suggested retry delay in milliseconds from the last 429 Retry-After header. */
+	retry_after_ms?: number;
 }
 
 /** Normalized bank query result, unified across providers (BrasilAPI, BancosBrasileiros). */
@@ -274,4 +278,8 @@ export interface IFallbackResult {
 	provider: string;
 	/** Error messages from providers that failed before the successful one. */
 	errors: string[];
+	/** Whether at least one provider returned HTTP 429. */
+	rateLimited: boolean;
+	/** Suggested retry delay in ms from the last 429 Retry-After header, if present. */
+	retryAfterMs?: number;
 }

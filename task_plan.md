@@ -410,9 +410,11 @@ Each new resource ships as its own MINOR release:
 - [x] Released as v0.10.0
 
 #### 24.3 Rate Limit Awareness
-- [ ] Detectar HTTP 429 no fallback engine
-- [ ] Retry com backoff exponencial (sem setTimeout — loop com delay via n8n helpers)
-- [ ] Respeitar header `Retry-After` se presente
+- [x] Detectar HTTP 429 no fallback engine (skip to next provider)
+- [x] Extrair `Retry-After` header → `retry_after_ms` no _meta
+- [x] Erro específico "All providers rate-limited or failed"
+- [x] 9 novos testes, released as v0.12.0
+- Note: backoff exponencial não implementado (setTimeout banned em community nodes). Fallback chain IS the backoff.
 
 #### 24.4 CNPJ Output Mode
 - [x] Param "Output Mode": Full (default), AI Summary — appears when Simplify is disabled

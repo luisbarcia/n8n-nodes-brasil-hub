@@ -24,12 +24,20 @@ export function safeStr(value: unknown): string {
  * @param errors - Error messages from providers that failed before the successful one.
  * @returns IMeta object ready to attach to the response.
  */
-export function buildMeta(provider: string, query: string, errors: string[]): {
+export function buildMeta(
+	provider: string,
+	query: string,
+	errors: string[],
+	rateLimited = false,
+	retryAfterMs?: number,
+): {
 	provider: string;
 	query: string;
 	queried_at: string;
 	strategy: 'fallback' | 'direct';
 	errors?: string[];
+	rate_limited?: boolean;
+	retry_after_ms?: number;
 } {
 	return {
 		provider,
@@ -37,6 +45,8 @@ export function buildMeta(provider: string, query: string, errors: string[]): {
 		queried_at: new Date().toISOString(),
 		strategy: errors.length > 0 ? 'fallback' : 'direct',
 		...(errors.length > 0 && { errors }),
+		...(rateLimited && { rate_limited: true }),
+		...(retryAfterMs != null && { retry_after_ms: retryAfterMs }),
 	};
 }
 

@@ -51,7 +51,7 @@ export async function feriadosQuery(
 
 	const feriados = normalizeFeriados(result.data, result.provider);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta(result.provider, String(year), result.errors);
+	const meta = buildMeta(result.provider, String(year), result.errors, result.rateLimited, result.retryAfterMs);
 
 	return buildResultItems(feriados as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
 }

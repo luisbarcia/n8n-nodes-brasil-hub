@@ -36,6 +36,8 @@ export async function queryWithFallback(
 ): Promise<IFallbackResult> {
 	const safeTimeout = clampTimeout(timeoutMs);
 	const errors: string[] = [];
+	let rateLimited = false;
+	let retryAfterMs: number | undefined;
 
 	for (const provider of providers) {
 		try {
@@ -49,14 +51,28 @@ export async function queryWithFallback(
 				timeout: safeTimeout,
 			});
 
-			return { data, provider: provider.name, errors };
+			return { data, provider: provider.name, errors, rateLimited, retryAfterMs };
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
 			const httpCode = (error as Record<string, unknown>)?.httpCode;
 			const detail = httpCode ? `[${httpCode}] ${message}` : message;
 			errors.push(`${provider.name}: ${detail}`);
+
+			if (httpCode === 429 || httpCode === '429') {
+				rateLimited = true;
+				const retryHeader = (error as Record<string, Record<string, unknown>>)?.headers?.['retry-after'];
+				if (retryHeader != null) {
+					const seconds = Number(retryHeader);
+					if (Number.isFinite(seconds) && seconds > 0) {
+						retryAfterMs = Math.round(seconds * 1000);
+					}
+				}
+			}
 		}
 	}
 
-	throw new Error(`No provider could fulfill the request: ${errors.join('; ')}`);
+	const prefix = rateLimited
+		? 'All providers rate-limited or failed'
+		: 'No provider could fulfill the request';
+	throw new Error(`${prefix}: ${errors.join('; ')}`);
 }

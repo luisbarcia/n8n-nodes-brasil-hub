@@ -55,7 +55,7 @@ export async function cnpjQuery(
 	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const full = normalizeCnpj(result.data, result.provider);
-	const meta = buildMeta(result.provider, cnpj, result.errors);
+	const meta = buildMeta(result.provider, cnpj, result.errors, result.rateLimited, result.retryAfterMs);
 	const outputMode = simplify ? 'simplified' : (context.getNodeParameter('outputMode', itemIndex, 'full') as string);
 
 	let normalized: Record<string, unknown>;
