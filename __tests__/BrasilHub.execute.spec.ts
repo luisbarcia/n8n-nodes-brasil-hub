@@ -16,6 +16,8 @@ function createExecuteContext(overrides: {
 	yearCode?: string;
 	referenceTable?: number;
 	year?: number;
+	uf?: string;
+	simplify?: boolean;
 	includeRaw?: boolean;
 	items?: INodeExecutionData[];
 	continueOnFail?: boolean;
@@ -36,6 +38,8 @@ function createExecuteContext(overrides: {
 		yearCode: overrides.yearCode ?? '2024-1',
 		referenceTable: overrides.referenceTable ?? 0,
 		year: overrides.year ?? 2026,
+		uf: overrides.uf ?? 'SP',
+		simplify: overrides.simplify ?? true,
 		includeRaw: overrides.includeRaw ?? false,
 	};
 
@@ -143,6 +147,39 @@ describe('BrasilHub.execute()', () => {
 		expect(results).toHaveLength(2);
 		expect(results[0].json).toHaveProperty('date', '2026-01-01');
 		expect(results[0].json).toHaveProperty('name', 'Confraternização mundial');
+		expect(results[0].json).toHaveProperty('_meta');
+	});
+
+	it('should dispatch ibge/states and return multiple items', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ibge',
+			operation: 'states',
+			httpResponse: [
+				{ id: 35, sigla: 'SP', nome: 'São Paulo', regiao: { id: 3, sigla: 'SE', nome: 'Sudeste' } },
+				{ id: 33, sigla: 'RJ', nome: 'Rio de Janeiro', regiao: { id: 3, sigla: 'SE', nome: 'Sudeste' } },
+			],
+		});
+		const [results] = await node.execute.call(ctx);
+		expect(results).toHaveLength(2);
+		expect(results[0].json).toHaveProperty('abbreviation', 'SP');
+		expect(results[0].json).toHaveProperty('name', 'São Paulo');
+		expect(results[0].json).toHaveProperty('region', 'Sudeste');
+		expect(results[0].json).toHaveProperty('_meta');
+	});
+
+	it('should dispatch ibge/cities and return multiple items', async () => {
+		const ctx = createExecuteContext({
+			resource: 'ibge',
+			operation: 'cities',
+			httpResponse: [
+				{ nome: 'ADAMANTINA', codigo_ibge: '3500105' },
+				{ nome: 'ADOLFO', codigo_ibge: '3500204' },
+			],
+		});
+		const [results] = await node.execute.call(ctx);
+		expect(results).toHaveLength(2);
+		expect(results[0].json).toHaveProperty('code', 3500105);
+		expect(results[0].json).toHaveProperty('name', 'ADAMANTINA');
 		expect(results[0].json).toHaveProperty('_meta');
 	});
 
