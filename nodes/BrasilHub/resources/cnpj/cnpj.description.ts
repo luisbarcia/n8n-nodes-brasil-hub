@@ -46,6 +46,7 @@ export const cnpjDescription: INodeProperties[] = [
 		displayName: 'Primary Provider',
 		name: 'primaryProvider',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: { show: showForCnpjQuery },
 		options: [
 			{ name: 'Auto (BrasilAPI First)', value: 'auto' },
@@ -64,6 +65,7 @@ export const cnpjDescription: INodeProperties[] = [
 		displayName: 'Simplify',
 		name: 'simplify',
 		type: 'boolean',
+		noDataExpression: true,
 		displayOptions: { show: showForCnpjQuery },
 		default: true,
 		description: 'Whether to return a simplified response with only the most important fields',
@@ -72,6 +74,7 @@ export const cnpjDescription: INodeProperties[] = [
 		displayName: 'Output Mode',
 		name: 'outputMode',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: { show: { resource: ['cnpj'], operation: ['query'], simplify: [false] } },
 		options: [
 			{

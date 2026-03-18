@@ -6,6 +6,7 @@ import type {
 	INodeTypeDescription,
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
+import { DEFAULT_TIMEOUT_MS, MIN_TIMEOUT_MS, MAX_TIMEOUT_MS } from './shared/fallback';
 import { cnpjDescription } from './resources/cnpj/cnpj.description';
 import { cnpjQuery, cnpjValidate } from './resources/cnpj/cnpj.execute';
 import { cepDescription } from './resources/cep/cep.description';
@@ -123,10 +124,11 @@ export class BrasilHub implements INodeType {
 				displayName: 'Timeout (Ms)',
 				name: 'timeout',
 				type: 'number',
-				default: 10000,
+				noDataExpression: true,
+				default: DEFAULT_TIMEOUT_MS,
 				typeOptions: {
-					minValue: 1000,
-					maxValue: 60000,
+					minValue: MIN_TIMEOUT_MS,
+					maxValue: MAX_TIMEOUT_MS,
 				},
 				description: 'HTTP request timeout in milliseconds for each provider attempt',
 			},

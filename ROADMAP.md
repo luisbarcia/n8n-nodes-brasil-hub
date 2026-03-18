@@ -33,14 +33,13 @@ Each new resource ships as its own MINOR release for faster iteration and easier
 - [x] **NCM Search** — Search codes by description (BrasilAPI, multi-item)
 - [x] Operations: `query`, `search`
 
-## v1.0.0 — Power User Features + Stable Release
+## v1.0.0 — Power User Features + Stable Release ✅
 
 - [x] **Configurable Provider Order** — User chooses primary provider per resource
 - [x] **Configurable Timeout** — Override default 10s timeout per operation
 - [x] **Rate Limit Awareness** — Detect HTTP 429, skip to next provider, expose in _meta
 - [x] **CNPJ Output Mode** — Simplified (default), Full, AI Summary
 - [ ] **Creator Portal resubmission** — Submit stable v1.0.0 for "Verified" badge
-- [ ] Comprehensive documentation site or wiki
 
 ## v1.1.0+ — Expansion (ideas, not committed)
 

@@ -2,7 +2,7 @@
 
 ## Project
 
-n8n community node (`n8n-nodes-brasil-hub`) for querying Brazilian public data. Single "Brasil Hub" node with resource/operation routing pattern. Currently ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Feriados, FIPE, IBGE, and NCM resources (v0.10.x) — 9 resources, 17 operations, 22 providers, configurable timeout.
+n8n community node (`n8n-nodes-brasil-hub`) for querying Brazilian public data. Single "Brasil Hub" node with resource/operation routing pattern. Currently ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Feriados, FIPE, IBGE, and NCM resources (v1.0.x) — 9 resources, 17 operations, 22 providers, configurable timeout + provider order, rate limit awareness, CNPJ output mode.
 
 ## Tech Stack
 

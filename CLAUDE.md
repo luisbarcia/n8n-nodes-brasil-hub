@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v0.10.x ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Feriados, FIPE, IBGE, and NCM — 9 resources, 17 operations, 22 providers, configurable timeout. Next milestone: v1.0 (configurable providers, rate limiting, CNPJ output mode).
+Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v1.0.x ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Feriados, FIPE, IBGE, and NCM — 9 resources, 17 operations, 22 providers, configurable timeout, configurable provider order, rate limit awareness, CNPJ output mode.
 
 - **License:** MIT
 - **Tech Stack:** TypeScript, n8n-workflow, Jest + ts-jest

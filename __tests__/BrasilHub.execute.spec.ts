@@ -361,6 +361,63 @@ describe('BrasilHub.execute()', () => {
 		);
 	});
 
+	it('should reorder providers when primaryProvider is set (CNPJ)', async () => {
+		const ctx = createExecuteContext({
+			resource: 'cnpj',
+			operation: 'query',
+		});
+		(ctx.getNodeParameter as jest.Mock).mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'cnpj', operation: 'query', cnpj: '11222333000181',
+				simplify: true, includeRaw: false, timeout: 10000,
+				primaryProvider: 'receitaws',
+			};
+			return params[name] ?? fallback;
+		});
+
+		await node.execute.call(ctx);
+		const firstCallUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(firstCallUrl).toContain('receitaws.com.br');
+	});
+
+	it('should reorder providers when primaryProvider is set (CEP)', async () => {
+		const ctx = createExecuteContext({
+			resource: 'cep',
+			operation: 'query',
+		});
+		(ctx.getNodeParameter as jest.Mock).mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'cep', operation: 'query', cep: '01001000',
+				includeRaw: false, timeout: 10000,
+				primaryProvider: 'viacep',
+			};
+			return params[name] ?? fallback;
+		});
+
+		await node.execute.call(ctx);
+		const firstCallUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(firstCallUrl).toContain('viacep.com.br');
+	});
+
+	it('should keep default order when primaryProvider is auto', async () => {
+		const ctx = createExecuteContext({
+			resource: 'cnpj',
+			operation: 'query',
+		});
+		(ctx.getNodeParameter as jest.Mock).mockImplementation((name: string, _index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'cnpj', operation: 'query', cnpj: '11222333000181',
+				simplify: true, includeRaw: false, timeout: 10000,
+				primaryProvider: 'auto',
+			};
+			return params[name] ?? fallback;
+		});
+
+		await node.execute.call(ctx);
+		const firstCallUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(firstCallUrl).toContain('brasilapi.com.br');
+	});
+
 	it('should process multiple items', async () => {
 		const ctx = createExecuteContext({
 			resource: 'cnpj',

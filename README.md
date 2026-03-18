@@ -17,7 +17,7 @@
 
 ---
 
-> **Development Status:** This package is in active development (v0.x). The API is stable but may receive breaking changes in minor versions. Please pin your version in `package.json`.
+> **Stable Release (v1.0)** — 9 resources, 17 operations, 22 providers. The API is stable and follows semantic versioning.
 
 ---
 
@@ -156,7 +156,7 @@ Each provider has a **configurable timeout** (default: 10 seconds, range: 1–60
 git clone https://github.com/luisbarcia/n8n-nodes-brasil-hub.git
 cd n8n-nodes-brasil-hub
 npm install
-npm test          # 1141 tests, 99%+ coverage
+npm test          # 1174 tests, 99%+ coverage
 npm run build
 npm run lint
 ```

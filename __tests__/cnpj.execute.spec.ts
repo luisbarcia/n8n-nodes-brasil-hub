@@ -108,6 +108,21 @@ describe('cnpjQuery output modes', () => {
 		expect(result.json).toHaveProperty('_meta');
 	});
 
+	it('should handle aiSummary with missing atividade_principal and endereco', async () => {
+		const ctx = createMockContext({ simplify: false, outputMode: 'aiSummary' });
+		(ctx.helpers.httpRequest as jest.Mock).mockResolvedValue({
+			cnpj: '11222333000181', razao_social: 'TESTE', nome_fantasia: '',
+			descricao_situacao_cadastral: 'ATIVA', data_inicio_atividade: '2020-01-01',
+			descricao_porte: 'ME', natureza_juridica: '', capital_social: 0,
+			cnae_fiscal: 0, cnae_fiscal_descricao: '', logradouro: '', numero: '',
+			complemento: '', bairro: '', cep: '', municipio: '', uf: '',
+			ddd_telefone_1: '', ddd_telefone_2: '', email: '', qsa: [],
+		});
+		const [result] = await cnpjQuery(ctx, 0);
+		expect(result.json).toHaveProperty('activity');
+		expect(result.json).toHaveProperty('city');
+	});
+
 	it('should default to full when simplify=false and outputMode not set', async () => {
 		const ctx = createMockContext({ simplify: false });
 		const [result] = await cnpjQuery(ctx, 0);
