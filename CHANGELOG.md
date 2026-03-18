@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-03-18
+
+### Fixed
+- Renamed resource display name `Feriado` → `Holiday` for English consistency (all UI text must be in English per n8n Cloud requirements)
+- Reordered resource options alphabetically per n8n lint rules (Holiday now between FIPE and IBGE)
+
+### Changed
+- Internal `value` remains `feriados` — no breaking change for existing workflows
+
 ## [1.0.0] - 2026-03-17
 
 ### Added
@@ -392,7 +401,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.13.0...v1.0.0
 [0.13.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.11.0...v0.12.0
