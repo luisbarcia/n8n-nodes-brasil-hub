@@ -4,14 +4,14 @@ This document describes the planned direction for n8n-nodes-brasil-hub.
 
 Each new resource ships as its own MINOR release for faster iteration and easier rollback.
 
-## Current (v0.7.x) ✅
+## v0.1–v0.7 — Foundation ✅
 
 - [x] **CNPJ resource** (Query + Validate) with 7 providers ([#36](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/36))
 - [x] **CEP resource** (Query + Validate) with 4 providers ([#37](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/37))
 - [x] **CPF resource** (Validate) — local checksum ([#5](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/5))
 - [x] **Bank resource** (Query + List) with 2 providers ([#32](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/32))
 - [x] **DDD resource** (Query) with 2 providers ([#33](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/33))
-- [x] **Feriado resource** (Query) with 2 providers ([#35](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/35))
+- [x] **Holiday resource** (Query) with 2 providers ([#35](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/35))
 - [x] **FIPE resource** (Brands, Models, Years, Price) with 1 provider ([#34](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/34))
 - [x] CNPJ Simplify parameter ([#38](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/38))
 - [x] Enhanced error messages with HTTP status ([#39](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/39))
