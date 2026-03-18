@@ -46,6 +46,7 @@ export const ibgeDescription: INodeProperties[] = [
 		displayName: 'Primary Provider',
 		name: 'primaryProvider',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: { show: showForIbge },
 		options: [
 			{ name: 'Auto (BrasilAPI First)', value: 'auto' },

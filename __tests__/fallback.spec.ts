@@ -255,6 +255,44 @@ describe('queryWithFallback', () => {
 		expect(result.retryAfterMs).toBeUndefined();
 	});
 
+	it('should ignore Retry-After: 0', async () => {
+		const err429 = Object.assign(new Error('Rate limited'), {
+			httpCode: 429, headers: { 'retry-after': '0' },
+		});
+		let callIndex = 0;
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callIndex++;
+					if (callIndex === 1) throw err429;
+					return { ok: true };
+				}),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+		const result = await queryWithFallback(ctx, providers);
+		expect(result.rateLimited).toBe(true);
+		expect(result.retryAfterMs).toBeUndefined();
+	});
+
+	it('should ignore negative Retry-After', async () => {
+		const err429 = Object.assign(new Error('Rate limited'), {
+			httpCode: 429, headers: { 'retry-after': '-5' },
+		});
+		let callIndex = 0;
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callIndex++;
+					if (callIndex === 1) throw err429;
+					return { ok: true };
+				}),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+		const result = await queryWithFallback(ctx, providers);
+		expect(result.rateLimited).toBe(true);
+		expect(result.retryAfterMs).toBeUndefined();
+	});
+
 	it('should collect all error messages from failed providers', async () => {
 		const ctx = createMockContext([
 			{ success: false, error: 'Timeout' },

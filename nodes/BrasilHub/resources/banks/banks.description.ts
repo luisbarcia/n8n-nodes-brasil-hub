@@ -46,6 +46,7 @@ export const banksDescription: INodeProperties[] = [
 		displayName: 'Primary Provider',
 		name: 'primaryProvider',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: { show: showForBanks },
 		options: [
 			{ name: 'Auto (BrasilAPI First)', value: 'auto' },

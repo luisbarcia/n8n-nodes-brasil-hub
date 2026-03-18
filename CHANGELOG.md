@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-17
+
+### Added
+- **Stable release** — first major version, API contract locked under semver
+- All 4 power-user features from v0.10–v0.13 consolidated:
+  - Configurable Timeout (1s–60s) with runtime clamping
+  - CNPJ Output Mode (Simplified, Full, AI Summary)
+  - Rate Limit Awareness (429 detection, Retry-After, fallback chain)
+  - Configurable Provider Order (6 resources, 22 providers)
+
+### Changed
+- 9 resources, 17 operations, 22 providers
+- 1174 tests, 24 suites, 99%+ branch coverage
+- All pre-1.0 versions deprecated
+
 ## [0.13.0] - 2026-03-17
 
 ### Added
@@ -377,7 +392,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.13.0...v1.0.0
 [0.13.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v0.10.1...v0.11.0

@@ -39,6 +39,7 @@ export const dddDescription: INodeProperties[] = [
 		displayName: 'Primary Provider',
 		name: 'primaryProvider',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: { show: showForDdd },
 		options: [
 			{ name: 'Auto (BrasilAPI First)', value: 'auto' },

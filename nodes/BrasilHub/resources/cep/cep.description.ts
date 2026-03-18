@@ -46,6 +46,7 @@ export const cepDescription: INodeProperties[] = [
 		displayName: 'Primary Provider',
 		name: 'primaryProvider',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: { show: showForCepQuery },
 		options: [
 			{ name: 'ApiCEP', value: 'apicep' },
