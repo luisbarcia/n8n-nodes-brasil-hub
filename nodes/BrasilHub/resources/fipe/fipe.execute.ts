@@ -82,7 +82,7 @@ export async function fipeBrands(
 
 	const brands = normalizeBrands(data);
 	const rawItems = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta('parallelum', vehicleType, []);
+	const meta = buildMeta('parallelum', vehicleType, [], false);
 
 	return buildResultItems(brands as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
 }
@@ -111,7 +111,7 @@ export async function fipeModels(
 
 	const models = normalizeModels(data);
 	const rawModelos = ((data as Record<string, unknown>)?.modelos ?? []) as Array<Record<string, unknown>>;
-	const meta = buildMeta('parallelum', `${vehicleType}/${brandCode}`, []);
+	const meta = buildMeta('parallelum', `${vehicleType}/${brandCode}`, [], false);
 
 	return buildResultItems(models as unknown as Array<Record<string, unknown>>, meta, rawModelos, includeRaw, itemIndex) as INodeExecutionData[];
 }
@@ -142,7 +142,7 @@ export async function fipeYears(
 
 	const years = normalizeYears(data);
 	const rawItems = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta('parallelum', `${vehicleType}/${brandCode}/${modelCode}`, []);
+	const meta = buildMeta('parallelum', `${vehicleType}/${brandCode}/${modelCode}`, [], false);
 
 	return buildResultItems(years as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
 }
@@ -174,7 +174,7 @@ export async function fipePrice(
 	const data = await fetchFipe(context, url, timeoutMs);
 
 	const price = normalizePrice(data);
-	const meta = buildMeta('parallelum', `${vehicleType}/${brandCode}/${modelCode}/${yearCode}`, []);
+	const meta = buildMeta('parallelum', `${vehicleType}/${brandCode}/${modelCode}/${yearCode}`, [], false);
 
 	return buildResultItem(price as unknown as Record<string, unknown>, meta, data, includeRaw, itemIndex) as INodeExecutionData[];
 }
