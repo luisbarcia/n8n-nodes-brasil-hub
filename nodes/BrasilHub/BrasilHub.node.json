@@ -6,7 +6,7 @@
 	"subcategories": {
 		"Data & Storage": ["Request Making"]
 	},
-	"alias": ["brazil", "cnpj", "cpf", "cep", "banks", "ddd", "feriados", "holidays", "fipe", "vehicle", "ibge", "states", "cities", "ncm", "tax-classification", "area-code", "tax-id", "zip-code", "address", "company", "timeout", "ai-summary"],
+	"alias": ["brazil", "brasil", "brazilian", "cnpj", "cpf", "cep", "banks", "banco", "ddd", "feriados", "holidays", "fipe", "vehicle", "ibge", "states", "cities", "municipios", "ncm", "tax-classification", "area-code", "tax-id", "zip-code", "postal-code", "address", "endereco", "company", "empresa", "consulta", "receita", "validation", "public-data", "tabela-fipe"],
 	"resources": {
 		"primaryDocumentation": [
 			{
