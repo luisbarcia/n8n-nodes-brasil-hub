@@ -44,5 +44,5 @@ export async function dddQuery(
 
 	const meta = buildMeta(result.provider, String(ddd), result.errors, result.rateLimited, result.retryAfterMs);
 
-	return buildResultItem(normalized as unknown as Record<string, unknown>, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
+	return buildResultItem(normalized, meta, result.data, includeRaw, itemIndex);
 }

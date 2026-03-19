@@ -1,3 +1,5 @@
+import type { IDataObject, INodeExecutionData } from 'n8n-workflow';
+
 /**
  * Coerces an unknown value to a string, returning `''` for null, undefined, or objects.
  *
@@ -63,19 +65,19 @@ export function buildMeta(
  * @param itemIndex - n8n input item index for pairedItem.
  * @returns Array of n8n execution data items.
  */
-export function buildResultItems(
-	items: Array<Record<string, unknown>>,
+export function buildResultItems<T extends object>(
+	items: T[],
 	meta: Record<string, unknown>,
 	rawItems: Array<Record<string, unknown>>,
 	includeRaw: boolean,
 	itemIndex: number,
-): Array<{ json: Record<string, unknown>; pairedItem: { item: number } }> {
+): INodeExecutionData[] {
 	return items.map((item, index) => ({
 		json: {
 			...item,
 			_meta: meta,
 			...(includeRaw && { _raw: rawItems[index] }),
-		},
+		} as IDataObject,
 		pairedItem: { item: itemIndex },
 	}));
 }
@@ -93,19 +95,19 @@ export function buildResultItems(
  * @param itemIndex - n8n input item index for pairedItem.
  * @returns Single-element array of n8n execution data.
  */
-export function buildResultItem(
-	normalized: Record<string, unknown>,
+export function buildResultItem<T extends object>(
+	normalized: T,
 	meta: Record<string, unknown>,
 	rawData: unknown,
 	includeRaw: boolean,
 	itemIndex: number,
-): Array<{ json: Record<string, unknown>; pairedItem: { item: number } }> {
+): INodeExecutionData[] {
 	return [{
 		json: {
 			...normalized,
 			_meta: meta,
-			...(includeRaw && { _raw: rawData as Record<string, unknown> }),
-		},
+			...(includeRaw && { _raw: rawData }),
+		} as IDataObject,
 		pairedItem: { item: itemIndex },
 	}];
 }

@@ -50,7 +50,7 @@ export async function ibgeStates(
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
 	const meta = buildMeta(result.provider, 'all', result.errors, result.rateLimited, result.retryAfterMs);
 
-	return buildResultItems(states as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
+	return buildResultItems(states, meta, rawItems, includeRaw, itemIndex);
 }
 
 /**
@@ -84,5 +84,5 @@ export async function ibgeCities(
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
 	const meta = buildMeta(result.provider, ufInput, result.errors, result.rateLimited, result.retryAfterMs);
 
-	return buildResultItems(cities as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
+	return buildResultItems(cities, meta, rawItems, includeRaw, itemIndex);
 }

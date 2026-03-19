@@ -31,7 +31,7 @@ export async function ncmQuery(
 	const normalized = normalizeNcm(result.data);
 	const meta = buildMeta(result.provider, ncmCode, result.errors, result.rateLimited, result.retryAfterMs);
 
-	return buildResultItem(normalized as unknown as Record<string, unknown>, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
+	return buildResultItem(normalized, meta, result.data, includeRaw, itemIndex);
 }
 
 /**
@@ -66,5 +66,5 @@ export async function ncmSearch(
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
 	const meta = buildMeta(result.provider, searchTerm, result.errors, result.rateLimited, result.retryAfterMs);
 
-	return buildResultItems(items as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
+	return buildResultItems(items, meta, rawItems, includeRaw, itemIndex);
 }

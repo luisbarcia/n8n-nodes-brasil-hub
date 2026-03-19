@@ -74,10 +74,10 @@ export async function cnpjQuery(
 			city: full.endereco ? `${full.endereco.municipio}/${full.endereco.uf}` : '',
 		};
 	} else {
-		normalized = full as unknown as Record<string, unknown>;
+		normalized = { ...full };
 	}
 
-	return buildResultItem(normalized, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
+	return buildResultItem(normalized, meta, result.data, includeRaw, itemIndex);
 }
 
 /**
