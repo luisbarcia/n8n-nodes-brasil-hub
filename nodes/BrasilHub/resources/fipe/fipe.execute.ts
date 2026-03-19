@@ -12,7 +12,7 @@ const YEAR_CODE_PATTERN = /^\d{1,5}-\d{1,2}$/;
 
 /** Appends `?tabela_referencia=X` when refTable > 0. */
 function appendRefTable(url: string, refTable: number): string {
-	const safeRef = Math.floor(refTable);
+	const safeRef = Number.isFinite(refTable) ? Math.floor(refTable) : 0;
 	return safeRef > 0 ? `${url}?tabela_referencia=${safeRef}` : url;
 }
 
