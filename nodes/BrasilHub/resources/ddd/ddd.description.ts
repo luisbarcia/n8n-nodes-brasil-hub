@@ -6,7 +6,7 @@ const showForDdd = { resource: ['ddd'] };
  * n8n node property definitions for the DDD resource.
  *
  * Defines the Operation selector (Query only) and the DDD input field.
- * Single provider (BrasilAPI), no fallback.
+ * Providers: BrasilAPI → municipios-brasileiros fallback.
  */
 export const dddDescription: INodeProperties[] = [
 	{

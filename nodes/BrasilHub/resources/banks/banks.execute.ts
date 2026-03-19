@@ -56,7 +56,7 @@ export async function banksQuery(
 
 	const meta = buildMeta(result.provider, String(bankCode), result.errors, result.rateLimited, result.retryAfterMs);
 
-	return buildResultItem(normalized as unknown as Record<string, unknown>, meta, result.data, includeRaw, itemIndex) as INodeExecutionData[];
+	return buildResultItem(normalized, meta, result.data, includeRaw, itemIndex);
 }
 
 /**
@@ -84,5 +84,5 @@ export async function banksList(
 
 	const meta = buildMeta(result.provider, 'all', result.errors, result.rateLimited, result.retryAfterMs);
 
-	return buildResultItems(banks as unknown as Array<Record<string, unknown>>, meta, rawItems, includeRaw, itemIndex) as INodeExecutionData[];
+	return buildResultItems(banks, meta, rawItems, includeRaw, itemIndex);
 }

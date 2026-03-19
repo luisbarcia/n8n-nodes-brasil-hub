@@ -1022,11 +1022,11 @@ describe('FIPE VECTOR 11: referenceTable edge cases', () => {
 		expect(callUrl).not.toContain('tabela_referencia');
 	});
 
-	it('referenceTable = Infinity → query param IS appended (Infinity > 0 is true)', async () => {
+	it('FIXED — referenceTable = Infinity → no query param (Number.isFinite guard)', async () => {
 		const ctx = createFipeContext({ referenceTable: Infinity });
 		await fipeBrands(ctx, 0);
 		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
-		expect(callUrl).toContain('tabela_referencia=Infinity');
+		expect(callUrl).not.toContain('tabela_referencia');
 	});
 
 	it('referenceTable = 0.5 → query param IS appended (0.5 > 0 is true)', async () => {

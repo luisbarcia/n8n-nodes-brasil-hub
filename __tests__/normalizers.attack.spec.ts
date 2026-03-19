@@ -719,15 +719,14 @@ describe('FIPE VECTOR 2: Type confusion', () => {
 			expect(result[0].code).toBe(3.14);
 		});
 
-		it('PASS — codigo as NaN → falls back to 0 (typeof NaN === "number" but NaN)', () => {
+		it('FIXED — codigo as NaN → falls back to 0 (Number.isFinite rejects NaN)', () => {
 			const result = normalizeModels({ modelos: [{ codigo: NaN, nome: 'NaN' }] });
-			// typeof NaN === 'number', so it passes the typeof check
-			expect(result[0].code).toBeNaN();
+			expect(result[0].code).toBe(0);
 		});
 
-		it('PASS — codigo as Infinity → kept as-is (typeof number)', () => {
+		it('FIXED — codigo as Infinity → falls back to 0 (Number.isFinite rejects Infinity)', () => {
 			const result = normalizeModels({ modelos: [{ codigo: Infinity, nome: 'Inf' }] });
-			expect(result[0].code).toBe(Infinity);
+			expect(result[0].code).toBe(0);
 		});
 
 		it('PASS — codigo as negative number → kept as-is', () => {
@@ -770,15 +769,15 @@ describe('FIPE VECTOR 2: Type confusion', () => {
 			expect(result.modelYear).toBe(0);
 		});
 
-		it('PASS — TipoVeiculo as NaN → accepted (typeof number)', () => {
+		it('FIXED — TipoVeiculo as NaN → falls back to 0 (Number.isFinite)', () => {
 			const result = normalizePrice({ TipoVeiculo: NaN, AnoModelo: NaN });
-			expect(result.vehicleType).toBeNaN();
-			expect(result.modelYear).toBeNaN();
+			expect(result.vehicleType).toBe(0);
+			expect(result.modelYear).toBe(0);
 		});
 
-		it('PASS — TipoVeiculo as Infinity → accepted (typeof number)', () => {
+		it('FIXED — TipoVeiculo as Infinity → falls back to 0 (Number.isFinite)', () => {
 			const result = normalizePrice({ TipoVeiculo: Infinity });
-			expect(result.vehicleType).toBe(Infinity);
+			expect(result.vehicleType).toBe(0);
 		});
 
 		it('PASS — TipoVeiculo as negative → accepted (typeof number)', () => {

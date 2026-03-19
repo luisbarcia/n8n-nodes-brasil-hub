@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-19
+
+### Added
+- **SEO**: +10 npm keywords (brazilian, automation, workflow, public-data, address, zip-code, company, tax-id, validation, api-fallback)
+- **SEO**: +11 codex aliases with PT-BR terms (brasil, banco, municipios, endereco, empresa, consulta, receita, tabela-fipe) for n8n marketplace discoverability
+- npm description now highlights "22 providers", "no credentials", "AI Agent ready"
+
+### Fixed
+- **Type safety**: Replaced unsafe `error as Error` casts with proper `instanceof` guards in router error handling (prevents TypeError on non-Error throws)
+- **NaN/Infinity leak**: FIPE normalizers now use `Number.isFinite()` instead of `typeof === 'number'` — rejects NaN/Infinity (falls back to 0)
+- **Infinity in URL**: `referenceTable=Infinity` no longer produces `?tabela_referencia=Infinity` in FIPE URLs
+
+### Changed
+- **Generic `buildResultItem<T>`/`buildResultItems<T>`**: Eliminates 14 double-cast expressions across all execute files. Cast centralized in utils.ts
+- **`useUnknownInCatchVariables: true`** in tsconfig — stricter catch variable typing
+- Fixed orphaned JSDoc comment in BrasilHub.node.ts (moved to resourceOperations)
+- Fixed stale DDD description comment ("Single provider" → "BrasilAPI → municipios-brasileiros")
+
 ## [1.0.3] - 2026-03-18
 
 ### Fixed
@@ -413,7 +431,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.0...v1.0.1

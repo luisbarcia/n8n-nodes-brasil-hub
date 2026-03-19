@@ -32,17 +32,14 @@ type ExecuteFunction = (
 	itemIndex: number,
 ) => Promise<INodeExecutionData[]>;
 
-/**
- * Dictionary map routing resource+operation pairs to their execute handlers.
- * Adding a new resource or operation only requires a new entry here.
- */
 /** Builds an error output item for continueOnFail mode. */
 function buildFailItem(node: INode, error: unknown, itemIndex: number): INodeExecutionData {
+	const message = error instanceof Error ? error.message : String(error);
 	const nodeError = error instanceof NodeOperationError
 		? error
-		: new NodeOperationError(node, error as Error, { itemIndex });
+		: new NodeOperationError(node, message, { itemIndex });
 	return {
-		json: { error: error instanceof Error ? error.message : String(error) },
+		json: { error: message },
 		error: nodeError,
 		pairedItem: { item: itemIndex },
 	};
@@ -50,13 +47,18 @@ function buildFailItem(node: INode, error: unknown, itemIndex: number): INodeExe
 
 /** Re-throws an error with itemIndex attached to its context. */
 function rethrowWithContext(node: INode, error: unknown, itemIndex: number): never {
-	if ((error as Record<string, unknown>).context) {
-		(error as Record<string, unknown> & { context: Record<string, unknown> }).context.itemIndex = itemIndex;
+	if (error != null && typeof error === 'object' && 'context' in error) {
+		(error as { context: Record<string, unknown> }).context.itemIndex = itemIndex;
 		throw error;
 	}
-	throw new NodeOperationError(node, error as Error, { itemIndex });
+	const message = error instanceof Error ? error.message : String(error);
+	throw new NodeOperationError(node, message, { itemIndex });
 }
 
+/**
+ * Dictionary map routing resource+operation pairs to their execute handlers.
+ * Adding a new resource or operation only requires a new entry here.
+ */
 const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
 	cnpj: { query: cnpjQuery, validate: cnpjValidate },
 	cep: { query: cepQuery, validate: cepValidate },

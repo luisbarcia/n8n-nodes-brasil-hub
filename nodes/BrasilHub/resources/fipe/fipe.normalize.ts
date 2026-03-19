@@ -35,7 +35,7 @@ export function normalizeModels(data: unknown): IFipeModel[] {
 		? (obj.modelos as Array<Record<string, unknown>>)
 		: [];
 	return modelos.filter((item) => item != null && typeof item === 'object').map((item) => ({
-		code: typeof item.codigo === 'number' ? item.codigo : 0,
+		code: Number.isFinite(item.codigo) ? (item.codigo as number) : 0,
 		name: safeStr(item.nome),
 	}));
 }
@@ -59,10 +59,10 @@ export function normalizeYears(data: unknown): IFipeYear[] {
 export function normalizePrice(data: unknown): IFipePrice {
 	const obj = (data ?? {}) as Record<string, unknown>;
 	return {
-		vehicleType: typeof obj.TipoVeiculo === 'number' ? obj.TipoVeiculo : 0,
+		vehicleType: Number.isFinite(obj.TipoVeiculo) ? (obj.TipoVeiculo as number) : 0,
 		brand: safeStr(obj.Marca),
 		model: safeStr(obj.Modelo),
-		modelYear: typeof obj.AnoModelo === 'number' ? obj.AnoModelo : 0,
+		modelYear: Number.isFinite(obj.AnoModelo) ? (obj.AnoModelo as number) : 0,
 		fuel: safeStr(obj.Combustivel),
 		fipeCode: safeStr(obj.CodigoFipe),
 		referenceMonth: safeStr(obj.MesReferencia),
