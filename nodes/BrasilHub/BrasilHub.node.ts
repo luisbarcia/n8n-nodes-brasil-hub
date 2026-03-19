@@ -32,10 +32,6 @@ type ExecuteFunction = (
 	itemIndex: number,
 ) => Promise<INodeExecutionData[]>;
 
-/**
- * Dictionary map routing resource+operation pairs to their execute handlers.
- * Adding a new resource or operation only requires a new entry here.
- */
 /** Builds an error output item for continueOnFail mode. */
 function buildFailItem(node: INode, error: unknown, itemIndex: number): INodeExecutionData {
 	const message = error instanceof Error ? error.message : String(error);
@@ -59,6 +55,10 @@ function rethrowWithContext(node: INode, error: unknown, itemIndex: number): nev
 	throw new NodeOperationError(node, message, { itemIndex });
 }
 
+/**
+ * Dictionary map routing resource+operation pairs to their execute handlers.
+ * Adding a new resource or operation only requires a new entry here.
+ */
 const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
 	cnpj: { query: cnpjQuery, validate: cnpjValidate },
 	cep: { query: cepQuery, validate: cepValidate },
