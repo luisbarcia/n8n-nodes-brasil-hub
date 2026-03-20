@@ -146,12 +146,16 @@ export function generatePerson(gender?: 'M' | 'F'): IFakePerson {
 	const motherFirst = pick(FEMALE_FIRST_NAMES);
 	const motherName = `${motherFirst} ${lastName1}`;
 
-	const currentYear = new Date().getFullYear();
+	const today = new Date();
+	const currentYear = today.getFullYear();
 	const birthYear = randInt(currentYear - 80, currentYear - 18);
 	const birthMonth = randInt(1, 12);
 	const birthDay = randInt(1, 28);
 	const birthDate = `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
-	const age = currentYear - birthYear;
+	let age = currentYear - birthYear;
+	if (today.getMonth() + 1 < birthMonth || (today.getMonth() + 1 === birthMonth && today.getDate() < birthDay)) {
+		age--;
+	}
 
 	const address = generateAddress();
 	const emailName = simplify(`${firstName}.${lastName2}${randInt(1, 99)}`);
@@ -211,7 +215,7 @@ export function generateCompany(): IFakeCompany {
 		cnpj: generateCnpj(true),
 		inscricaoEstadual: `${randDigits(3)}.${randDigits(3)}.${randDigits(3)}.${randDigits(3)}`,
 		openDate,
-		email: `contato@${emailSlug}${pick(COMPANY_EMAIL_DOMAINS).replace('empresa', '')}`,
+		email: `contato@${emailSlug}.${pick(COMPANY_EMAIL_DOMAINS)}`,
 		phone: `(${ddd}) ${randDigits(4)}-${randDigits(4)}`,
 		activity,
 		address,

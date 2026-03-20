@@ -146,10 +146,12 @@ describe('generatePerson', () => {
 		expect(person.birthDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 	});
 
-	it('should have age between 18 and 80', () => {
-		const person = generatePerson();
-		expect(person.age).toBeGreaterThanOrEqual(18);
-		expect(person.age).toBeLessThanOrEqual(80);
+	it('should have age between 17 and 80 (accounts for birthday not yet passed)', () => {
+		for (let i = 0; i < 50; i++) {
+			const person = generatePerson();
+			expect(person.age).toBeGreaterThanOrEqual(17);
+			expect(person.age).toBeLessThanOrEqual(80);
+		}
 	});
 
 	it('should have valid email format', () => {

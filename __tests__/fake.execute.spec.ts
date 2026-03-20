@@ -99,7 +99,7 @@ describe('fakePerson', () => {
 		expect(p.rg).toMatch(/^\d{2}\.\d{3}\.\d{3}-\d{1}$/);
 		expect(p.birthDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 		expect(typeof p.age).toBe('number');
-		expect(p.age).toBeGreaterThanOrEqual(18);
+		expect(p.age).toBeGreaterThanOrEqual(17);
 		expect(p.age).toBeLessThanOrEqual(80);
 		expect(['M', 'F']).toContain(p.gender);
 		expect(typeof p.motherName).toBe('string');
