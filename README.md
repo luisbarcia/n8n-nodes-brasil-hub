@@ -156,6 +156,29 @@ Request → Provider 1 (BrasilAPI)
 
 Each provider has a **configurable timeout** (default: 10 seconds, range: 1–60s). The `_meta.strategy` field tells you if the response came from the primary provider (`direct`) or a fallback.
 
+## FAQ
+
+**Do I need API keys or credentials?**
+No. All data providers used by Brasil Hub are free public APIs. Just install the node and start querying. Zero configuration needed.
+
+**What happens when a provider API goes down?**
+Brasil Hub automatically tries the next provider. For CNPJ queries, there are 7 fallback providers. You can see which provider responded in the `_meta.strategy` field ("direct" or "fallback").
+
+**Can I choose which provider to use first?**
+Yes. Each resource with multiple providers has a "Primary Provider" dropdown. Pick your preferred provider and it becomes the first one tried.
+
+**Does it work with n8n AI Agents?**
+Yes. Brasil Hub has `usableAsTool: true`, so you can add it as a tool in any n8n AI Agent workflow. The AI Summary output mode for CNPJ returns flat English fields optimized for LLM consumption.
+
+**Can I generate fake test data?**
+Yes. The Fake resource generates realistic Brazilian test data locally (no API calls): person profiles with valid CPF, company profiles with valid CNPJ, or standalone CPF/CNPJ numbers. All checksums are correct.
+
+**How does Brasil Hub compare to using HTTP Request nodes?**
+With HTTP Request nodes you need to handle each API individually, normalize different response formats, implement fallback logic, and deal with rate limits. Brasil Hub handles all of this in a single node with consistent output.
+
+**What n8n versions are supported?**
+n8n 1.0+ with Node.js 20 or 22. The node follows semantic versioning -- minor updates add features, patch updates fix bugs, and no breaking changes within a major version.
+
 ## Compatibility
 
 | | Version |
