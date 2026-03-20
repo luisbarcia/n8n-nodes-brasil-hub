@@ -10,6 +10,8 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/n8n-nodes-brasil-hub"><img src="https://img.shields.io/npm/v/n8n-nodes-brasil-hub" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/n8n-nodes-brasil-hub"><img src="https://img.shields.io/npm/dw/n8n-nodes-brasil-hub" alt="npm downloads"></a>
+  <a href="https://github.com/luisbarcia/n8n-nodes-brasil-hub/stargazers"><img src="https://img.shields.io/github/stars/luisbarcia/n8n-nodes-brasil-hub" alt="GitHub stars"></a>
   <a href="https://github.com/luisbarcia/n8n-nodes-brasil-hub/actions/workflows/ci.yml"><img src="https://github.com/luisbarcia/n8n-nodes-brasil-hub/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://sonarcloud.io/dashboard?id=luisbarcia_n8n-nodes-brasil-hub"><img src="https://sonarcloud.io/api/project_badges/measure?project=luisbarcia_n8n-nodes-brasil-hub&metric=alert_status" alt="Quality Gate Status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
