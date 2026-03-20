@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0](https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.1.1...v1.2.0) (2026-03-20)
+
+
+### Added
+
+* add FIPE Reference Tables + PIX resource ([#113](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/113)) ([55bd18d](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/55bd18d9b61c4e2ee3f2b1308a4107fa3522e5bb))
+
+
+### Fixed
+
+* **ci:** configure Release Please to use simple v-tags without component prefix ([#106](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/106)) ([2402ad3](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/2402ad3eb55891b6a823e27e50da1263a49ca82a))
+
+
+### Documentation
+
+* update living docs for v1.2.0 (10 resources, PIX + FIPE ref tables) ([#114](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/114)) ([950358f](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/950358fd08b4bc4c6ba49256da9718bae11a3330))
+
 ## [Unreleased]
 
 ## [1.1.1] - 2026-03-19
