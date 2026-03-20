@@ -68,7 +68,7 @@ export function normalizeReferenceTables(data: unknown, filterYear = 0): IFipeRe
 				month: safeStr(obj.Mes),
 			};
 		});
-	if (filterYear > 0) {
+	if (filterYear >= 1000 && filterYear <= 9999) {
 		const yearStr = `/${String(filterYear)}`;
 		return tables.filter((t) => t.month.endsWith(yearStr));
 	}

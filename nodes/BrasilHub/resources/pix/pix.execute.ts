@@ -1,7 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import { buildMeta, buildResultItem, buildResultItems } from '../../shared/utils';
-import { queryWithFallback, clampTimeout, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
+import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import type { IProvider } from '../../types';
 import { normalizePixParticipants } from './pix.normalize';
 
@@ -28,7 +28,7 @@ export async function pixList(
 	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
 
 	const providers = buildProviders();
-	const result = await queryWithFallback(context, providers, clampTimeout(timeoutMs));
+	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const participants = normalizePixParticipants(result.data);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
@@ -65,7 +65,7 @@ export async function pixQuery(
 	}
 
 	const providers = buildProviders();
-	const result = await queryWithFallback(context, providers, clampTimeout(timeoutMs));
+	const result = await queryWithFallback(context, providers, timeoutMs);
 
 	const all = normalizePixParticipants(result.data);
 	const match = all.find((p) => p.ispb === ispb);

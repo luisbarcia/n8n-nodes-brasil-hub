@@ -125,8 +125,8 @@ export class BrasilHub implements INodeType {
 			...feriadosDescription,
 			...fipeDescription,
 			...ibgeDescription,
-			...pixDescription,
 			...ncmDescription,
+			...pixDescription,
 			{
 				displayName: 'Timeout (Ms)',
 				name: 'timeout',

@@ -99,10 +99,46 @@ describe('fipeReferenceTables', () => {
 		expect(callUrl).not.toContain('tabela_referencia');
 	});
 
-	it('should include _raw when includeRaw is true', async () => {
+	it('should include correct _raw aligned with each item', async () => {
 		const ctx = createMockContext({ includeRaw: true }, referenceTablesResponse);
 		const results = await fipeReferenceTables(ctx, 0);
-		expect(results[0].json).toHaveProperty('_raw');
+		expect(results[0].json._raw).toEqual(referenceTablesResponse[0]);
+		expect(results[1].json._raw).toEqual(referenceTablesResponse[1]);
+	});
+
+	it('should align _raw with filtered items when filterYear is active', async () => {
+		const unorderedData = [
+			{ Codigo: 328, Mes: 'dezembro/2025' },
+			{ Codigo: 331, Mes: 'março/2026' },
+			{ Codigo: 330, Mes: 'fevereiro/2026' },
+		];
+		const ctx = createMockContext({ filterYear: 2026, includeRaw: true }, unorderedData);
+		const results = await fipeReferenceTables(ctx, 0);
+		expect(results).toHaveLength(2);
+		expect(results[0].json._raw).toEqual({ Codigo: 331, Mes: 'março/2026' });
+		expect(results[1].json._raw).toEqual({ Codigo: 330, Mes: 'fevereiro/2026' });
+	});
+
+	it('should include _meta.strategy as direct', async () => {
+		const ctx = createMockContext({}, referenceTablesResponse);
+		const results = await fipeReferenceTables(ctx, 0);
+		expect(results[0].json._meta).toHaveProperty('strategy', 'direct');
+	});
+
+	it('should ignore 2-digit filterYear (requires 4 digits)', async () => {
+		const ctx = createMockContext({ filterYear: 26 }, referenceTablesResponse);
+		const results = await fipeReferenceTables(ctx, 0);
+		expect(results).toHaveLength(4); // returns all — 26 is not a valid 4-digit year
+	});
+
+	it('should handle NaN/Infinity filterYear gracefully', async () => {
+		const ctxNaN = createMockContext({ filterYear: NaN }, referenceTablesResponse);
+		const resultsNaN = await fipeReferenceTables(ctxNaN, 0);
+		expect(resultsNaN).toHaveLength(4); // returns all
+
+		const ctxInf = createMockContext({ filterYear: Infinity }, referenceTablesResponse);
+		const resultsInf = await fipeReferenceTables(ctxInf, 0);
+		expect(resultsInf).toHaveLength(4); // returns all
 	});
 
 	it('should handle empty response', async () => {

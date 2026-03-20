@@ -58,10 +58,17 @@ describe('pixList', () => {
 		}
 	});
 
-	it('should include _raw when includeRaw is true', async () => {
+	it('should include correct _raw aligned with each item', async () => {
 		const ctx = createMockContext({ includeRaw: true }, participantsResponse);
 		const results = await pixList(ctx, 0);
-		expect(results[0].json).toHaveProperty('_raw');
+		expect(results[0].json._raw).toEqual(participantsResponse[0]);
+		expect(results[1].json._raw).toEqual(participantsResponse[1]);
+	});
+
+	it('should include _meta.strategy as direct', async () => {
+		const ctx = createMockContext({}, participantsResponse);
+		const results = await pixList(ctx, 0);
+		expect(results[0].json._meta).toHaveProperty('strategy', 'direct');
 	});
 
 	it('should handle empty response', async () => {
@@ -114,15 +121,28 @@ describe('pixQuery', () => {
 		expect(results[0].json).toHaveProperty('ispb', '00000000');
 	});
 
-	it('should include _raw when includeRaw is true', async () => {
+	it('should include correct _raw matching the queried participant', async () => {
 		const ctx = createMockContext({ ispb: '00000000', includeRaw: true }, participantsResponse);
 		const results = await pixQuery(ctx, 0);
-		expect(results[0].json).toHaveProperty('_raw');
+		expect(results[0].json._raw).toEqual(participantsResponse[0]);
 	});
 
 	it('should match second participant by ISPB', async () => {
 		const ctx = createMockContext({ ispb: '00360305' }, participantsResponse);
 		const results = await pixQuery(ctx, 0);
 		expect(results[0].json).toHaveProperty('name', 'CAIXA ECONOMICA FEDERAL');
+	});
+
+	it('should throw when API returns empty array', async () => {
+		const ctx = createMockContext({ ispb: '00000000' }, []);
+		await expect(pixQuery(ctx, 0)).rejects.toThrow('PIX participant not found');
+	});
+
+	it('should always call the list endpoint (ISPB not in URL)', async () => {
+		const ctx = createMockContext({ ispb: '00.000.000' }, participantsResponse);
+		await pixQuery(ctx, 0);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toContain('/pix/v1/participants');
+		expect(callUrl).not.toContain('00000000');
 	});
 });

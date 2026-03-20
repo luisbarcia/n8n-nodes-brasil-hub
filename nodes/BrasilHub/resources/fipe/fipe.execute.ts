@@ -77,13 +77,18 @@ export async function fipeReferenceTables(
 ): Promise<INodeExecutionData[]> {
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
 	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
-	const filterYear = context.getNodeParameter('filterYear', itemIndex, 0) as number;
+	const rawFilterYear = context.getNodeParameter('filterYear', itemIndex, 0) as number;
+	const filterYear = Number.isFinite(rawFilterYear) ? Math.floor(rawFilterYear) : 0;
 
 	const url = `${BASE_URL}/referencias`;
 	const data = await fetchFipe(context, url, timeoutMs);
 
 	const tables = normalizeReferenceTables(data, filterYear);
-	const rawItems = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
+	const allRaw = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
+	// Filter raw items to stay aligned with normalized tables when year filter is active
+	const rawItems = (filterYear >= 1000 && filterYear <= 9999)
+		? allRaw.filter((r) => String(r.Mes ?? '').endsWith(`/${String(filterYear)}`))
+		: allRaw;
 	const meta = buildMeta('parallelum', 'referencias', [], false);
 
 	return buildResultItems(tables, meta, rawItems, includeRaw, itemIndex);

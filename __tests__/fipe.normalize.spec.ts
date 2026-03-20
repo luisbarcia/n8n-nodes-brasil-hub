@@ -146,6 +146,21 @@ describe('normalizeReferenceTables', () => {
 		expect(result).toHaveLength(5);
 	});
 
+	it('should ignore 2-digit filterYear (requires 4 digits)', () => {
+		const result = normalizeReferenceTables(referenceTablesFixture, 26);
+		expect(result).toHaveLength(5); // returns all — 26 is not 1000-9999
+	});
+
+	it('should ignore negative filterYear', () => {
+		const result = normalizeReferenceTables(referenceTablesFixture, -2026);
+		expect(result).toHaveLength(5); // returns all
+	});
+
+	it('should verify all filtered codes match expected year', () => {
+		const result = normalizeReferenceTables(referenceTablesFixture, 2025);
+		expect(result.map((t) => t.code)).toEqual([328, 327]);
+	});
+
 	it('should handle empty array', () => {
 		expect(normalizeReferenceTables([])).toEqual([]);
 	});
