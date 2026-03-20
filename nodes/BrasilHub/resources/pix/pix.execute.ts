@@ -52,7 +52,7 @@ export async function pixQuery(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const ispb = (context.getNodeParameter('ispb', itemIndex) as string).replace(/\D/g, '');
+	const ispb = String(context.getNodeParameter('ispb', itemIndex) ?? '').replace(/\D/g, '');
 	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
 	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
 
