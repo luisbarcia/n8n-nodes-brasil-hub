@@ -1,8 +1,8 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItems, reorderProviders } from '../../shared/utils';
-import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
+import { buildMeta, buildResultItems, readCommonParams, reorderProviders } from '../../shared/utils';
+import { queryWithFallback } from '../../shared/fallback';
 import { normalizeStates, normalizeCities } from './ibge.normalize';
 
 const VALID_UFS = new Set([
@@ -41,10 +41,8 @@ export async function ibgeStates(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 
-	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
 	const result = await queryWithFallback(context, reorderProviders(STATES_PROVIDERS, primaryProvider), timeoutMs);
 	const states = normalizeStates(result.data, result.provider);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
@@ -66,9 +64,7 @@ export async function ibgeCities(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const ufInput = (context.getNodeParameter('uf', itemIndex) as string).toUpperCase().trim();
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
-	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
+	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 
 	if (!VALID_UFS.has(ufInput)) {
 		throw new NodeOperationError(

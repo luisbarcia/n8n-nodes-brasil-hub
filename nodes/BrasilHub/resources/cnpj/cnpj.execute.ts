@@ -1,9 +1,9 @@
 import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItem, reorderProviders } from '../../shared/utils';
+import { buildMeta, buildResultItem, readCommonParams, reorderProviders } from '../../shared/utils';
 import { validateCnpj, sanitizeCnpj } from '../../shared/validators';
-import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
+import { queryWithFallback } from '../../shared/fallback';
 import { normalizeCnpj } from './cnpj.normalize';
 
 const CNPJ_PROVIDERS: IProvider[] = [
@@ -39,8 +39,7 @@ export async function cnpjQuery(
 ): Promise<INodeExecutionData[]> {
 	const cnpjInput = context.getNodeParameter('cnpj', itemIndex) as string;
 	const simplify = context.getNodeParameter('simplify', itemIndex, true) as boolean;
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 	const cnpj = sanitizeCnpj(cnpjInput);
 
 	if (cnpj.length !== 14) {
@@ -51,7 +50,6 @@ export async function cnpjQuery(
 		throw new NodeOperationError(context.getNode(), 'Invalid CNPJ checksum', { itemIndex });
 	}
 
-	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
 	const providers = reorderProviders(buildProviders(cnpj), primaryProvider);
 	const result = await queryWithFallback(context, providers, timeoutMs);
 

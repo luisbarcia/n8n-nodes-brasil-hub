@@ -1,4 +1,5 @@
-import type { IDataObject, INodeExecutionData } from 'n8n-workflow';
+import type { IDataObject, IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
+import { DEFAULT_TIMEOUT_MS } from './fallback';
 
 /**
  * Coerces an unknown value to a string, returning `''` for null, undefined, or objects.
@@ -137,4 +138,30 @@ export function reorderProviders<T extends { name: string }>(providers: T[], pri
 	const idx = providers.findIndex((p) => p.name === primary);
 	if (idx <= 0) return providers;
 	return [providers[idx], ...providers.slice(0, idx), ...providers.slice(idx + 1)];
+}
+
+/** Common parameters shared by all API-calling handlers. */
+export interface ICommonParams {
+	includeRaw: boolean;
+	timeoutMs: number;
+	primaryProvider: string;
+}
+
+/**
+ * Reads the 3 common node parameters shared by all API-calling handlers.
+ * Resources without primaryProvider get 'auto' (no-op in reorderProviders).
+ *
+ * @param context - n8n execution context.
+ * @param itemIndex - Current item index.
+ * @returns Common parameters object.
+ */
+export function readCommonParams(
+	context: IExecuteFunctions,
+	itemIndex: number,
+): ICommonParams {
+	return {
+		includeRaw: context.getNodeParameter('includeRaw', itemIndex, false) as boolean,
+		timeoutMs: context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number,
+		primaryProvider: context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string,
+	};
 }

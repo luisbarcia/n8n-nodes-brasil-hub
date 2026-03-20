@@ -1,7 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { buildMeta, buildResultItem, buildResultItems } from '../../shared/utils';
-import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
+import { buildMeta, buildResultItem, buildResultItems, readCommonParams } from '../../shared/utils';
+import { queryWithFallback } from '../../shared/fallback';
 import type { IProvider } from '../../types';
 import { normalizePixParticipants } from './pix.normalize';
 
@@ -24,8 +24,7 @@ export async function pixList(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
 	const providers = buildProviders();
 	const result = await queryWithFallback(context, providers, timeoutMs);
@@ -53,8 +52,7 @@ export async function pixQuery(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const ispb = String(context.getNodeParameter('ispb', itemIndex) ?? '').replace(/\D/g, '');
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
 	if (!ISPB_PATTERN.test(ispb)) {
 		throw new NodeOperationError(

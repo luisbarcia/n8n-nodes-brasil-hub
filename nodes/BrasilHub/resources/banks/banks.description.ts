@@ -1,4 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
+import { includeRawField } from '../../shared/description-builders';
 
 const showForBanks = { resource: ['banks'] };
 const showForBanksQuery = { resource: ['banks'], operation: ['query'] };
@@ -56,12 +57,5 @@ export const banksDescription: INodeProperties[] = [
 		default: 'auto',
 		description: 'Choose which provider to try first for bank queries',
 	},
-	{
-		displayName: 'Include Raw Response',
-		name: 'includeRaw',
-		type: 'boolean',
-		displayOptions: { show: showForBanks },
-		default: false,
-		description: 'Whether to include the raw API response alongside the normalized data',
-	},
+	includeRawField('banks'),
 ];

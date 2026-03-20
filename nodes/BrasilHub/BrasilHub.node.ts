@@ -7,34 +7,33 @@ import type {
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import { DEFAULT_TIMEOUT_MS, MIN_TIMEOUT_MS, MAX_TIMEOUT_MS } from './shared/fallback';
-import { cnpjDescription } from './resources/cnpj/cnpj.description';
-import { cnpjQuery, cnpjValidate } from './resources/cnpj/cnpj.execute';
-import { cepDescription } from './resources/cep/cep.description';
-import { cepQuery, cepValidate } from './resources/cep/cep.execute';
-import { cpfDescription } from './resources/cpf/cpf.description';
-import { cpfValidate } from './resources/cpf/cpf.execute';
-import { banksDescription } from './resources/banks/banks.description';
-import { banksQuery, banksList } from './resources/banks/banks.execute';
-import { dddDescription } from './resources/ddd/ddd.description';
-import { dddQuery } from './resources/ddd/ddd.execute';
-import { feriadosDescription } from './resources/feriados/feriados.description';
-import { feriadosQuery } from './resources/feriados/feriados.execute';
-import { ibgeDescription } from './resources/ibge/ibge.description';
-import { ibgeStates, ibgeCities } from './resources/ibge/ibge.execute';
-import { ncmDescription } from './resources/ncm/ncm.description';
-import { ncmQuery, ncmSearch } from './resources/ncm/ncm.execute';
-import { fipeDescription } from './resources/fipe/fipe.description';
-import { fipeReferenceTables, fipeBrands, fipeModels, fipeYears, fipePrice } from './resources/fipe/fipe.execute';
-import { pixDescription } from './resources/pix/pix.description';
-import { pixList, pixQuery } from './resources/pix/pix.execute';
-import { fakeDescription } from './resources/fake/fake.description';
-import { fakeCpf, fakeCnpj, fakePerson, fakeCompany } from './resources/fake/fake.execute';
+import type { IResourceDefinition, ExecuteFunction } from './types';
+import { banksResource } from './resources/banks';
+import { cepResource } from './resources/cep';
+import { cnpjResource } from './resources/cnpj';
+import { cpfResource } from './resources/cpf';
+import { dddResource } from './resources/ddd';
+import { fakeResource } from './resources/fake';
+import { feriadosResource } from './resources/feriados';
+import { fipeResource } from './resources/fipe';
+import { ibgeResource } from './resources/ibge';
+import { ncmResource } from './resources/ncm';
+import { pixResource } from './resources/pix';
 
-/** Signature for resource/operation execute handlers (returns array to support multi-item resources). */
-type ExecuteFunction = (
-	context: IExecuteFunctions,
-	itemIndex: number,
-) => Promise<INodeExecutionData[]>;
+/** All registered resource modules, in alphabetical order. */
+const allResources: IResourceDefinition[] = [
+	banksResource,
+	cepResource,
+	cnpjResource,
+	cpfResource,
+	dddResource,
+	fakeResource,
+	feriadosResource,
+	fipeResource,
+	ibgeResource,
+	ncmResource,
+	pixResource,
+];
 
 /** Builds an error output item for continueOnFail mode. */
 function buildFailItem(node: INode, error: unknown, itemIndex: number): INodeExecutionData {
@@ -61,21 +60,11 @@ function rethrowWithContext(node: INode, error: unknown, itemIndex: number): nev
 
 /**
  * Dictionary map routing resource+operation pairs to their execute handlers.
- * Adding a new resource or operation only requires a new entry here.
+ * Built automatically from the barrel-exported resource modules.
+ * Adding a new resource only requires a new barrel file + entry in allResources.
  */
-const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
-	cnpj: { query: cnpjQuery, validate: cnpjValidate },
-	cep: { query: cepQuery, validate: cepValidate },
-	cpf: { validate: cpfValidate },
-	banks: { query: banksQuery, list: banksList },
-	ddd: { query: dddQuery },
-	fake: { cpf: fakeCpf, cnpj: fakeCnpj, person: fakePerson, company: fakeCompany },
-	feriados: { query: feriadosQuery },
-	ibge: { states: ibgeStates, cities: ibgeCities },
-	ncm: { query: ncmQuery, search: ncmSearch },
-	pix: { list: pixList, query: pixQuery },
-	fipe: { brands: fipeBrands, models: fipeModels, price: fipePrice, referenceTables: fipeReferenceTables, years: fipeYears },
-};
+const resourceOperations: Record<string, Record<string, ExecuteFunction>> =
+	Object.fromEntries(allResources.map(r => [r.resource, r.operations]));
 
 /**
  * Brasil Hub n8n community node.
@@ -121,17 +110,7 @@ export class BrasilHub implements INodeType {
 				],
 				default: 'cnpj',
 			},
-			...cnpjDescription,
-			...cepDescription,
-			...cpfDescription,
-			...banksDescription,
-			...dddDescription,
-			...fakeDescription,
-			...feriadosDescription,
-			...fipeDescription,
-			...ibgeDescription,
-			...ncmDescription,
-			...pixDescription,
+			...allResources.flatMap(r => r.description),
 			{
 				displayName: 'Timeout (Ms)',
 				name: 'timeout',

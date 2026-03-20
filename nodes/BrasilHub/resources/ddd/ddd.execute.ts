@@ -1,8 +1,8 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItem, reorderProviders } from '../../shared/utils';
-import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
+import { buildMeta, buildResultItem, readCommonParams, reorderProviders } from '../../shared/utils';
+import { queryWithFallback } from '../../shared/fallback';
 import { normalizeDdd } from './ddd.normalize';
 
 /**
@@ -21,8 +21,7 @@ export async function dddQuery(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const dddInput = context.getNodeParameter('ddd', itemIndex) as string;
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 	const ddd = Number.parseInt(dddInput, 10);
 
 	if (!Number.isInteger(ddd) || ddd < 11 || ddd > 99) {
@@ -32,8 +31,6 @@ export async function dddQuery(
 			{ itemIndex },
 		);
 	}
-
-	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
 	const providers: IProvider[] = [
 		{ name: 'brasilapi', url: `https://brasilapi.com.br/api/ddd/v1/${ddd}` },
 		{ name: 'municipios', url: 'https://raw.githubusercontent.com/kelvins/municipios-brasileiros/main/json/municipios.json' },

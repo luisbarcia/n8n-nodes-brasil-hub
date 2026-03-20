@@ -1,4 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
+import { includeRawField } from '../../shared/description-builders';
 
 const showForFeriados = { resource: ['feriados'] };
 
@@ -53,12 +54,5 @@ export const feriadosDescription: INodeProperties[] = [
 		default: 'auto',
 		description: 'Choose which provider to try first for holiday queries',
 	},
-	{
-		displayName: 'Include Raw Response',
-		name: 'includeRaw',
-		type: 'boolean',
-		displayOptions: { show: showForFeriados },
-		default: false,
-		description: 'Whether to include the raw API response alongside the normalized data',
-	},
+	includeRawField('feriados'),
 ];
