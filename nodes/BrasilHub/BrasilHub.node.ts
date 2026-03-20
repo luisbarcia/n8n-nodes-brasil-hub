@@ -25,6 +25,8 @@ import { ncmDescription } from './resources/ncm/ncm.description';
 import { ncmQuery, ncmSearch } from './resources/ncm/ncm.execute';
 import { fipeDescription } from './resources/fipe/fipe.description';
 import { fipeReferenceTables, fipeBrands, fipeModels, fipeYears, fipePrice } from './resources/fipe/fipe.execute';
+import { pixDescription } from './resources/pix/pix.description';
+import { pixList, pixQuery } from './resources/pix/pix.execute';
 
 /** Signature for resource/operation execute handlers (returns array to support multi-item resources). */
 type ExecuteFunction = (
@@ -68,6 +70,7 @@ const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
 	feriados: { query: feriadosQuery },
 	ibge: { states: ibgeStates, cities: ibgeCities },
 	ncm: { query: ncmQuery, search: ncmSearch },
+	pix: { list: pixList, query: pixQuery },
 	fipe: { brands: fipeBrands, models: fipeModels, price: fipePrice, referenceTables: fipeReferenceTables, years: fipeYears },
 };
 
@@ -110,6 +113,7 @@ export class BrasilHub implements INodeType {
 					{ name: 'Holiday', value: 'feriados', description: 'Query Brazilian public holidays by year' },
 					{ name: 'IBGE', value: 'ibge', description: 'Query Brazilian states and municipalities' },
 					{ name: 'NCM', value: 'ncm', description: 'Query tax classification codes by code or description' },
+				{ name: 'PIX', value: 'pix', description: 'Query PIX participants from the Central Bank directory' },
 				],
 				default: 'cnpj',
 			},
@@ -121,6 +125,7 @@ export class BrasilHub implements INodeType {
 			...feriadosDescription,
 			...fipeDescription,
 			...ibgeDescription,
+			...pixDescription,
 			...ncmDescription,
 			{
 				displayName: 'Timeout (Ms)',

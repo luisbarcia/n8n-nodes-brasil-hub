@@ -200,6 +200,28 @@ export interface IFeriado {
 	_raw?: unknown;
 }
 
+/** Normalized PIX participant from BrasilAPI (BCB directory). */
+export interface IPixParticipant {
+	/** ISPB code (8 digits, e.g. "00000000"). */
+	ispb: string;
+	/** CNPJ of the institution (14 digits). */
+	cnpj: string;
+	/** Full institution name. */
+	name: string;
+	/** Short institution name. */
+	shortName: string;
+	/** Participation modality (e.g. "PDCT"). */
+	participationType: string;
+	/** Participation type (e.g. "DRCT", "INDR"). */
+	type: string;
+	/** Operation start date (ISO 8601). */
+	startDate: string;
+	/** Query metadata. */
+	_meta?: IMeta;
+	/** Raw provider response. */
+	_raw?: unknown;
+}
+
 /** Normalized FIPE brand (marca) result from parallelum. */
 export interface IFipeBrand {
 	/** Brand code as returned by the API (e.g. "1", "59"). */

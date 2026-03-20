@@ -24,12 +24,13 @@ describe('BrasilHub node', () => {
 		expect(values).toContain('fipe');
 		expect(values).toContain('ibge');
 		expect(values).toContain('ncm');
+		expect(values).toContain('pix');
 	});
 
 	it('should have operation properties for all resources', () => {
 		const node = new BrasilHub();
 		const ops = node.description.properties.filter((p) => p.name === 'operation');
-		expect(ops.length).toBe(9);
+		expect(ops.length).toBe(10);
 		for (const op of ops) {
 			expect(op.noDataExpression).toBe(true);
 			const values = op.options as Array<{ value: string; action: string }>;
@@ -79,14 +80,20 @@ describe('BrasilHub node', () => {
 					uf: 'SP',
 					ncmCode: '8504.40.10',
 					searchTerm: 'computador',
+					ispb: '00000000',
+					filterYear: 0,
 					includeRaw: false,
 				};
+				// PIX query needs array response with matching ISPB; FIPE referenceTables needs array too
+				const mockResponse = resource === 'pix'
+					? [{ ispb: '00000000', nome: 'BANCO', nome_reduzido: 'BCO', cnpj: '', modalidade_participacao: '', tipo_participacao: '', inicio_operacao: '' }]
+					: {};
 				const ctx = {
 					getInputData: jest.fn(() => [{ json: {} }]),
 					getNodeParameter: jest.fn((name: string, _i: number, fb?: unknown) => params[name] ?? fb),
 					getNode: jest.fn(() => ({ name: 'Brasil Hub' })),
 					continueOnFail: jest.fn(() => false),
-					helpers: { httpRequest: jest.fn().mockResolvedValue({}) },
+					helpers: { httpRequest: jest.fn().mockResolvedValue(mockResponse) },
 				};
 				// Should not throw "Unknown resource/operation"
 				await expect(

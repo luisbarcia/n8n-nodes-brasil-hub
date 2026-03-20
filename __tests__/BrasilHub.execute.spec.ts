@@ -279,9 +279,9 @@ describe('BrasilHub.execute()', () => {
 	});
 
 	it('should throw NodeOperationError for unknown resource/operation', async () => {
-		const ctx = createExecuteContext({ resource: 'pix', operation: 'query' });
+		const ctx = createExecuteContext({ resource: 'foo', operation: 'bar' });
 		await expect(node.execute.call(ctx)).rejects.toThrow(
-			'Unknown resource/operation: pix/query',
+			'Unknown resource/operation: foo/bar',
 		);
 	});
 
