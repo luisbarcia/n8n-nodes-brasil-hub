@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-brasil-hub",
   "version": "1.2.0",
-  "description": "n8n community node to query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Holidays, FIPE, IBGE, NCM, PIX) — 23 providers with automatic fallback, no credentials required, AI Agent ready",
+  "description": "n8n community node for Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Holidays, FIPE, IBGE, NCM, PIX) + fake data generator — 23 providers, automatic fallback, AI Agent ready",
   "license": "MIT",
   "homepage": "https://github.com/luisbarcia/n8n-nodes-brasil-hub",
   "keywords": [
@@ -39,7 +39,11 @@
     "pix",
     "instant-payment",
     "bcb",
-    "central-bank"
+    "central-bank",
+    "fake-data",
+    "test-data",
+    "generator",
+    "faker"
   ],
   "author": {
     "name": "Luis Barcia",
