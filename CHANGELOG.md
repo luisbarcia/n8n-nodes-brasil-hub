@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-03-19
+
+### Changed
+- README: prominent downloads + stars badges (for-the-badge style)
+- GitHub: 17 repository topics added for discoverability
+
 ## [1.1.0] - 2026-03-19
 
 ### Added
@@ -431,7 +437,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration (npm + GitHub Actions weekly updates)
 - MIT license
 
-[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.0.1...v1.0.2
