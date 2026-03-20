@@ -1,14 +1,16 @@
 import type { INodeProperties } from 'n8n-workflow';
 
 const showForFipe = { resource: ['fipe'] };
+const showForFipeNotRefTables = { resource: ['fipe'], operation: ['brands', 'models', 'years', 'price'] };
 const showForFipeWithBrand = { resource: ['fipe'], operation: ['models', 'years', 'price'] };
 const showForFipeWithModel = { resource: ['fipe'], operation: ['years', 'price'] };
 const showForFipeWithYear = { resource: ['fipe'], operation: ['price'] };
+const showForFipeRefTables = { resource: ['fipe'], operation: ['referenceTables'] };
 
 /**
  * n8n node property definitions for the FIPE resource.
  *
- * Defines 4 operations (Brands, Models, Years, Price) with hierarchical
+ * Defines 5 operations (Brands, Models, Price, Reference Tables, Years) with hierarchical
  * conditional parameters — each level adds a param that depends on the previous.
  */
 export const fipeDescription: INodeProperties[] = [
@@ -32,16 +34,22 @@ export const fipeDescription: INodeProperties[] = [
 				description: 'List all models for a given brand',
 			},
 			{
-				name: 'Years',
-				value: 'years',
-				action: 'List years for a model',
-				description: 'List available years for a given model',
-			},
-			{
 				name: 'Price',
 				value: 'price',
 				action: 'Get vehicle price',
 				description: 'Get the FIPE table price for a specific vehicle',
+			},
+			{
+				name: 'Reference Tables',
+				value: 'referenceTables',
+				action: 'List FIPE reference tables',
+				description: 'List available FIPE reference tables (monthly, since 2001)',
+			},
+			{
+				name: 'Years',
+				value: 'years',
+				action: 'List years for a model',
+				description: 'List available years for a given model',
 			},
 		],
 		default: 'brands',
@@ -51,7 +59,7 @@ export const fipeDescription: INodeProperties[] = [
 		name: 'vehicleType',
 		type: 'options',
 		required: true,
-		displayOptions: { show: showForFipe },
+		displayOptions: { show: showForFipeNotRefTables },
 		options: [
 			{ name: 'Cars', value: 'carros' },
 			{ name: 'Motorcycles', value: 'motos' },
@@ -91,10 +99,19 @@ export const fipeDescription: INodeProperties[] = [
 		description: 'The year-fuel code from the Years operation',
 	},
 	{
+		displayName: 'Filter Year',
+		name: 'filterYear',
+		type: 'number',
+		displayOptions: { show: showForFipeRefTables },
+		default: 0,
+		placeholder: 'e.g. 2025',
+		description: 'Filter reference tables by year (0 = return all)',
+	},
+	{
 		displayName: 'Reference Table',
 		name: 'referenceTable',
 		type: 'number',
-		displayOptions: { show: showForFipe },
+		displayOptions: { show: showForFipeNotRefTables },
 		default: 0,
 		description: 'The FIPE reference table number (0 = latest)',
 	},

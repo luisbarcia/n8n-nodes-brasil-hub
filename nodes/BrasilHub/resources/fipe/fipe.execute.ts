@@ -2,7 +2,7 @@ import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import { buildMeta, buildResultItem, buildResultItems } from '../../shared/utils';
 import { clampTimeout, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
-import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice } from './fipe.normalize';
+import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice, normalizeReferenceTables } from './fipe.normalize';
 
 const BASE_URL = 'https://parallelum.com.br/fipe/api/v1';
 
@@ -62,6 +62,31 @@ async function fetchFipe(context: IExecuteFunctions, url: string, timeoutMs = DE
 		},
 		timeout: clampTimeout(timeoutMs),
 	});
+}
+
+/**
+ * Lists all available FIPE reference tables.
+ *
+ * @param context - n8n execution context.
+ * @param itemIndex - Current item index.
+ * @returns One n8n item per reference table.
+ */
+export async function fipeReferenceTables(
+	context: IExecuteFunctions,
+	itemIndex: number,
+): Promise<INodeExecutionData[]> {
+	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
+	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const filterYear = context.getNodeParameter('filterYear', itemIndex, 0) as number;
+
+	const url = `${BASE_URL}/referencias`;
+	const data = await fetchFipe(context, url, timeoutMs);
+
+	const tables = normalizeReferenceTables(data, filterYear);
+	const rawItems = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
+	const meta = buildMeta('parallelum', 'referencias', [], false);
+
+	return buildResultItems(tables, meta, rawItems, includeRaw, itemIndex);
 }
 
 /**

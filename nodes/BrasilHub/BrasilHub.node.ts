@@ -24,7 +24,7 @@ import { ibgeStates, ibgeCities } from './resources/ibge/ibge.execute';
 import { ncmDescription } from './resources/ncm/ncm.description';
 import { ncmQuery, ncmSearch } from './resources/ncm/ncm.execute';
 import { fipeDescription } from './resources/fipe/fipe.description';
-import { fipeBrands, fipeModels, fipeYears, fipePrice } from './resources/fipe/fipe.execute';
+import { fipeReferenceTables, fipeBrands, fipeModels, fipeYears, fipePrice } from './resources/fipe/fipe.execute';
 
 /** Signature for resource/operation execute handlers (returns array to support multi-item resources). */
 type ExecuteFunction = (
@@ -68,7 +68,7 @@ const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
 	feriados: { query: feriadosQuery },
 	ibge: { states: ibgeStates, cities: ibgeCities },
 	ncm: { query: ncmQuery, search: ncmSearch },
-	fipe: { brands: fipeBrands, models: fipeModels, years: fipeYears, price: fipePrice },
+	fipe: { brands: fipeBrands, models: fipeModels, price: fipePrice, referenceTables: fipeReferenceTables, years: fipeYears },
 };
 
 /**

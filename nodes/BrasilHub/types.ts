@@ -262,6 +262,18 @@ export interface IFipePrice {
 	_raw?: unknown;
 }
 
+/** Normalized FIPE reference table entry from parallelum. */
+export interface IFipeReferenceTable {
+	/** Reference table code (e.g. 331). */
+	code: number;
+	/** Reference month in Portuguese (e.g. "março/2026"). */
+	month: string;
+	/** Query metadata. Present when queried via API. */
+	_meta?: IMeta;
+	/** Raw provider response. Present only when "Include Raw Response" is enabled. */
+	_raw?: unknown;
+}
+
 /** A data provider endpoint used by the fallback engine. */
 export interface IProvider {
 	/** Provider identifier (e.g. "brasilapi", "cnpjws", "receitaws"). */

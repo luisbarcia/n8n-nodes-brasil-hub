@@ -1,4 +1,4 @@
-import { fipeBrands, fipeModels, fipeYears, fipePrice } from '../nodes/BrasilHub/resources/fipe/fipe.execute';
+import { fipeReferenceTables, fipeBrands, fipeModels, fipeYears, fipePrice } from '../nodes/BrasilHub/resources/fipe/fipe.execute';
 
 const brandsResponse = [
 	{ codigo: '1', nome: 'Acura' },
@@ -16,6 +16,13 @@ const modelsResponse = {
 const yearsResponse = [
 	{ codigo: '2024-1', nome: '2024 Gasolina' },
 	{ codigo: '2023-1', nome: '2023 Gasolina' },
+];
+
+const referenceTablesResponse = [
+	{ Codigo: 331, Mes: 'março/2026' },
+	{ Codigo: 330, Mes: 'fevereiro/2026' },
+	{ Codigo: 329, Mes: 'janeiro/2026' },
+	{ Codigo: 328, Mes: 'dezembro/2025' },
 ];
 
 const priceResponse = {
@@ -37,6 +44,7 @@ function createMockContext(overrides: Record<string, unknown> = {}, httpResponse
 		modelCode: '4828',
 		yearCode: '2024-1',
 		referenceTable: 0,
+		filterYear: 0,
 		includeRaw: false,
 		...overrides,
 	};
@@ -50,6 +58,59 @@ function createMockContext(overrides: Record<string, unknown> = {}, httpResponse
 		},
 	} as unknown as Parameters<typeof fipeBrands>[0];
 }
+
+describe('fipeReferenceTables', () => {
+	it('should return multiple items (one per reference table)', async () => {
+		const ctx = createMockContext({}, referenceTablesResponse);
+		const results = await fipeReferenceTables(ctx, 0);
+		expect(results).toHaveLength(4);
+		expect(results[0].json).toHaveProperty('code', 331);
+		expect(results[0].json).toHaveProperty('month', 'março/2026');
+	});
+
+	it('should include _meta on each item', async () => {
+		const ctx = createMockContext({}, referenceTablesResponse);
+		const results = await fipeReferenceTables(ctx, 0);
+		for (const r of results) {
+			expect(r.json._meta).toHaveProperty('provider', 'parallelum');
+			expect(r.json._meta).toHaveProperty('query', 'referencias');
+			expect(r.pairedItem).toEqual({ item: 0 });
+		}
+	});
+
+	it('should filter by year when filterYear > 0', async () => {
+		const ctx = createMockContext({ filterYear: 2026 }, referenceTablesResponse);
+		const results = await fipeReferenceTables(ctx, 0);
+		expect(results).toHaveLength(3);
+		expect(results.every((r) => (r.json.month as string).endsWith('/2026'))).toBe(true);
+	});
+
+	it('should return all tables when filterYear is 0', async () => {
+		const ctx = createMockContext({ filterYear: 0 }, referenceTablesResponse);
+		const results = await fipeReferenceTables(ctx, 0);
+		expect(results).toHaveLength(4);
+	});
+
+	it('should call correct URL (/referencias)', async () => {
+		const ctx = createMockContext({}, referenceTablesResponse);
+		await fipeReferenceTables(ctx, 0);
+		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
+		expect(callUrl).toContain('/referencias');
+		expect(callUrl).not.toContain('tabela_referencia');
+	});
+
+	it('should include _raw when includeRaw is true', async () => {
+		const ctx = createMockContext({ includeRaw: true }, referenceTablesResponse);
+		const results = await fipeReferenceTables(ctx, 0);
+		expect(results[0].json).toHaveProperty('_raw');
+	});
+
+	it('should handle empty response', async () => {
+		const ctx = createMockContext({}, []);
+		const results = await fipeReferenceTables(ctx, 0);
+		expect(results).toEqual([]);
+	});
+});
 
 describe('fipeBrands', () => {
 	it('should return multiple items (one per brand)', async () => {
