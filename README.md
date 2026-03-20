@@ -5,7 +5,7 @@
 <h1 align="center">Brasil Hub for n8n</h1>
 
 <p align="center">
-  Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Holidays, FIPE, IBGE &amp; NCM) with automatic multi-provider fallback — zero configuration, zero credentials.
+  Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Holidays, FIPE, IBGE, NCM &amp; PIX) with automatic multi-provider fallback — zero configuration, zero credentials.
 </p>
 
 <p align="center">
@@ -23,7 +23,7 @@
 
 ---
 
-> **Stable Release (v1.0)** — 9 resources, 17 operations, 22 providers. The API is stable and follows semantic versioning.
+> **v1.2** — 10 resources, 20 operations, 23 providers. The API is stable and follows semantic versioning.
 
 ---
 
@@ -61,12 +61,15 @@ npm install n8n-nodes-brasil-hub
 | **Holiday** | Query | Fetch public holidays by year | BrasilAPI → Nager.Date |
 | **FIPE** | Brands | List vehicle brands by type | parallelum |
 | **FIPE** | Models | List models for a brand | parallelum |
-| **FIPE** | Years | List available years for a model | parallelum |
 | **FIPE** | Price | Get FIPE table price for a vehicle | parallelum |
+| **FIPE** | Reference Tables | List available FIPE reference tables | parallelum |
+| **FIPE** | Years | List available years for a model | parallelum |
 | **IBGE** | States | List all Brazilian states | BrasilAPI → IBGE API |
 | **IBGE** | Cities | List municipalities by state | BrasilAPI → IBGE API |
 | **NCM** | Query | Fetch tax classification by code | BrasilAPI |
 | **NCM** | Search | Search tax codes by description | BrasilAPI |
+| **PIX** | List | List all PIX participants | BrasilAPI |
+| **PIX** | Query | Look up PIX participant by ISPB code | BrasilAPI |
 
 ## Example Output
 
@@ -162,7 +165,7 @@ Each provider has a **configurable timeout** (default: 10 seconds, range: 1–60
 git clone https://github.com/luisbarcia/n8n-nodes-brasil-hub.git
 cd n8n-nodes-brasil-hub
 npm install
-npm test          # 1174 tests, 99%+ coverage
+npm test          # 1280 tests, 99%+ coverage
 npm run build
 npm run lint
 ```
