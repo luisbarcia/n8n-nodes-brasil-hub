@@ -13,7 +13,8 @@ import { normalizeCnpj } from '../nodes/BrasilHub/resources/cnpj/cnpj.normalize'
 import { normalizeCep } from '../nodes/BrasilHub/resources/cep/cep.normalize';
 import { normalizeBank, normalizeBanks } from '../nodes/BrasilHub/resources/banks/banks.normalize';
 import { normalizeDdd } from '../nodes/BrasilHub/resources/ddd/ddd.normalize';
-import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice } from '../nodes/BrasilHub/resources/fipe/fipe.normalize';
+import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice, normalizeReferenceTables } from '../nodes/BrasilHub/resources/fipe/fipe.normalize';
+import { normalizePixParticipants } from '../nodes/BrasilHub/resources/pix/pix.normalize';
 import { normalizeFeriados } from '../nodes/BrasilHub/resources/feriados/feriados.normalize';
 import { normalizeStates, normalizeCities } from '../nodes/BrasilHub/resources/ibge/ibge.normalize';
 import { normalizeNcm, normalizeNcmList } from '../nodes/BrasilHub/resources/ncm/ncm.normalize';
@@ -2991,5 +2992,101 @@ describe('NCM VECTOR 8: Prototype pollution attempts', () => {
 		const malicious = [{ codigo: '1234', descricao: 'Test', constructor: { prototype: { hacked: true } } }];
 		normalizeNcmList(malicious);
 		expect(({} as Record<string, unknown>).hacked).toBeUndefined();
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// PIX ATTACK VECTORS
+// ─────────────────────────────────────────────────────────────
+
+describe('PIX VECTOR 9: Malformed API responses', () => {
+	for (const input of [null, undefined, '', 42, true, {}, { data: [] }]) {
+		it(`[PASS] normalizePixParticipants(${JSON.stringify(input)}) → []`, () => {
+			expect(normalizePixParticipants(input)).toEqual([]);
+		});
+	}
+});
+
+describe('PIX VECTOR 10: Type confusion on fields', () => {
+	it('[PASS] numeric ispb coerced to string', () => {
+		const result = normalizePixParticipants([{ ispb: 12345678 }]);
+		expect(result[0].ispb).toBe('12345678');
+	});
+
+	it('[PASS] boolean nome coerced to string', () => {
+		const result = normalizePixParticipants([{ nome: true }]);
+		expect(result[0].name).toBe('true');
+	});
+
+	it('[PASS] null fields produce empty strings', () => {
+		const result = normalizePixParticipants([{
+			ispb: null, cnpj: null, nome: null,
+			nome_reduzido: null, modalidade_participacao: null,
+			tipo_participacao: null, inicio_operacao: null,
+		}]);
+		expect(result[0].ispb).toBe('');
+		expect(result[0].name).toBe('');
+	});
+});
+
+describe('PIX VECTOR 11: XSS/SQLi in fields (NOTED — passthrough expected)', () => {
+	it('[NOTED] XSS in name passes through', () => {
+		const result = normalizePixParticipants([{ nome: '<script>alert(1)</script>' }]);
+		expect(result[0].name).toBe('<script>alert(1)</script>');
+	});
+});
+
+describe('PIX VECTOR 12: Large payload', () => {
+	it('[PASS] 10000 participants normalize without crash', () => {
+		const items = Array.from({ length: 10000 }, (_, i) => ({
+			ispb: String(i).padStart(8, '0'), nome: `Bank ${i}`,
+		}));
+		const result = normalizePixParticipants(items);
+		expect(result).toHaveLength(10000);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────
+// FIPE REFERENCE TABLES ATTACK VECTORS
+// ─────────────────────────────────────────────────────────────
+
+describe('FIPE REF TABLES VECTOR 9: Type confusion on Codigo', () => {
+	for (const [input, expected] of [
+		['331', 0], [true, 0], [null, 0], [{}, 0], [[], 0],
+	] as [unknown, number][]) {
+		it(`[PASS] Codigo=${JSON.stringify(input)} → code=${expected}`, () => {
+			const result = normalizeReferenceTables([{ Codigo: input, Mes: 'test' }]);
+			expect(result[0].code).toBe(expected);
+		});
+	}
+});
+
+describe('FIPE REF TABLES VECTOR 10: filterYear edge cases', () => {
+	const fixture = [{ Codigo: 1, Mes: 'janeiro/2026' }];
+
+	it('[PASS] NaN filterYear returns all', () => {
+		expect(normalizeReferenceTables(fixture, NaN)).toHaveLength(1);
+	});
+
+	it('[PASS] Infinity filterYear returns all (not 4-digit)', () => {
+		expect(normalizeReferenceTables(fixture, Infinity)).toHaveLength(1);
+	});
+
+	it('[PASS] fractional year 2026.5 matches nothing (String coercion produces /2026.5)', () => {
+		expect(normalizeReferenceTables(fixture, 2026.5)).toHaveLength(0);
+	});
+
+	it('[PASS] 2-digit year 26 returns all (requires 4 digits)', () => {
+		expect(normalizeReferenceTables(fixture, 26)).toHaveLength(1);
+	});
+});
+
+describe('FIPE REF TABLES VECTOR 11: Large payload', () => {
+	it('[PASS] 10000 tables normalize without crash', () => {
+		const items = Array.from({ length: 10000 }, (_, i) => ({
+			Codigo: i, Mes: `mês/${2020 + (i % 10)}`,
+		}));
+		const result = normalizeReferenceTables(items);
+		expect(result).toHaveLength(10000);
 	});
 });

@@ -1,4 +1,4 @@
-import type { IFipeBrand, IFipeModel, IFipeYear, IFipePrice } from '../../types';
+import type { IFipeBrand, IFipeModel, IFipeYear, IFipePrice, IFipeReferenceTable } from '../../types';
 import { safeStr } from '../../shared/utils';
 
 /** Normalizes an array of {codigo, nome} items into {code, name} objects (shared by brands and years). */
@@ -48,6 +48,31 @@ export function normalizeModels(data: unknown): IFipeModel[] {
  */
 export function normalizeYears(data: unknown): IFipeYear[] {
 	return normalizeCodeNameList(data);
+}
+
+/**
+ * Normalizes a parallelum reference tables array.
+ *
+ * @param data - Raw array from `/fipe/api/v1/referencias`.
+ * @param filterYear - When > 0, only returns tables matching this year.
+ * @returns Array of normalized reference table objects.
+ */
+export function normalizeReferenceTables(data: unknown, filterYear = 0): IFipeReferenceTable[] {
+	if (!Array.isArray(data)) return [];
+	const tables = (data as unknown[])
+		.filter((item) => item != null && typeof item === 'object')
+		.map((item) => {
+			const obj = item as Record<string, unknown>;
+			return {
+				code: Number.isFinite(obj.Codigo) ? (obj.Codigo as number) : 0,
+				month: safeStr(obj.Mes),
+			};
+		});
+	if (filterYear >= 1000 && filterYear <= 9999) {
+		const yearStr = `/${String(filterYear)}`;
+		return tables.filter((t) => t.month.endsWith(yearStr));
+	}
+	return tables;
 }
 
 /**

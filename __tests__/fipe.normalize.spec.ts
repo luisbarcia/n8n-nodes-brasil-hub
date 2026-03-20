@@ -3,6 +3,7 @@ import {
 	normalizeModels,
 	normalizeYears,
 	normalizePrice,
+	normalizeReferenceTables,
 } from '../nodes/BrasilHub/resources/fipe/fipe.normalize';
 
 // Real fixture from parallelum /fipe/api/v1/carros/marcas
@@ -28,6 +29,15 @@ const yearsFixture = [
 	{ codigo: '2024-1', nome: '2024 Gasolina' },
 	{ codigo: '2023-1', nome: '2023 Gasolina' },
 	{ codigo: '32000-1', nome: 'Zero KM Gasolina' },
+];
+
+// Real fixture from parallelum /fipe/api/v1/referencias
+const referenceTablesFixture = [
+	{ Codigo: 331, Mes: 'março/2026' },
+	{ Codigo: 330, Mes: 'fevereiro/2026' },
+	{ Codigo: 329, Mes: 'janeiro/2026' },
+	{ Codigo: 328, Mes: 'dezembro/2025' },
+	{ Codigo: 327, Mes: 'novembro/2025' },
 ];
 
 // Real fixture from parallelum /fipe/api/v1/carros/marcas/59/modelos/4828/anos/2024-1
@@ -109,6 +119,72 @@ describe('normalizeYears', () => {
 		expect(normalizeYears([])).toEqual([]);
 		expect(normalizeYears(null)).toEqual([]);
 		expect(normalizeYears(undefined)).toEqual([]);
+	});
+});
+
+describe('normalizeReferenceTables', () => {
+	it('should normalize parallelum reference tables array', () => {
+		const result = normalizeReferenceTables(referenceTablesFixture);
+		expect(result).toHaveLength(5);
+		expect(result[0]).toEqual({ code: 331, month: 'março/2026' });
+		expect(result[4]).toEqual({ code: 327, month: 'novembro/2025' });
+	});
+
+	it('should filter by year when filterYear > 0', () => {
+		const result = normalizeReferenceTables(referenceTablesFixture, 2026);
+		expect(result).toHaveLength(3);
+		expect(result.every((t) => t.month.endsWith('/2026'))).toBe(true);
+	});
+
+	it('should return empty array when filterYear matches nothing', () => {
+		const result = normalizeReferenceTables(referenceTablesFixture, 2020);
+		expect(result).toEqual([]);
+	});
+
+	it('should return all tables when filterYear is 0', () => {
+		const result = normalizeReferenceTables(referenceTablesFixture, 0);
+		expect(result).toHaveLength(5);
+	});
+
+	it('should ignore 2-digit filterYear (requires 4 digits)', () => {
+		const result = normalizeReferenceTables(referenceTablesFixture, 26);
+		expect(result).toHaveLength(5); // returns all — 26 is not 1000-9999
+	});
+
+	it('should ignore negative filterYear', () => {
+		const result = normalizeReferenceTables(referenceTablesFixture, -2026);
+		expect(result).toHaveLength(5); // returns all
+	});
+
+	it('should verify all filtered codes match expected year', () => {
+		const result = normalizeReferenceTables(referenceTablesFixture, 2025);
+		expect(result.map((t) => t.code)).toEqual([328, 327]);
+	});
+
+	it('should handle empty array', () => {
+		expect(normalizeReferenceTables([])).toEqual([]);
+	});
+
+	it('should handle non-array input', () => {
+		expect(normalizeReferenceTables(null)).toEqual([]);
+		expect(normalizeReferenceTables(undefined)).toEqual([]);
+		expect(normalizeReferenceTables('string')).toEqual([]);
+	});
+
+	it('should handle entries with missing fields', () => {
+		const result = normalizeReferenceTables([{ Codigo: 100 }, { Mes: 'janeiro/2020' }]);
+		expect(result[0]).toEqual({ code: 100, month: '' });
+		expect(result[1]).toEqual({ code: 0, month: 'janeiro/2020' });
+	});
+
+	it('should coerce non-numeric Codigo to 0', () => {
+		const result = normalizeReferenceTables([{ Codigo: NaN, Mes: 'test' }]);
+		expect(result[0].code).toBe(0);
+	});
+
+	it('should coerce Infinity Codigo to 0', () => {
+		const result = normalizeReferenceTables([{ Codigo: Infinity, Mes: 'test' }]);
+		expect(result[0].code).toBe(0);
 	});
 });
 

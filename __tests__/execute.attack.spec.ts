@@ -21,7 +21,8 @@ import { cnpjQuery } from '../nodes/BrasilHub/resources/cnpj/cnpj.execute';
 // cepQuery not directly tested (covered via BrasilHub.execute + normalizer tests)
 import { banksList } from '../nodes/BrasilHub/resources/banks/banks.execute';
 import { dddQuery } from '../nodes/BrasilHub/resources/ddd/ddd.execute';
-import { fipeBrands, fipeModels, fipeYears, fipePrice } from '../nodes/BrasilHub/resources/fipe/fipe.execute';
+import { fipeReferenceTables, fipeBrands, fipeModels, fipeYears, fipePrice } from '../nodes/BrasilHub/resources/fipe/fipe.execute';
+import { pixList, pixQuery } from '../nodes/BrasilHub/resources/pix/pix.execute';
 import { feriadosQuery } from '../nodes/BrasilHub/resources/feriados/feriados.execute';
 import { ibgeStates, ibgeCities } from '../nodes/BrasilHub/resources/ibge/ibge.execute';
 import { ncmQuery, ncmSearch } from '../nodes/BrasilHub/resources/ncm/ncm.execute';
@@ -3093,4 +3094,167 @@ describe('NCM VECTOR 42: URL construction and pairedItem', () => {
 		expect(meta.query).toBe('computador');
 		expect(meta.strategy).toBe('direct');
 	});
+});
+
+// ─── PIX ATTACK VECTORS ──────────────────────────────────────────
+
+function createPixAttackContext(overrides: Record<string, unknown> = {}, httpResponse: unknown = []) {
+	const params: Record<string, unknown> = {
+		ispb: '00000000',
+		includeRaw: false,
+		...overrides,
+	};
+	return {
+		getNodeParameter: jest.fn((name: string, _index: number, fallback?: unknown) =>
+			params[name] ?? fallback,
+		),
+		getNode: jest.fn(() => ({ name: 'Brasil Hub' })),
+		helpers: {
+			httpRequest: jest.fn().mockResolvedValue(httpResponse),
+		},
+	} as unknown as Parameters<typeof pixList>[0];
+}
+
+describe('PIX VECTOR 17: Garbage API responses for pixList', () => {
+	for (const response of [null, undefined, '', 42, true, { error: 'fail' }]) {
+		it(`[PASS] httpRequest returns ${JSON.stringify(response)} → empty array`, async () => {
+			const ctx = createPixAttackContext({}, response);
+			const results = await pixList(ctx, 0);
+			expect(results).toEqual([]);
+		});
+	}
+});
+
+describe('PIX VECTOR 18: Garbage API responses for pixQuery', () => {
+	for (const response of [null, undefined, '', 42, true, { error: 'fail' }]) {
+		it(`[PASS] httpRequest returns ${JSON.stringify(response)} → throws not found`, async () => {
+			const ctx = createPixAttackContext({ ispb: '00000000' }, response);
+			await expect(pixQuery(ctx, 0)).rejects.toThrow('PIX participant not found');
+		});
+	}
+});
+
+describe('PIX VECTOR 19: HTTP errors propagate', () => {
+	for (const error of [new Error('timeout'), new Error('404'), 'string error']) {
+		it(`[PASS] pixList: ${String(error)} → throws`, async () => {
+			const ctx = createPixAttackContext({});
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(error);
+			await expect(pixList(ctx, 0)).rejects.toThrow();
+		});
+	}
+
+	it('[PASS] pixQuery: timeout → throws (not "not found")', async () => {
+		const ctx = createPixAttackContext({ ispb: '00000000' });
+		(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(new Error('timeout'));
+		await expect(pixQuery(ctx, 0)).rejects.toThrow('timeout');
+	});
+});
+
+describe('PIX VECTOR 20: ISPB boundary edge cases', () => {
+	it('[PASS] empty string after stripping → invalid', async () => {
+		const ctx = createPixAttackContext({ ispb: '........' });
+		await expect(pixQuery(ctx, 0)).rejects.toThrow('Invalid ISPB code');
+	});
+
+	it('[PASS] 9 digits → invalid', async () => {
+		const ctx = createPixAttackContext({ ispb: '123456789' });
+		await expect(pixQuery(ctx, 0)).rejects.toThrow('Invalid ISPB code');
+	});
+
+	it('[PASS] 7 digits → invalid', async () => {
+		const ctx = createPixAttackContext({ ispb: '1234567' });
+		await expect(pixQuery(ctx, 0)).rejects.toThrow('Invalid ISPB code');
+	});
+
+	it('[PASS] numeric ISPB from AI agent (type safety)', async () => {
+		const ctx = createPixAttackContext({ ispb: 360305 });
+		await expect(pixQuery(ctx, 0)).rejects.toThrow('Invalid ISPB code');
+	});
+
+	it('[PASS] null ISPB → invalid', async () => {
+		const ctx = createPixAttackContext({ ispb: null });
+		await expect(pixQuery(ctx, 0)).rejects.toThrow('Invalid ISPB code');
+	});
+});
+
+describe('PIX VECTOR 21: continueOnFail via BrasilHub.execute', () => {
+	const node = new BrasilHub();
+
+	it('[PASS] pix/query with invalid ISPB + continueOnFail', async () => {
+		const ctx = {
+			getInputData: jest.fn(() => [{ json: {} }]),
+			getNodeParameter: jest.fn((name: string, _i: number, fb?: unknown) => {
+				const p: Record<string, unknown> = {
+					resource: 'pix', operation: 'query', ispb: 'invalid', includeRaw: false,
+				};
+				return p[name] ?? fb;
+			}),
+			getNode: jest.fn(() => ({ name: 'Brasil Hub' })),
+			continueOnFail: jest.fn(() => true),
+			helpers: { httpRequest: jest.fn().mockResolvedValue([]) },
+		} as unknown as IExecuteFunctions;
+		const [[result]] = await node.execute.call(ctx);
+		expect(result.json).toHaveProperty('error');
+	});
+});
+
+// ─── FIPE REFERENCE TABLES ATTACK VECTORS ────────────────────────
+
+function createRefTablesAttackContext(overrides: Record<string, unknown> = {}, httpResponse: unknown = []) {
+	const params: Record<string, unknown> = {
+		filterYear: 0,
+		includeRaw: false,
+		...overrides,
+	};
+	return {
+		getNodeParameter: jest.fn((name: string, _index: number, fallback?: unknown) =>
+			params[name] ?? fallback,
+		),
+		getNode: jest.fn(() => ({ name: 'Brasil Hub' })),
+		helpers: {
+			httpRequest: jest.fn().mockResolvedValue(httpResponse),
+		},
+	} as unknown as Parameters<typeof fipeReferenceTables>[0];
+}
+
+describe('FIPE VECTOR 17: Garbage API responses for fipeReferenceTables', () => {
+	for (const response of [null, undefined, '', 42, true, { error: 'fail' }]) {
+		it(`[PASS] httpRequest returns ${JSON.stringify(response)} → empty array`, async () => {
+			const ctx = createRefTablesAttackContext({}, response);
+			const results = await fipeReferenceTables(ctx, 0);
+			expect(results).toEqual([]);
+		});
+	}
+});
+
+describe('FIPE VECTOR 18: filterYear type attacks', () => {
+	const fixture = [{ Codigo: 1, Mes: 'janeiro/2026' }];
+
+	it('[PASS] NaN filterYear returns all tables', async () => {
+		const ctx = createRefTablesAttackContext({ filterYear: NaN }, fixture);
+		const results = await fipeReferenceTables(ctx, 0);
+		expect(results).toHaveLength(1);
+	});
+
+	it('[PASS] Infinity filterYear returns all tables', async () => {
+		const ctx = createRefTablesAttackContext({ filterYear: Infinity }, fixture);
+		const results = await fipeReferenceTables(ctx, 0);
+		expect(results).toHaveLength(1);
+	});
+
+	it('[PASS] negative filterYear returns all tables', async () => {
+		const ctx = createRefTablesAttackContext({ filterYear: -1 }, fixture);
+		const results = await fipeReferenceTables(ctx, 0);
+		expect(results).toHaveLength(1);
+	});
+});
+
+describe('FIPE VECTOR 19: HTTP errors for fipeReferenceTables', () => {
+	for (const error of [new Error('timeout'), new Error('404')]) {
+		it(`[PASS] ${String(error)} → throws`, async () => {
+			const ctx = createRefTablesAttackContext({});
+			(ctx.helpers.httpRequest as jest.Mock).mockRejectedValue(error);
+			await expect(fipeReferenceTables(ctx, 0)).rejects.toThrow();
+		});
+	}
 });
