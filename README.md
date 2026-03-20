@@ -9,6 +9,12 @@
 </p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/n8n-nodes-brasil-hub"><img src="https://img.shields.io/npm/dw/n8n-nodes-brasil-hub?style=for-the-badge&label=downloads&color=blue" alt="npm downloads"></a>
+  &nbsp;
+  <a href="https://github.com/luisbarcia/n8n-nodes-brasil-hub/stargazers"><img src="https://img.shields.io/github/stars/luisbarcia/n8n-nodes-brasil-hub?style=for-the-badge&color=gold" alt="GitHub stars"></a>
+</p>
+
+<p align="center">
   <a href="https://www.npmjs.com/package/n8n-nodes-brasil-hub"><img src="https://img.shields.io/npm/v/n8n-nodes-brasil-hub" alt="npm version"></a>
   <a href="https://github.com/luisbarcia/n8n-nodes-brasil-hub/actions/workflows/ci.yml"><img src="https://github.com/luisbarcia/n8n-nodes-brasil-hub/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://sonarcloud.io/dashboard?id=luisbarcia_n8n-nodes-brasil-hub"><img src="https://sonarcloud.io/api/project_badges/measure?project=luisbarcia_n8n-nodes-brasil-hub&metric=alert_status" alt="Quality Gate Status"></a>
