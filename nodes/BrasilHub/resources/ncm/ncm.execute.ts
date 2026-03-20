@@ -1,7 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { buildMeta, buildResultItem, buildResultItems } from '../../shared/utils';
-import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
+import { buildMeta, buildResultItem, buildResultItems, readCommonParams } from '../../shared/utils';
+import { queryWithFallback } from '../../shared/fallback';
 import { normalizeNcm, normalizeNcmList } from './ncm.normalize';
 
 /**
@@ -17,8 +17,7 @@ export async function ncmQuery(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const ncmCode = (context.getNodeParameter('ncmCode', itemIndex) as string).trim();
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
 	if (!ncmCode) {
 		throw new NodeOperationError(context.getNode(), 'NCM code is required', { itemIndex });
@@ -47,8 +46,7 @@ export async function ncmSearch(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const searchTerm = (context.getNodeParameter('searchTerm', itemIndex) as string).trim();
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
 	if (searchTerm.length < 3) {
 		throw new NodeOperationError(

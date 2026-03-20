@@ -1,8 +1,8 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItem, buildResultItems, reorderProviders } from '../../shared/utils';
-import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
+import { buildMeta, buildResultItem, buildResultItems, readCommonParams, reorderProviders } from '../../shared/utils';
+import { queryWithFallback } from '../../shared/fallback';
 import { normalizeBank, normalizeBanks } from './banks.normalize';
 
 const BANKS_LIST_PROVIDERS: IProvider[] = [
@@ -36,8 +36,7 @@ export async function banksQuery(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const bankCodeInput = context.getNodeParameter('bankCode', itemIndex) as string;
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 	const bankCode = Number.parseInt(bankCodeInput, 10);
 
 	if (!Number.isInteger(bankCode) || bankCode <= 0) {
@@ -48,7 +47,6 @@ export async function banksQuery(
 		);
 	}
 
-	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
 	const providers = reorderProviders(buildQueryProviders(bankCode), primaryProvider);
 	const result = await queryWithFallback(context, providers, timeoutMs);
 
@@ -73,10 +71,8 @@ export async function banksList(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 
-	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
 	const result = await queryWithFallback(context, reorderProviders(BANKS_LIST_PROVIDERS, primaryProvider), timeoutMs);
 
 	const rawItems = result.data as Array<Record<string, unknown>>;

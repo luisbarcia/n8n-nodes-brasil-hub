@@ -1,8 +1,8 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItems, reorderProviders } from '../../shared/utils';
-import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
+import { buildMeta, buildResultItems, readCommonParams, reorderProviders } from '../../shared/utils';
+import { queryWithFallback } from '../../shared/fallback';
 import { normalizeFeriados } from './feriados.normalize';
 
 /**
@@ -35,8 +35,7 @@ export async function feriadosQuery(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const year = context.getNodeParameter('year', itemIndex) as number;
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 
 	if (!Number.isInteger(year) || year < 1900 || year > 2199) {
 		throw new NodeOperationError(
@@ -46,7 +45,6 @@ export async function feriadosQuery(
 		);
 	}
 
-	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
 	const providers = reorderProviders(buildProviders(year), primaryProvider);
 	const result = await queryWithFallback(context, providers, timeoutMs);
 

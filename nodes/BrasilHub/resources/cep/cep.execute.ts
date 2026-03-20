@@ -1,9 +1,9 @@
 import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItem, reorderProviders } from '../../shared/utils';
+import { buildMeta, buildResultItem, readCommonParams, reorderProviders } from '../../shared/utils';
 import { validateCep, sanitizeCep } from '../../shared/validators';
-import { queryWithFallback, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
+import { queryWithFallback } from '../../shared/fallback';
 import { normalizeCep } from './cep.normalize';
 
 const CEP_PROVIDERS: IProvider[] = [
@@ -42,8 +42,7 @@ export async function cepQuery(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const cepInput = context.getNodeParameter('cep', itemIndex) as string;
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 	const cep = sanitizeCep(cepInput);
 
 	if (cep.length !== 8) {
@@ -54,7 +53,6 @@ export async function cepQuery(
 		throw new NodeOperationError(context.getNode(), 'Invalid CEP', { itemIndex });
 	}
 
-	const primaryProvider = context.getNodeParameter('primaryProvider', itemIndex, 'auto') as string;
 	const providers = reorderProviders(buildProviders(cep), primaryProvider);
 	const result = await queryWithFallback(context, providers, timeoutMs);
 
