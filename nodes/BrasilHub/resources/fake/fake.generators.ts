@@ -35,7 +35,12 @@ function simplify(str: string): string {
 
 // ─── CPF Generator ──────────────────────────────────────────────
 
-/** Generates a valid CPF (11 digits, checksum-correct). */
+/**
+ * Generates a valid CPF using the official Receita Federal checksum algorithm.
+ *
+ * @param formatted - When true, returns `XXX.XXX.XXX-XX`. Default: unformatted 11 digits.
+ * @returns A checksum-correct CPF string.
+ */
 export function generateCpf(formatted = false): string {
 	const digits = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10));
 
@@ -60,7 +65,13 @@ export function generateCpf(formatted = false): string {
 
 // ─── CNPJ Generator ─────────────────────────────────────────────
 
-/** Generates a valid CNPJ (14 digits, checksum-correct). */
+/**
+ * Generates a valid CNPJ using the official Receita Federal checksum algorithm.
+ * Always uses branch `0001` (headquarters).
+ *
+ * @param formatted - When true, returns `XX.XXX.XXX/XXXX-XX`. Default: unformatted 14 digits.
+ * @returns A checksum-correct CNPJ string.
+ */
 export function generateCnpj(formatted = false): string {
 	const base = Array.from({ length: 8 }, () => Math.floor(Math.random() * 10));
 	base.push(0, 0, 0, 1); // branch = 0001
@@ -95,13 +106,21 @@ export function generateRg(): string {
 
 // ─── Address Generator ──────────────────────────────────────────
 
+/** Fake Brazilian address. City is always the state capital; CEP prefix matches the state. */
 export interface IFakeAddress {
+	/** Street with prefix (e.g. "Rua das Flores", "Avenida Brasil"). */
 	street: string;
+	/** Street number (1-9999). */
 	number: string;
+	/** Apartment/suite complement (empty ~60% of the time). */
 	complement: string;
+	/** Neighborhood name. */
 	neighborhood: string;
+	/** City name (always the state capital). */
 	city: string;
+	/** Two-letter state abbreviation (e.g. "SP", "RJ"). */
 	state: string;
+	/** 8-digit CEP (unformatted, prefix matches the state). */
 	cep: string;
 }
 
@@ -122,20 +141,37 @@ export function generateAddress(): IFakeAddress {
 
 // ─── Person Generator ───────────────────────────────────────────
 
+/** Fake Brazilian person profile. All documents are checksum-correct but fictitious. */
 export interface IFakePerson {
+	/** Full name (first + two last names). */
 	name: string;
+	/** Formatted CPF (XXX.XXX.XXX-XX), checksum-correct. */
 	cpf: string;
+	/** Formatted RG (XX.XXX.XXX-X). */
 	rg: string;
+	/** Birth date in ISO format (YYYY-MM-DD). */
 	birthDate: string;
+	/** Age in years (accounts for birthday month/day). */
 	age: number;
+	/** Gender: "M" or "F". */
 	gender: string;
+	/** Mother's full name (female first name + person's first last name). */
 	motherName: string;
+	/** Email with accent-free slug and Brazilian domain. */
 	email: string;
+	/** Mobile phone with valid DDD matching the address state. */
 	phone: string;
+	/** Full Brazilian address. */
 	address: IFakeAddress;
 }
 
-/** Generates a fake Brazilian person profile. */
+/**
+ * Generates a fake Brazilian person profile with consistent data
+ * (phone DDD matches state, CEP prefix matches state, age matches birthDate).
+ *
+ * @param gender - Force "M" or "F". Omit for random.
+ * @returns Complete person profile.
+ */
 export function generatePerson(gender?: 'M' | 'F'): IFakePerson {
 	const g = gender ?? (Math.random() > 0.5 ? 'M' : 'F');
 	const firstName = g === 'M' ? pick(MALE_FIRST_NAMES) : pick(FEMALE_FIRST_NAMES);
@@ -177,19 +213,34 @@ export function generatePerson(gender?: 'M' | 'F'): IFakePerson {
 
 // ─── Company Generator ──────────────────────────────────────────
 
+/** Fake Brazilian company profile. CNPJ is checksum-correct but fictitious. */
 export interface IFakeCompany {
+	/** Official company name (razão social). */
 	razaoSocial: string;
+	/** Trade name (nome fantasia). */
 	nomeFantasia: string;
+	/** Formatted CNPJ (XX.XXX.XXX/XXXX-XX), checksum-correct. */
 	cnpj: string;
+	/** State registration number (inscrição estadual). */
 	inscricaoEstadual: string;
+	/** Company opening date in ISO format (YYYY-MM-DD). */
 	openDate: string;
+	/** Contact email with company domain. */
 	email: string;
+	/** Landline phone with valid DDD matching the address state. */
 	phone: string;
+	/** Primary economic activity description. */
 	activity: string;
+	/** Full Brazilian address. */
 	address: IFakeAddress;
 }
 
-/** Generates a fake Brazilian company profile. */
+/**
+ * Generates a fake Brazilian company profile with consistent data
+ * (phone DDD matches state, CNPJ is checksum-correct).
+ *
+ * @returns Complete company profile.
+ */
 export function generateCompany(): IFakeCompany {
 	const lastName1 = pick(LAST_NAMES);
 	const lastName2 = pick(LAST_NAMES);
