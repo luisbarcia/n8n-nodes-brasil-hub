@@ -1,5 +1,6 @@
 /** Embedded Brazilian data lists for fake profile generation (~5KB). */
 
+/** Common Brazilian male first names (70 entries). */
 export const MALE_FIRST_NAMES = [
 	'Agostinho', 'Alexandre', 'Anderson', 'André', 'Antonio', 'Arthur', 'Benedito', 'Benjamin',
 	'Bernardo', 'Bruno', 'Carlos', 'Cauã', 'César', 'Daniel', 'Davi', 'Diego', 'Eduardo',
@@ -12,6 +13,7 @@ export const MALE_FIRST_NAMES = [
 	'Vinicius', 'Vitor', 'Wagner',
 ];
 
+/** Common Brazilian female first names (70 entries). */
 export const FEMALE_FIRST_NAMES = [
 	'Adriana', 'Agatha', 'Alice', 'Aline', 'Amanda', 'Ana', 'Beatriz', 'Bianca', 'Bruna',
 	'Camila', 'Carla', 'Carolina', 'Cecília', 'Clara', 'Cristina', 'Daniela', 'Débora',
@@ -24,6 +26,7 @@ export const FEMALE_FIRST_NAMES = [
 	'Vera', 'Vitória', 'Viviane', 'Yasmin',
 ];
 
+/** Common Brazilian last names / surnames (65 entries). */
 export const LAST_NAMES = [
 	'Almeida', 'Alves', 'Amaral', 'Andrade', 'Araújo', 'Azevedo', 'Barbosa', 'Barros',
 	'Batista', 'Borges', 'Braga', 'Brito', 'Campos', 'Cardoso', 'Carvalho', 'Castro',
@@ -36,10 +39,12 @@ export const LAST_NAMES = [
 	'Tavares', 'Teixeira', 'Vieira',
 ];
 
+/** Brazilian street type prefixes (Rua, Avenida, Travessa, etc.). */
 export const STREET_PREFIXES = [
 	'Rua', 'Avenida', 'Travessa', 'Alameda', 'Praça',
 ];
 
+/** Common Brazilian street names (30 entries). */
 export const STREET_NAMES = [
 	'das Flores', 'dos Bandeirantes', 'Brasil', 'São Paulo', 'da Paz', 'das Acácias',
 	'do Comércio', 'Principal', 'XV de Novembro', 'Sete de Setembro', 'da Liberdade',
@@ -49,6 +54,7 @@ export const STREET_NAMES = [
 	'Castro Alves', 'Machado de Assis', 'Olavo Bilac', 'José de Alencar', 'Gonçalves Dias',
 ];
 
+/** Common Brazilian neighborhood names from major cities (28 entries). */
 export const NEIGHBORHOODS = [
 	'Centro', 'Jardim América', 'Vila Nova', 'Santa Cruz', 'Boa Vista', 'São José',
 	'Liberdade', 'Consolação', 'Bela Vista', 'Moema', 'Pinheiros', 'Vila Mariana',
@@ -88,10 +94,12 @@ export const STATES: Array<{ uf: string; capital: string; cepPrefix: string; ddd
 	{ uf: 'TO', capital: 'Palmas', cepPrefix: '77000', ddd: '63' },
 ];
 
+/** Brazilian company legal suffixes (Ltda, S.A., ME, etc.). */
 export const COMPANY_SUFFIXES = [
 	'Ltda', 'S.A.', 'ME', 'EPP', 'EIRELI', 'Ltda ME', 'S/A',
 ];
 
+/** Common Brazilian business activity descriptions (20 entries). */
 export const COMPANY_ACTIVITIES = [
 	'Desenvolvimento de software', 'Consultoria empresarial', 'Comércio varejista',
 	'Serviços de alimentação', 'Transporte rodoviário', 'Construção civil',
@@ -102,11 +110,13 @@ export const COMPANY_ACTIVITIES = [
 	'Contabilidade e auditoria', 'Hotelaria e turismo',
 ];
 
+/** Common Brazilian personal email domains. */
 export const EMAIL_DOMAINS = [
 	'gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com.br', 'uol.com.br',
 	'terra.com.br', 'bol.com.br', 'ig.com.br', 'globo.com', 'live.com',
 ];
 
+/** Generic Brazilian company email domains. */
 export const COMPANY_EMAIL_DOMAINS = [
 	'empresa.com.br', 'negocio.com.br', 'tech.com.br', 'group.com.br', 'corp.com.br',
 ];

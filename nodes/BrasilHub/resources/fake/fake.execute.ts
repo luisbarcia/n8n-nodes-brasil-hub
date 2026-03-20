@@ -26,7 +26,13 @@ function generateItems(
 	return results;
 }
 
-/** Generates fake CPF numbers. */
+/**
+ * Generates fake CPF numbers (checksum-correct, formatted or unformatted).
+ *
+ * @param context - n8n execution context.
+ * @param itemIndex - Current item index.
+ * @returns One n8n item per generated CPF.
+ */
 export async function fakeCpf(
 	context: IExecuteFunctions,
 	itemIndex: number,
@@ -35,7 +41,13 @@ export async function fakeCpf(
 	return generateItems(context, itemIndex, () => ({ cpf: generateCpf(formatted) }) as IDataObject);
 }
 
-/** Generates fake CNPJ numbers. */
+/**
+ * Generates fake CNPJ numbers (checksum-correct, formatted or unformatted).
+ *
+ * @param context - n8n execution context.
+ * @param itemIndex - Current item index.
+ * @returns One n8n item per generated CNPJ.
+ */
 export async function fakeCnpj(
 	context: IExecuteFunctions,
 	itemIndex: number,
@@ -44,7 +56,13 @@ export async function fakeCnpj(
 	return generateItems(context, itemIndex, () => ({ cnpj: generateCnpj(formatted) }) as IDataObject);
 }
 
-/** Generates fake person profiles. */
+/**
+ * Generates fake Brazilian person profiles (name, CPF, RG, address, phone, email).
+ *
+ * @param context - n8n execution context.
+ * @param itemIndex - Current item index.
+ * @returns One n8n item per generated person.
+ */
 export async function fakePerson(
 	context: IExecuteFunctions,
 	itemIndex: number,
@@ -54,7 +72,13 @@ export async function fakePerson(
 	return generateItems(context, itemIndex, () => ({ ...generatePerson(gender) }) as unknown as IDataObject);
 }
 
-/** Generates fake company profiles. */
+/**
+ * Generates fake Brazilian company profiles (razão social, CNPJ, address, phone, email).
+ *
+ * @param context - n8n execution context.
+ * @param itemIndex - Current item index.
+ * @returns One n8n item per generated company.
+ */
 export async function fakeCompany(
 	context: IExecuteFunctions,
 	itemIndex: number,

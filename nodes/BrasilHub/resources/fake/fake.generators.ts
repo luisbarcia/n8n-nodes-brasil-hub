@@ -99,7 +99,11 @@ export function generateCnpj(formatted = false): string {
 
 // ─── RG Generator ───────────────────────────────────────────────
 
-/** Generates a fake RG number (format: XX.XXX.XXX-X). */
+/**
+ * Generates a fake RG number in SP/RJ format.
+ *
+ * @returns Formatted RG string (XX.XXX.XXX-X).
+ */
 export function generateRg(): string {
 	return `${randDigits(2)}.${randDigits(3)}.${randDigits(3)}-${randDigits(1)}`;
 }
@@ -124,7 +128,11 @@ export interface IFakeAddress {
 	cep: string;
 }
 
-/** Generates a fake Brazilian address. */
+/**
+ * Generates a fake Brazilian address with consistent state/city/CEP.
+ *
+ * @returns Address object where city is the state capital and CEP prefix matches the state.
+ */
 export function generateAddress(): IFakeAddress {
 	const stateInfo = pick(STATES);
 	const hasComplement = Math.random() > 0.6;
