@@ -41,12 +41,17 @@ Each new resource ships as its own MINOR release for faster iteration and easier
 - [x] **CNPJ Output Mode** — Simplified (default), Full, AI Summary
 - [ ] **Creator Portal resubmission** — Submit stable v1.0.0 for "Verified" badge
 
-## v1.1.0+ — Expansion (ideas, not committed)
+## v1.2.0 — FIPE Reference Tables + PIX ✅
 
-- [ ] **PIX Directory** — Query PIX participants (BCB API)
-- [ ] **CNES** — Health establishments (DataSUS)
-- [ ] **Historical FIPE** — Query past reference tables
-- [ ] **Correios Tracking** — Package tracking (if public API available)
+- [x] **FIPE Reference Tables** — List available FIPE reference tables with optional year filter ([#109](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/109))
+- [x] **PIX Directory** — Query PIX participants from BCB directory (BrasilAPI) ([#110](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/110))
+- [x] Operations: `referenceTables` (FIPE), `list` + `query` (PIX)
+- [x] 1280 tests, testing arsenal audit passed
+
+## Future — Expansion (ideas, not committed)
+
+- [ ] **CNES** — Health establishments (DataSUS) — APIs currently unavailable ([#111](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/111))
+- [ ] **Correios Tracking** — Package tracking — no public credential-free API found ([#112](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/112))
 
 ## Not Planned
 
