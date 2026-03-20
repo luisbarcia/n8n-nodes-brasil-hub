@@ -27,6 +27,8 @@ import { fipeDescription } from './resources/fipe/fipe.description';
 import { fipeReferenceTables, fipeBrands, fipeModels, fipeYears, fipePrice } from './resources/fipe/fipe.execute';
 import { pixDescription } from './resources/pix/pix.description';
 import { pixList, pixQuery } from './resources/pix/pix.execute';
+import { fakeDescription } from './resources/fake/fake.description';
+import { fakeCpf, fakeCnpj, fakePerson, fakeCompany } from './resources/fake/fake.execute';
 
 /** Signature for resource/operation execute handlers (returns array to support multi-item resources). */
 type ExecuteFunction = (
@@ -67,6 +69,7 @@ const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
 	cpf: { validate: cpfValidate },
 	banks: { query: banksQuery, list: banksList },
 	ddd: { query: dddQuery },
+	fake: { cpf: fakeCpf, cnpj: fakeCnpj, person: fakePerson, company: fakeCompany },
 	feriados: { query: feriadosQuery },
 	ibge: { states: ibgeStates, cities: ibgeCities },
 	ncm: { query: ncmQuery, search: ncmSearch },
@@ -109,6 +112,7 @@ export class BrasilHub implements INodeType {
 					{ name: 'CNPJ', value: 'cnpj', description: 'Query or validate Brazilian company tax IDs' },
 					{ name: 'CPF', value: 'cpf', description: 'Validate Brazilian individual tax IDs' },
 					{ name: 'DDD', value: 'ddd', description: 'Query Brazilian area codes and their cities' },
+				{ name: 'Fake', value: 'fake', description: 'Generate fake Brazilian data for testing (Person, Company, CPF, CNPJ)' },
 					{ name: 'FIPE', value: 'fipe', description: 'Query vehicle prices from the FIPE table' },
 					{ name: 'Holiday', value: 'feriados', description: 'Query Brazilian public holidays by year' },
 					{ name: 'IBGE', value: 'ibge', description: 'Query Brazilian states and municipalities' },
@@ -122,6 +126,7 @@ export class BrasilHub implements INodeType {
 			...cpfDescription,
 			...banksDescription,
 			...dddDescription,
+			...fakeDescription,
 			...feriadosDescription,
 			...fipeDescription,
 			...ibgeDescription,

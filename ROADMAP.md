@@ -48,8 +48,18 @@ Each new resource ships as its own MINOR release for faster iteration and easier
 - [x] Operations: `referenceTables` (FIPE), `list` + `query` (PIX)
 - [x] 1280 tests, testing arsenal audit passed
 
+## v1.3.0 — Fake Data Generator ✅
+
+- [x] **Fake Person** — Generate complete person profiles (name, CPF, RG, birthDate, email, phone, address) ([#115](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/115))
+- [x] **Fake Company** — Generate complete company profiles (razão social, CNPJ, IE, email, phone, address)
+- [x] **Fake CPF/CNPJ** — Generate valid checksum-correct documents
+- [x] Operations: `person`, `company`, `cpf`, `cnpj` (all local, no API)
+- [x] 1349 tests, 100% JSDoc coverage, testing arsenal audit passed
+
 ## Future — Expansion (ideas, not committed)
 
+- [ ] **Câmbio** — Exchange rates from BCB ([#116](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/116))
+- [ ] **Taxas** — Interest rates and indices (Selic, CDI, IPCA) ([#117](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/117))
 - [ ] **CNES** — Health establishments (DataSUS) — APIs currently unavailable ([#111](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/111))
 - [ ] **Correios Tracking** — Package tracking — no public credential-free API found ([#112](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/112))
 

@@ -5,7 +5,7 @@
 <h1 align="center">Brasil Hub for n8n</h1>
 
 <p align="center">
-  Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Holidays, FIPE, IBGE, NCM &amp; PIX) with automatic multi-provider fallback — zero configuration, zero credentials.
+  Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Holidays, FIPE, IBGE, NCM, PIX) + generate fake test data — automatic multi-provider fallback, zero credentials.
 </p>
 
 <p align="center">
@@ -23,7 +23,7 @@
 
 ---
 
-> **v1.2** — 10 resources, 20 operations, 23 providers. The API is stable and follows semantic versioning.
+> **v1.3** — 11 resources, 24 operations, 23 providers + local fake data generation. The API is stable and follows semantic versioning.
 
 ---
 
@@ -58,6 +58,10 @@ npm install n8n-nodes-brasil-hub
 | **CNPJ** | Validate | Check if CNPJ is valid (local checksum, no API) | — |
 | **CPF** | Validate | Check if CPF is valid (local checksum, no API) | — |
 | **DDD** | Query | Fetch state and cities by area code | BrasilAPI → municipios-brasileiros |
+| **Fake** | Person | Generate fake Brazilian person profile | Local (no API) |
+| **Fake** | Company | Generate fake Brazilian company profile | Local (no API) |
+| **Fake** | CPF | Generate valid fake CPF numbers | Local (no API) |
+| **Fake** | CNPJ | Generate valid fake CNPJ numbers | Local (no API) |
 | **Holiday** | Query | Fetch public holidays by year | BrasilAPI → Nager.Date |
 | **FIPE** | Brands | List vehicle brands by type | parallelum |
 | **FIPE** | Models | List models for a brand | parallelum |
@@ -165,7 +169,7 @@ Each provider has a **configurable timeout** (default: 10 seconds, range: 1–60
 git clone https://github.com/luisbarcia/n8n-nodes-brasil-hub.git
 cd n8n-nodes-brasil-hub
 npm install
-npm test          # 1280 tests, 99%+ coverage
+npm test          # 1349 tests, 99%+ coverage
 npm run build
 npm run lint
 ```
