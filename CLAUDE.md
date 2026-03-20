@@ -120,6 +120,18 @@ Fallback is automatic. BrasilAPI is always primary. Headers include `User-Agent:
 - **Normalized output** by default, optional raw response via `Include Raw Response` checkbox
 - **NodeApiError** for API errors (preserves HTTP status), **NodeOperationError** for validation/operation errors with `itemIndex`
 
+## JSDoc — 100% Coverage Obrigatório
+
+**Toda função, interface, tipo e constante exportada DEVE ter JSDoc completo.**
+
+- Funções: `@param` para cada parâmetro + `@returns` + descrição
+- Interfaces: descrição na interface + descrição em cada campo
+- Constantes: descrição do conteúdo e propósito
+- Após adicionar/modificar código: rodar `/code-documenter` para verificar cobertura
+- **Nunca commitar código exportado sem JSDoc** — isso é parte do checklist de qualidade
+
+Status atual: **92/92 exports documentados (100%)**.
+
 ## n8n Compliance
 
 - `n8n-community-node-package` keyword in package.json
