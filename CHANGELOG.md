@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0](https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.2.0...v1.3.0) (2026-03-20)
+
+
+### Added
+
+* add Fake resource — generate Brazilian test data ([#118](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/118)) ([9c866ab](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/9c866ab1621595925dee28d4a03917c45f13be52))
+
+
+### Documentation
+
+* SEO/AEO optimization — FAQ + tutorial + comparison article ([#126](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/126)) ([ac37564](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/ac37564bdcf0450b0c922e98a373ba55f34bc0e6))
+
 ## [1.2.0](https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.1.1...v1.2.0) (2026-03-20)
 
 
