@@ -3,6 +3,7 @@ import {
 	generatePerson, generateCompany,
 } from '../nodes/BrasilHub/resources/fake/fake.generators';
 import { validateCpf, validateCnpj } from '../nodes/BrasilHub/shared/validators';
+import { STATES } from '../nodes/BrasilHub/resources/fake/fake.data';
 
 describe('generateCpf', () => {
 	it('should generate an 11-digit string', () => {
@@ -60,9 +61,15 @@ describe('generateCnpj', () => {
 });
 
 describe('generateRg', () => {
-	it('should match XX.XXX.XXX-X format', () => {
-		const rg = generateRg();
-		expect(rg).toMatch(/^\d{2}\.\d{3}\.\d{3}-\d{1}$/);
+	it('should match XX.XXX.XXX-X format (20 iterations)', () => {
+		for (let i = 0; i < 20; i++) {
+			expect(generateRg()).toMatch(/^\d{2}\.\d{3}\.\d{3}-\d{1}$/);
+		}
+	});
+
+	it('should generate unique RGs', () => {
+		const rgs = new Set(Array.from({ length: 100 }, () => generateRg()));
+		expect(rgs.size).toBeGreaterThan(80);
 	});
 });
 
@@ -192,13 +199,95 @@ describe('generateCompany', () => {
 		expect(co.inscricaoEstadual).toMatch(/^\d{3}\.\d{3}\.\d{3}\.\d{3}$/);
 	});
 
-	it('should have email with @', () => {
-		const co = generateCompany();
-		expect(co.email).toContain('@');
+	it('should have valid company email format', () => {
+		for (let i = 0; i < 30; i++) {
+			const co = generateCompany();
+			expect(co.email).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+		}
 	});
 
 	it('should have valid address', () => {
 		const co = generateCompany();
 		expect(co.address.state).toMatch(/^[A-Z]{2}$/);
+	});
+
+	it('should have company phone in landline format', () => {
+		for (let i = 0; i < 30; i++) {
+			const co = generateCompany();
+			expect(co.phone).toMatch(/^\(\d{2}\) \d{4}-\d{4}$/);
+		}
+	});
+
+	it('should have phone DDD matching address state', () => {
+		for (let i = 0; i < 30; i++) {
+			const co = generateCompany();
+			const phoneDdd = co.phone.match(/^\((\d{2})\)/)?.[1];
+			const stateData = STATES.find((s) => s.uf === co.address.state);
+			expect(phoneDdd).toBe(stateData?.ddd);
+		}
+	});
+});
+
+// ─── High-volume cross-validation ────────────────────────────────
+
+describe('generateCpf — high-volume validation', () => {
+	it('should generate 200 valid CPFs that all pass validator', () => {
+		for (let i = 0; i < 200; i++) {
+			expect(validateCpf(generateCpf()).valid).toBe(true);
+		}
+	});
+
+	it('formatted CPFs should also pass validation', () => {
+		for (let i = 0; i < 100; i++) {
+			const cpf = generateCpf(true);
+			expect(validateCpf(cpf.replace(/\D/g, '')).valid).toBe(true);
+		}
+	});
+});
+
+describe('generateCnpj — high-volume validation', () => {
+	it('should generate 200 valid CNPJs that all pass validator', () => {
+		for (let i = 0; i < 200; i++) {
+			expect(validateCnpj(generateCnpj()).valid).toBe(true);
+		}
+	});
+});
+
+describe('generatePerson — data quality', () => {
+	it('phone DDD should match address state', () => {
+		for (let i = 0; i < 50; i++) {
+			const person = generatePerson();
+			const phoneDdd = person.phone.match(/^\((\d{2})\)/)?.[1];
+			const stateData = STATES.find((s) => s.uf === person.address.state);
+			expect(phoneDdd).toBe(stateData?.ddd);
+		}
+	});
+
+	it('name should have 3+ words (first + 2 last names)', () => {
+		for (let i = 0; i < 50; i++) {
+			expect(generatePerson().name.split(' ').length).toBeGreaterThanOrEqual(3);
+		}
+	});
+
+	it('email should not contain accented characters', () => {
+		for (let i = 0; i < 100; i++) {
+			expect(generatePerson().email).not.toMatch(/[àáâãäèéêëìíîïòóôõöùúûüñç]/i);
+		}
+	});
+
+	it('address city should match state capital', () => {
+		for (let i = 0; i < 50; i++) {
+			const person = generatePerson();
+			const stateData = STATES.find((s) => s.uf === person.address.state);
+			expect(person.address.city).toBe(stateData?.capital);
+		}
+	});
+
+	it('address CEP prefix should match state', () => {
+		for (let i = 0; i < 50; i++) {
+			const person = generatePerson();
+			const stateData = STATES.find((s) => s.uf === person.address.state);
+			expect(person.address.cep.startsWith(stateData!.cepPrefix)).toBe(true);
+		}
 	});
 });
