@@ -1,4 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
+import { includeRawField } from '../../shared/description-builders';
 
 const showForNcm = { resource: ['ncm'] };
 const showForNcmQuery = { resource: ['ncm'], operation: ['query'] };
@@ -53,12 +54,5 @@ export const ncmDescription: INodeProperties[] = [
 		placeholder: 'e.g. computador',
 		description: 'The keyword to search for in NCM descriptions (minimum 3 characters)',
 	},
-	{
-		displayName: 'Include Raw Response',
-		name: 'includeRaw',
-		type: 'boolean',
-		displayOptions: { show: showForNcm },
-		default: false,
-		description: 'Whether to include the raw API response alongside the normalized data',
-	},
+	includeRawField('ncm'),
 ];

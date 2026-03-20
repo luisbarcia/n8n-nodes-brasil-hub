@@ -1,4 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
+import { includeRawField } from '../../shared/description-builders';
 
 const showForFipe = { resource: ['fipe'] };
 const showForFipeNotRefTables = { resource: ['fipe'], operation: ['brands', 'models', 'years', 'price'] };
@@ -115,12 +116,5 @@ export const fipeDescription: INodeProperties[] = [
 		default: 0,
 		description: 'The FIPE reference table number (0 = latest)',
 	},
-	{
-		displayName: 'Include Raw Response',
-		name: 'includeRaw',
-		type: 'boolean',
-		displayOptions: { show: showForFipe },
-		default: false,
-		description: 'Whether to include the raw API response alongside the normalized data',
-	},
+	includeRawField('fipe'),
 ];
