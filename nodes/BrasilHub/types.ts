@@ -296,6 +296,22 @@ export interface IFipeReferenceTable {
 	_raw?: unknown;
 }
 
+/** Signature for resource/operation execute handlers. */
+export type ExecuteFunction = (
+	context: import('n8n-workflow').IExecuteFunctions,
+	itemIndex: number,
+) => Promise<import('n8n-workflow').INodeExecutionData[]>;
+
+/** Contract for a resource module. Each resource exports one of these. */
+export interface IResourceDefinition {
+	/** Resource key used in the router (e.g., 'cnpj', 'cep'). */
+	resource: string;
+	/** n8n property definitions (operation selector + fields). */
+	description: import('n8n-workflow').INodeProperties[];
+	/** Map of operation name to handler function. */
+	operations: Record<string, ExecuteFunction>;
+}
+
 /** A data provider endpoint used by the fallback engine. */
 export interface IProvider {
 	/** Provider identifier (e.g. "brasilapi", "cnpjws", "receitaws"). */
