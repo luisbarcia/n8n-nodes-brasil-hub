@@ -10,104 +10,54 @@ function clampQuantity(value: number): number {
 	return Math.max(MIN_QUANTITY, Math.min(MAX_QUANTITY, n));
 }
 
-/**
- * Generates fake CPF numbers.
- *
- * @param context - n8n execution context.
- * @param itemIndex - Current item index.
- * @returns One n8n item per generated CPF.
- */
+/** Generates N items from a generator function, with pairedItem tracking. */
+function generateItems(
+	context: IExecuteFunctions,
+	itemIndex: number,
+	generator: () => IDataObject,
+): INodeExecutionData[] {
+	const rawQty = context.getNodeParameter('quantity', itemIndex, 1) as number;
+	const quantity = clampQuantity(rawQty);
+
+	const results: INodeExecutionData[] = [];
+	for (let i = 0; i < quantity; i++) {
+		results.push({ json: generator(), pairedItem: { item: itemIndex } });
+	}
+	return results;
+}
+
+/** Generates fake CPF numbers. */
 export async function fakeCpf(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const rawQty = context.getNodeParameter('quantity', itemIndex, 1) as number;
 	const formatted = context.getNodeParameter('formatted', itemIndex, true) as boolean;
-	const quantity = clampQuantity(rawQty);
-
-	const results: INodeExecutionData[] = [];
-	for (let i = 0; i < quantity; i++) {
-		results.push({
-			json: { cpf: generateCpf(formatted) } as IDataObject,
-			pairedItem: { item: itemIndex },
-		});
-	}
-	return results;
+	return generateItems(context, itemIndex, () => ({ cpf: generateCpf(formatted) }) as IDataObject);
 }
 
-/**
- * Generates fake CNPJ numbers.
- *
- * @param context - n8n execution context.
- * @param itemIndex - Current item index.
- * @returns One n8n item per generated CNPJ.
- */
+/** Generates fake CNPJ numbers. */
 export async function fakeCnpj(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const rawQty = context.getNodeParameter('quantity', itemIndex, 1) as number;
 	const formatted = context.getNodeParameter('formatted', itemIndex, true) as boolean;
-	const quantity = clampQuantity(rawQty);
-
-	const results: INodeExecutionData[] = [];
-	for (let i = 0; i < quantity; i++) {
-		results.push({
-			json: { cnpj: generateCnpj(formatted) } as IDataObject,
-			pairedItem: { item: itemIndex },
-		});
-	}
-	return results;
+	return generateItems(context, itemIndex, () => ({ cnpj: generateCnpj(formatted) }) as IDataObject);
 }
 
-/**
- * Generates fake person profiles.
- *
- * @param context - n8n execution context.
- * @param itemIndex - Current item index.
- * @returns One n8n item per generated person.
- */
+/** Generates fake person profiles. */
 export async function fakePerson(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const rawQty = context.getNodeParameter('quantity', itemIndex, 1) as number;
 	const genderParam = context.getNodeParameter('gender', itemIndex, 'any') as string;
-	const quantity = clampQuantity(rawQty);
 	const gender = genderParam === 'M' || genderParam === 'F' ? genderParam : undefined;
-
-	const results: INodeExecutionData[] = [];
-	for (let i = 0; i < quantity; i++) {
-		const person = generatePerson(gender);
-		results.push({
-			json: { ...person } as unknown as IDataObject,
-			pairedItem: { item: itemIndex },
-		});
-	}
-	return results;
+	return generateItems(context, itemIndex, () => ({ ...generatePerson(gender) }) as unknown as IDataObject);
 }
 
-/**
- * Generates fake company profiles.
- *
- * @param context - n8n execution context.
- * @param itemIndex - Current item index.
- * @returns One n8n item per generated company.
- */
+/** Generates fake company profiles. */
 export async function fakeCompany(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const rawQty = context.getNodeParameter('quantity', itemIndex, 1) as number;
-	const quantity = clampQuantity(rawQty);
-
-	const results: INodeExecutionData[] = [];
-	for (let i = 0; i < quantity; i++) {
-		const company = generateCompany();
-		results.push({
-			json: { ...company } as unknown as IDataObject,
-			pairedItem: { item: itemIndex },
-		});
-	}
-	return results;
+	return generateItems(context, itemIndex, () => ({ ...generateCompany() }) as unknown as IDataObject);
 }
