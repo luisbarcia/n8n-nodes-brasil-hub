@@ -28,6 +28,32 @@ describe('BrasilHub node', () => {
 		expect(values).toContain('fake');
 	});
 
+	it('should have no duplicate resource keys in allResources', () => {
+		const node = new BrasilHub();
+		const resourceProp = node.description.properties.find((p) => p.name === 'resource');
+		const uiValues = (resourceProp!.options as Array<{ value: string }>).map((o) => o.value);
+		const uniqueValues = new Set(uiValues);
+		expect(uniqueValues.size).toBe(uiValues.length);
+	});
+
+	it('should have matching resource keys between UI options and operation descriptions', () => {
+		const node = new BrasilHub();
+		const resourceProp = node.description.properties.find((p) => p.name === 'resource');
+		const uiValues = new Set((resourceProp!.options as Array<{ value: string }>).map((o) => o.value));
+		const opProps = node.description.properties.filter((p) => p.name === 'operation');
+		const opResources = new Set(
+			opProps.map((p) => (p.displayOptions?.show?.resource as string[])?.[0]).filter(Boolean),
+		);
+		// Every UI resource must have an operation description
+		for (const uiVal of uiValues) {
+			expect(opResources.has(uiVal)).toBe(true);
+		}
+		// Every operation description must have a UI resource
+		for (const opRes of opResources) {
+			expect(uiValues.has(opRes)).toBe(true);
+		}
+	});
+
 	it('should have operation properties for all resources', () => {
 		const node = new BrasilHub();
 		const ops = node.description.properties.filter((p) => p.name === 'operation');
