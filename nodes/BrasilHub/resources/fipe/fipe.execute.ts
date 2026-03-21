@@ -1,6 +1,6 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { buildMeta, buildResultItem, buildResultItems } from '../../shared/utils';
+import { buildMeta, buildResultItem, buildResultItems, readCommonParams } from '../../shared/utils';
 import { clampTimeout, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeBrands, normalizeModels, normalizeYears, normalizePrice, normalizeReferenceTables } from './fipe.normalize';
 
@@ -41,12 +41,11 @@ function validateCode(context: IExecuteFunctions, value: string, name: string, p
 	}
 }
 
-/** Reads common FIPE params from the execution context with validation. */
-function getCommonParams(context: IExecuteFunctions, itemIndex: number) {
+/** Reads common FIPE params (extends readCommonParams with vehicleType + referenceTable). */
+function getFipeParams(context: IExecuteFunctions, itemIndex: number) {
+	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 	const vehicleType = context.getNodeParameter('vehicleType', itemIndex) as string;
 	const referenceTable = context.getNodeParameter('referenceTable', itemIndex, 0) as number;
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
 	validateVehicleType(context, vehicleType, itemIndex);
 	return { vehicleType, referenceTable, includeRaw, timeoutMs };
 }
@@ -75,8 +74,7 @@ export async function fipeReferenceTables(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const includeRaw = context.getNodeParameter('includeRaw', itemIndex, false) as boolean;
-	const timeoutMs = context.getNodeParameter('timeout', itemIndex, DEFAULT_TIMEOUT_MS) as number;
+	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 	const rawFilterYear = context.getNodeParameter('filterYear', itemIndex, 0) as number;
 	const filterYear = Number.isFinite(rawFilterYear) ? Math.floor(rawFilterYear) : 0;
 
@@ -105,7 +103,7 @@ export async function fipeBrands(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getCommonParams(context, itemIndex);
+	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getFipeParams(context, itemIndex);
 
 	const url = appendRefTable(`${BASE_URL}/${encodeURIComponent(vehicleType)}/marcas`, referenceTable);
 	const data = await fetchFipe(context, url, timeoutMs);
@@ -129,7 +127,7 @@ export async function fipeModels(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getCommonParams(context, itemIndex);
+	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getFipeParams(context, itemIndex);
 	const brandCode = context.getNodeParameter('brandCode', itemIndex) as string;
 	validateCode(context, brandCode, 'Brand code', BRAND_MODEL_PATTERN, itemIndex);
 
@@ -158,7 +156,7 @@ export async function fipeYears(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getCommonParams(context, itemIndex);
+	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getFipeParams(context, itemIndex);
 	const brandCode = context.getNodeParameter('brandCode', itemIndex) as string;
 	const modelCode = context.getNodeParameter('modelCode', itemIndex) as string;
 	validateCode(context, brandCode, 'Brand code', BRAND_MODEL_PATTERN, itemIndex);
@@ -189,7 +187,7 @@ export async function fipePrice(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getCommonParams(context, itemIndex);
+	const { vehicleType, referenceTable, includeRaw, timeoutMs } = getFipeParams(context, itemIndex);
 	const brandCode = context.getNodeParameter('brandCode', itemIndex) as string;
 	const modelCode = context.getNodeParameter('modelCode', itemIndex) as string;
 	const yearCode = context.getNodeParameter('yearCode', itemIndex) as string;

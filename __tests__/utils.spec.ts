@@ -1,4 +1,5 @@
 import { readCommonParams } from '../nodes/BrasilHub/shared/utils';
+import { includeRawField } from '../nodes/BrasilHub/shared/description-builders';
 
 function createMockContext(overrides: Record<string, unknown> = {}) {
 	const params: Record<string, unknown> = {
@@ -41,5 +42,31 @@ describe('readCommonParams', () => {
 		expect(ctx.getNodeParameter).toHaveBeenCalledWith('includeRaw', 5, false);
 		expect(ctx.getNodeParameter).toHaveBeenCalledWith('timeout', 5, 10000);
 		expect(ctx.getNodeParameter).toHaveBeenCalledWith('primaryProvider', 5, 'auto');
+	});
+});
+
+describe('includeRawField', () => {
+	it('should generate field for all operations when no filter', () => {
+		const field = includeRawField('banks');
+		expect(field.displayName).toBe('Include Raw Response');
+		expect(field.name).toBe('includeRaw');
+		expect(field.type).toBe('boolean');
+		expect(field.default).toBe(false);
+		expect(field.displayOptions?.show).toEqual({ resource: ['banks'] });
+	});
+
+	it('should generate field with operation filter', () => {
+		const field = includeRawField('cnpj', ['query']);
+		expect(field.displayOptions?.show).toEqual({ resource: ['cnpj'], operation: ['query'] });
+	});
+
+	it('should generate field with multiple operation filter', () => {
+		const field = includeRawField('cep', ['query', 'validate']);
+		expect(field.displayOptions?.show).toEqual({ resource: ['cep'], operation: ['query', 'validate'] });
+	});
+
+	it('should have "Whether" prefix in description', () => {
+		const field = includeRawField('ddd');
+		expect(field.description).toMatch(/^Whether/);
 	});
 });
