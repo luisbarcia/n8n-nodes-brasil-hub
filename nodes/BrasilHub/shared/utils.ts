@@ -73,11 +73,17 @@ export function buildResultItems<T extends object>(
 	includeRaw: boolean,
 	itemIndex: number,
 ): INodeExecutionData[] {
+	// Filter rawItems the same way normalizers do (remove null/non-object entries)
+	// to maintain index alignment when normalizers filter out invalid entries.
+	// See: https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/131
+	const filteredRaw = includeRaw
+		? rawItems.filter((r) => r != null && typeof r === 'object')
+		: rawItems;
 	return items.map((item, index) => ({
 		json: {
 			...item,
 			_meta: meta,
-			...(includeRaw && { _raw: rawItems[index] }),
+			...(includeRaw && { _raw: filteredRaw[index] }),
 		} as IDataObject,
 		pairedItem: { item: itemIndex },
 	}));

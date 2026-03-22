@@ -2863,14 +2863,12 @@ describe('NCM VECTOR 40: includeRaw alignment', () => {
 		];
 		const ctx = createNcmContext({ searchTerm: 'computador', includeRaw: true }, rawData);
 		const results = await ncmSearch(ctx, 0);
-		// normalizeNcmList filters null → 2 items, but rawItems has 3
-		// buildResultItems uses index alignment, so the _raw for the 2nd normalized
-		// item will map to rawData[1] (null) — this is a known mismatch
+		// normalizeNcmList filters null → 2 items
+		// buildResultItems now also filters rawItems to remove null/non-object entries (fix #131)
+		// so _raw aligns correctly with normalized items
 		expect(results).toHaveLength(2);
 		expect(results[0].json._raw).toEqual(rawData[0]);
-		// The 2nd normalized item's _raw is rawData[1] (null) — not rawData[2]
-		// This is a NOTED index mismatch when normalizer filters out items
-		expect(results[1].json._raw).toBe(null);
+		expect(results[1].json._raw).toEqual(rawData[2]);
 	});
 });
 
