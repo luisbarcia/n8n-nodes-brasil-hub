@@ -296,6 +296,44 @@ export interface IFipeReferenceTable {
 	_raw?: unknown;
 }
 
+/** Normalized currency from BrasilAPI câmbio endpoint. */
+export interface ICurrency {
+	/** ISO currency code (e.g. "USD", "EUR"). */
+	symbol: string;
+	/** Currency name in Portuguese (e.g. "Dolar dos Estados Unidos"). */
+	name: string;
+	/** Central Bank currency type ("A" = commercial, "B" = tourism/financial). */
+	currencyType: string;
+}
+
+/** Normalized exchange rate quotation from BrasilAPI câmbio endpoint. */
+export interface ICambioRate {
+	/** ISO currency code (e.g. "USD"). */
+	currency: string;
+	/** Quotation date in ISO format (YYYY-MM-DD). */
+	date: string;
+	/** Buy rate in BRL. */
+	buyRate: number;
+	/** Sell rate in BRL. */
+	sellRate: number;
+	/** Buy parity (1 for Type A currencies). */
+	buyParity: number;
+	/** Sell parity (1 for Type A currencies). */
+	sellParity: number;
+	/** Quotation timestamp (YYYY-MM-DD HH:mm:ss.SSS). */
+	quotedAt: string;
+	/** Bulletin type (e.g. "ABERTURA", "INTERMEDIARIO", "FECHAMENTO PTAX"). */
+	bulletinType: string;
+}
+
+/** Normalized interest rate from BrasilAPI taxas endpoint. */
+export interface ITaxa {
+	/** Rate name (e.g. "Selic", "CDI", "IPCA"). */
+	name: string;
+	/** Rate percentage value (e.g. 14.75). */
+	value: number;
+}
+
 /** Signature for resource/operation execute handlers. */
 export type ExecuteFunction = (
 	context: import('n8n-workflow').IExecuteFunctions,

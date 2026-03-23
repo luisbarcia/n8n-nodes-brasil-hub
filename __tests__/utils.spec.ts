@@ -1,4 +1,4 @@
-import { readCommonParams } from '../nodes/BrasilHub/shared/utils';
+import { readCommonParams, buildResultItems, buildResultItem } from '../nodes/BrasilHub/shared/utils';
 import { includeRawField } from '../nodes/BrasilHub/shared/description-builders';
 
 function createMockContext(overrides: Record<string, unknown> = {}) {
@@ -42,6 +42,103 @@ describe('readCommonParams', () => {
 		expect(ctx.getNodeParameter).toHaveBeenCalledWith('includeRaw', 5, false);
 		expect(ctx.getNodeParameter).toHaveBeenCalledWith('timeout', 5, 10000);
 		expect(ctx.getNodeParameter).toHaveBeenCalledWith('primaryProvider', 5, 'auto');
+	});
+});
+
+describe('buildResultItems', () => {
+	const meta = { provider: 'test', query: 'q', queried_at: '2024-01-01', strategy: 'direct' as const };
+
+	it('should build items with correct _meta and pairedItem', () => {
+		const items = [{ name: 'A' }, { name: 'B' }];
+		const raw = [{ n: 'A' }, { n: 'B' }] as Array<Record<string, unknown>>;
+		const result = buildResultItems(items, meta, raw, false, 0);
+
+		expect(result).toHaveLength(2);
+		expect(result[0].json.name).toBe('A');
+		expect(result[0].json._meta).toEqual(meta);
+		expect(result[0].json._raw).toBeUndefined();
+		expect(result[0].pairedItem).toEqual({ item: 0 });
+	});
+
+	it('should include _raw when includeRaw is true', () => {
+		const items = [{ name: 'A' }];
+		const raw = [{ n: 'A' }] as Array<Record<string, unknown>>;
+		const result = buildResultItems(items, meta, raw, true, 0);
+
+		expect(result[0].json._raw).toEqual({ n: 'A' });
+	});
+
+	it('should align _raw correctly when rawItems contains null entries (bug #131)', () => {
+		// Normalizer filters nulls: [valid, null, valid] → [norm0, norm1]
+		// rawItems still has null: [raw0, null, raw2]
+		// Without fix: norm1._raw = rawItems[1] = null ← BUG
+		// With fix:    norm1._raw = filtered[1] = raw2 ← CORRECT
+		const items = [{ name: 'First' }, { name: 'Third' }];
+		const raw = [
+			{ original: 'first' },
+			null as unknown as Record<string, unknown>,
+			{ original: 'third' },
+		];
+		const result = buildResultItems(items, meta, raw, true, 0);
+
+		expect(result).toHaveLength(2);
+		expect(result[0].json._raw).toEqual({ original: 'first' });
+		expect(result[1].json._raw).toEqual({ original: 'third' }); // ← THIS FAILS WITHOUT FIX
+	});
+
+	it('should align _raw when multiple nulls are interspersed', () => {
+		const items = [{ v: 1 }, { v: 2 }];
+		const raw = [
+			null as unknown as Record<string, unknown>,
+			{ r: 1 },
+			null as unknown as Record<string, unknown>,
+			undefined as unknown as Record<string, unknown>,
+			{ r: 2 },
+		];
+		const result = buildResultItems(items, meta, raw, true, 0);
+
+		expect(result).toHaveLength(2);
+		expect(result[0].json._raw).toEqual({ r: 1 });
+		expect(result[1].json._raw).toEqual({ r: 2 });
+	});
+
+	it('should handle empty arrays', () => {
+		const result = buildResultItems([], meta, [], true, 0);
+		expect(result).toHaveLength(0);
+	});
+
+	it('should handle rawItems with non-object primitives', () => {
+		// Some APIs might return [valid, "string", valid, 42]
+		const items = [{ v: 'A' }, { v: 'B' }];
+		const raw = [
+			{ r: 'A' },
+			'not-an-object' as unknown as Record<string, unknown>,
+			{ r: 'B' },
+			42 as unknown as Record<string, unknown>,
+		];
+		const result = buildResultItems(items, meta, raw, true, 0);
+
+		expect(result).toHaveLength(2);
+		expect(result[0].json._raw).toEqual({ r: 'A' });
+		expect(result[1].json._raw).toEqual({ r: 'B' });
+	});
+});
+
+describe('buildResultItem', () => {
+	const meta = { provider: 'test', query: 'q' };
+
+	it('should build single-element array with _meta', () => {
+		const result = buildResultItem({ name: 'X' }, meta, { raw: true }, false, 3);
+		expect(result).toHaveLength(1);
+		expect(result[0].json.name).toBe('X');
+		expect(result[0].json._meta).toEqual(meta);
+		expect(result[0].json._raw).toBeUndefined();
+		expect(result[0].pairedItem).toEqual({ item: 3 });
+	});
+
+	it('should include _raw when includeRaw is true', () => {
+		const result = buildResultItem({ name: 'X' }, meta, { raw: true }, true, 0);
+		expect(result[0].json._raw).toEqual({ raw: true });
 	});
 });
 

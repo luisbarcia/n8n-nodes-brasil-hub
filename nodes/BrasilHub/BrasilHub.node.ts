@@ -9,6 +9,7 @@ import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import { DEFAULT_TIMEOUT_MS, MIN_TIMEOUT_MS, MAX_TIMEOUT_MS } from './shared/fallback';
 import type { IResourceDefinition, ExecuteFunction } from './types';
 import { banksResource } from './resources/banks';
+import { cambioResource } from './resources/cambio';
 import { cepResource } from './resources/cep';
 import { cnpjResource } from './resources/cnpj';
 import { cpfResource } from './resources/cpf';
@@ -19,10 +20,12 @@ import { fipeResource } from './resources/fipe';
 import { ibgeResource } from './resources/ibge';
 import { ncmResource } from './resources/ncm';
 import { pixResource } from './resources/pix';
+import { taxasResource } from './resources/taxas';
 
 /** All registered resource modules, in alphabetical order. */
 const allResources: IResourceDefinition[] = [
 	banksResource,
+	cambioResource,
 	cepResource,
 	cnpjResource,
 	cpfResource,
@@ -33,6 +36,7 @@ const allResources: IResourceDefinition[] = [
 	ibgeResource,
 	ncmResource,
 	pixResource,
+	taxasResource,
 ];
 
 /** Builds an error output item for continueOnFail mode. */
@@ -82,7 +86,7 @@ export class BrasilHub implements INodeType {
 		group: [],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Holidays, FIPE, IBGE, NCM) with multi-provider fallback',
+		description: 'Query Brazilian public data (CNPJ, CEP, CPF, Banks, Câmbio, DDD, Holidays, FIPE, IBGE, NCM, PIX, Taxas) with multi-provider fallback',
 		defaults: {
 			name: 'Brasil Hub',
 		},
@@ -97,16 +101,18 @@ export class BrasilHub implements INodeType {
 				noDataExpression: true,
 				options: [
 					{ name: 'Bank', value: 'banks', description: 'Query or list Brazilian banks and financial institutions' },
+					{ name: 'Câmbio', value: 'cambio', description: 'Query exchange rates and currencies from the Central Bank' },
 					{ name: 'CEP', value: 'cep', description: 'Query or validate Brazilian postal codes' },
 					{ name: 'CNPJ', value: 'cnpj', description: 'Query or validate Brazilian company tax IDs' },
 					{ name: 'CPF', value: 'cpf', description: 'Validate Brazilian individual tax IDs' },
 					{ name: 'DDD', value: 'ddd', description: 'Query Brazilian area codes and their cities' },
-				{ name: 'Fake', value: 'fake', description: 'Generate fake Brazilian data for testing (Person, Company, CPF, CNPJ)' },
+					{ name: 'Fake', value: 'fake', description: 'Generate fake Brazilian data for testing (Person, Company, CPF, CNPJ)' },
 					{ name: 'FIPE', value: 'fipe', description: 'Query vehicle prices from the FIPE table' },
 					{ name: 'Holiday', value: 'feriados', description: 'Query Brazilian public holidays by year' },
 					{ name: 'IBGE', value: 'ibge', description: 'Query Brazilian states and municipalities' },
 					{ name: 'NCM', value: 'ncm', description: 'Query tax classification codes by code or description' },
-				{ name: 'PIX', value: 'pix', description: 'Query PIX participants from the Central Bank directory' },
+					{ name: 'PIX', value: 'pix', description: 'Query PIX participants from the Central Bank directory' },
+					{ name: 'Taxa', value: 'taxas', description: 'Query Brazilian interest rates and indices (Selic, CDI, IPCA)' },
 				],
 				default: 'cnpj',
 			},
