@@ -761,6 +761,87 @@ CEP instáveis: Postmon (503 no teste), República Virtual (legado 2005, schema 
 - Todos os outros alertas (malware, eval, native code, etc.): dependências transitivas de `n8n-workflow`/`@n8n/node-cli` que **não vão no dist** (`files: ["dist"]`)
 - Nenhuma ação necessária — alertas são de devDependencies
 
+## Correios Tracking API Research (2026-03-22)
+
+**Issue:** #112 — Research Correios Tracking viability (public API)
+**Verdict: NOT VIABLE** — No credential-free public API exists for Correios package tracking.
+
+### Sources Investigated
+
+#### 1. BrasilAPI
+- **Status:** No Correios tracking endpoint exists
+- BrasilAPI docs list 15 resources (Banks, CEP, CNPJ, DDD, FIPE, etc.) — none for tracking
+- `GET /api/correios/v1/{code}` returns **404**
+- PR #673 ("Feature/add track correios items") was opened Apr 2025, closed without merge Apr 30 2025 — no reviewer comments explain why
+- The BrasilAPI docs note Correios "doesn't have CORS enabled" but never implemented a tracking proxy
+
+#### 2. Correios Official API (api.correios.com.br)
+- **Status:** Requires authentication + contract
+- Tracking API ("Rastro/SRO") is classified as **Private API** — requires active contract with Correios
+- Even the "public" APIs (CEP, Preco, Prazo) require a free "Meu Correios" login (Basic Auth)
+- `GET /srorastro/v1/objetos/{code}` returns `403 "GTW-006: Token invalido."`
+- `GET proxyapp.correios.com.br/v1/sro-rastro/{code}` returns `403`
+- Correios explicitly states: "A consulta de rastreamento passa a ser restrita aos objetos vinculados ao contrato do remetente" (tracking restricted to shipper's contract objects)
+
+#### 3. Link & Track (linketrack.com)
+- **Status:** PERMANENTLY DISCONTINUED (March 2025)
+- Was the most popular community proxy for Correios tracking
+- Shut down due to "persistent issues where the API would intermittently return incorrect tracking events"
+- The underlying `correiosApi` GitHub repo confirms: "A API de Rastreamento de Encomendas dos Correios — Link&Track foi descontinuada de forma definitiva"
+- Maintainers redirect users to SiteRastreio.com
+
+#### 4. SiteRastreio.com (successor to Link & Track)
+- **Status:** Requires API key registration
+- Free tier: 1,000 requests/month + mandatory footer link attribution
+- Paid tier: starts at $10/month
+- Response time: 1.5–3 seconds
+- NOT credential-free — registration required even for free tier
+
+#### 5. Correios-Brasil (npm, 548 stars)
+- **Status:** ARCHIVED (Feb 2024, read-only)
+- TypeScript library with `rastrearEncomendas()` function
+- No longer maintained — likely broken against current Correios systems
+- Did not document which endpoint it called internally
+
+#### 6. api-correios (PHP, 35 stars)
+- **Status:** Requires Access Token
+- Wraps `sdkcorreios` package, calls `/correios/tracking/` endpoint
+- Supports 7 providers (melhorrastreio, encomenda.io, rastreadordepacotes, etc.)
+- All providers require authentication
+
+#### 7. Web Scraping (correios-rastreio-api-parser)
+- **Status:** NOT VIABLE for this project
+- Public tracking page at `rastreamento.correios.com.br` uses CAPTCHA
+- Scraping violates project convention (API-only, no scraping)
+- All scraping-based repos are dormant (last updates 2018–2022)
+
+#### 8. GitHub Search (broad)
+- Searched `correios rastreio`, `correios tracking api`, `correios-api` topics
+- No active, credential-free community API proxy found
+- All viable projects either require auth, are archived, or use scraping
+
+### Summary Table
+
+| Source | Type | Auth Required | Status | Viable |
+|--------|------|--------------|--------|--------|
+| BrasilAPI | Community proxy | No | No endpoint exists | NO |
+| Correios API | Official REST | Contract + token | Active but restricted | NO |
+| Link & Track | Community proxy | Token | **Discontinued** Mar 2025 | NO |
+| SiteRastreio | Commercial proxy | API key (free tier) | Active | NO (needs credentials) |
+| Correios-Brasil | npm library | Unknown | Archived Feb 2024 | NO |
+| Web scraping | Direct | N/A | CAPTCHA protected | NO (against policy) |
+
+### Recommendation
+
+**Close issue #112 as "not planned"** with the following rationale:
+
+> No credential-free public API exists for Correios package tracking. The official Correios API requires a commercial contract. The most popular community proxy (Link & Track) was permanently discontinued in March 2025. The successor (SiteRastreio) requires API key registration. Web scraping is not viable due to CAPTCHA and violates the project's API-only convention. This resource cannot be implemented without requiring user credentials, which contradicts the project's zero-credential design principle.
+
+**Future reconsideration triggers:**
+- BrasilAPI adds a Correios tracking endpoint (monitor PR activity)
+- Correios reclassifies Rastro/SRO as a "public" API (available with free Meu Correios login)
+- A new community proxy emerges that is truly credential-free and stable
+
 ## Resources
 - Spec v0.1: `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`
 - **Spec v0.2: `docs/superpowers/specs/2026-03-11-brasil-hub-v0.2.0-design.md`**

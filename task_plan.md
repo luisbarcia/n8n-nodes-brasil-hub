@@ -444,7 +444,7 @@ Each new resource ships as its own MINOR release:
 - [ ] **PIX Directory** — Participantes do PIX (BCB API)
 - [ ] **CNES** — Estabelecimentos de saúde (DataSUS)
 - [ ] **Historical FIPE** — Tabelas de referência passadas
-- [ ] **Correios Tracking** — Rastreamento (se API pública disponível)
+- [x] **Correios Tracking** — ~~Rastreamento~~ NOT VIABLE (no credential-free public API — see findings.md, issue #112 closed)
 
 **Status:** future
 

@@ -1,10 +1,9 @@
-import type { IExecuteFunctions, INodeExecutionData, JsonObject } from 'n8n-workflow';
-import { NodeApiError, NodeOperationError } from 'n8n-workflow';
+import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 import { buildMeta, buildResultItems, readCommonParams } from '../../shared/utils';
-import { clampTimeout, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
+import { queryWithFallback } from '../../shared/fallback';
+import type { IProvider } from '../../types';
 import { normalizeCurrencies, normalizeCotacoes } from './cambio.normalize';
-
-const BASE_URL = 'https://brasilapi.com.br/api/cambio/v1';
 
 /** Pattern for validating ISO currency codes (3 uppercase letters). */
 const CURRENCY_CODE_PATTERN = /^[A-Z]{3}$/;
@@ -13,34 +12,10 @@ const CURRENCY_CODE_PATTERN = /^[A-Z]{3}$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
- * Performs a single HTTP GET to the BrasilAPI câmbio endpoint.
- *
- * @param context - n8n execution context, used for `httpRequest`.
- * @param url - Full URL to request.
- * @param timeoutMs - HTTP timeout in milliseconds.
- * @returns Raw response data from the API.
- */
-async function fetchCambio(
-	context: IExecuteFunctions,
-	url: string,
-	timeoutMs: number = DEFAULT_TIMEOUT_MS,
-): Promise<unknown> {
-	return context.helpers.httpRequest({
-		method: 'GET',
-		url,
-		headers: {
-			Accept: 'application/json',
-			'User-Agent': 'n8n-brasil-hub-node/1.0',
-		},
-		timeout: clampTimeout(timeoutMs),
-	});
-}
-
-/**
  * Lists all available currencies from the Central Bank via BrasilAPI.
  *
- * Returns one n8n item per currency. No input parameters required beyond
- * the common ones (timeout, includeRaw).
+ * Returns one n8n item per currency. Uses queryWithFallback with a
+ * single provider for consistent rate-limit awareness and error handling.
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
@@ -52,20 +27,14 @@ export async function cambioCurrencies(
 ): Promise<INodeExecutionData[]> {
 	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
-	const url = `${BASE_URL}/moedas`;
-	let data: unknown;
-	try {
-		data = await fetchCambio(context, url, timeoutMs);
-	} catch (error) {
-		throw new NodeApiError(context.getNode(), error as JsonObject, {
-			message: 'Failed to fetch currencies from BrasilAPI',
-			itemIndex,
-		});
-	}
+	const providers: IProvider[] = [
+		{ name: 'brasilapi', url: 'https://brasilapi.com.br/api/cambio/v1/moedas' },
+	];
+	const result = await queryWithFallback(context, providers, timeoutMs);
 
-	const currencies = normalizeCurrencies(data);
-	const rawItems = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta('brasilapi', 'moedas', [], false);
+	const currencies = normalizeCurrencies(result.data);
+	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
+	const meta = buildMeta(result.provider, 'moedas', result.errors, result.rateLimited, result.retryAfterMs);
 
 	return buildResultItems(currencies, meta, rawItems, includeRaw, itemIndex);
 }
@@ -106,23 +75,19 @@ export async function cambioRate(
 		);
 	}
 
-	const url = `${BASE_URL}/cotacao/${encodeURIComponent(currencyCode)}/${encodeURIComponent(date)}`;
-	let data: unknown;
-	try {
-		data = await fetchCambio(context, url, timeoutMs);
-	} catch (error) {
-		throw new NodeApiError(context.getNode(), error as JsonObject, {
-			message: `Failed to fetch rate for ${currencyCode} on ${date} from BrasilAPI`,
-			itemIndex,
-		});
-	}
+	const safeCurrency = encodeURIComponent(currencyCode);
+	const safeDate = encodeURIComponent(date);
+	const providers: IProvider[] = [
+		{ name: 'brasilapi', url: `https://brasilapi.com.br/api/cambio/v1/cotacao/${safeCurrency}/${safeDate}` },
+	];
+	const result = await queryWithFallback(context, providers, timeoutMs);
 
-	const rates = normalizeCotacoes(data);
-	const obj = (data ?? {}) as Record<string, unknown>;
+	const rates = normalizeCotacoes(result.data);
+	const obj = (result.data ?? {}) as Record<string, unknown>;
 	const rawItems = Array.isArray(obj.cotacoes)
 		? (obj.cotacoes as Array<Record<string, unknown>>)
 		: [];
-	const meta = buildMeta('brasilapi', `${currencyCode}/${date}`, [], false);
+	const meta = buildMeta(result.provider, `${currencyCode}/${date}`, result.errors, result.rateLimited, result.retryAfterMs);
 
 	return buildResultItems(rates, meta, rawItems, includeRaw, itemIndex);
 }

@@ -1,37 +1,19 @@
-import type { IExecuteFunctions, INodeExecutionData, JsonObject } from 'n8n-workflow';
-import { NodeApiError, NodeOperationError } from 'n8n-workflow';
+import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 import { buildMeta, buildResultItems, buildResultItem, readCommonParams } from '../../shared/utils';
-import { clampTimeout, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
+import { queryWithFallback } from '../../shared/fallback';
+import type { IProvider } from '../../types';
 import { normalizeTaxa, normalizeTaxas } from './taxas.normalize';
 
-const BASE_URL = 'https://brasilapi.com.br/api/taxas/v1';
-
-/**
- * Performs a single HTTP GET to BrasilAPI taxas endpoint.
- *
- * @param context - n8n execution context.
- * @param url - Full URL to fetch.
- * @param timeoutMs - HTTP timeout in milliseconds.
- * @returns Raw JSON response from the API.
- */
-async function fetchTaxas(context: IExecuteFunctions, url: string, timeoutMs: number = DEFAULT_TIMEOUT_MS): Promise<unknown> {
-	return context.helpers.httpRequest({
-		method: 'GET',
-		url,
-		headers: {
-			Accept: 'application/json',
-			'User-Agent': 'n8n-brasil-hub-node/1.0',
-		},
-		timeout: clampTimeout(timeoutMs),
-		json: true,
-	});
-}
+/** Pattern for validating rate codes (1-50 alphanumeric characters, hyphens, underscores). */
+const RATE_CODE_PATTERN = /^[A-Za-z0-9_-]{1,50}$/;
 
 /**
  * Lists all available Brazilian interest rates from BrasilAPI.
  *
  * Returns one n8n item per rate (Selic, CDI, IPCA, etc.).
- * Single provider (BrasilAPI), no fallback.
+ * Uses queryWithFallback with a single provider for consistent
+ * rate-limit awareness and error handling.
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
@@ -43,19 +25,14 @@ export async function taxasList(
 ): Promise<INodeExecutionData[]> {
 	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
-	let data: unknown;
-	try {
-		data = await fetchTaxas(context, BASE_URL, timeoutMs);
-	} catch (error) {
-		throw new NodeApiError(context.getNode(), error as JsonObject, {
-			message: 'Failed to fetch interest rates from BrasilAPI',
-			itemIndex,
-		});
-	}
+	const providers: IProvider[] = [
+		{ name: 'brasilapi', url: 'https://brasilapi.com.br/api/taxas/v1' },
+	];
+	const result = await queryWithFallback(context, providers, timeoutMs);
 
-	const taxas = normalizeTaxas(data);
-	const rawItems = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta('brasilapi', 'taxas', [], false);
+	const taxas = normalizeTaxas(result.data);
+	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
+	const meta = buildMeta(result.provider, 'taxas', result.errors, result.rateLimited, result.retryAfterMs);
 
 	return buildResultItems(taxas, meta, rawItems, includeRaw, itemIndex);
 }
@@ -63,14 +40,13 @@ export async function taxasList(
 /**
  * Queries a specific Brazilian interest rate by code from BrasilAPI.
  *
- * Validates that the rate code is non-empty before making the API call.
- * Single provider (BrasilAPI), no fallback.
+ * Validates that the rate code matches the expected format before making
+ * the API call. Uses queryWithFallback with a single provider.
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Single n8n item with the normalized rate data.
- * @throws {NodeOperationError} If the rate code is empty.
- * @throws {NodeApiError} If the API request fails.
+ * @throws {NodeOperationError} If the rate code is empty or invalid.
  */
 export async function taxasQuery(
 	context: IExecuteFunctions,
@@ -79,7 +55,7 @@ export async function taxasQuery(
 	const rateCode = String(context.getNodeParameter('rateCode', itemIndex) ?? '').trim();
 	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
-	if (!rateCode || !/^[A-Za-z0-9_-]{1,50}$/.test(rateCode)) {
+	if (!rateCode || !RATE_CODE_PATTERN.test(rateCode)) {
 		throw new NodeOperationError(
 			context.getNode(),
 			'Invalid rate code: must be 1-50 alphanumeric characters (e.g. Selic, CDI, IPCA)',
@@ -87,20 +63,13 @@ export async function taxasQuery(
 		);
 	}
 
-	const url = `${BASE_URL}/${encodeURIComponent(rateCode)}`;
+	const providers: IProvider[] = [
+		{ name: 'brasilapi', url: `https://brasilapi.com.br/api/taxas/v1/${encodeURIComponent(rateCode)}` },
+	];
+	const result = await queryWithFallback(context, providers, timeoutMs);
 
-	let data: unknown;
-	try {
-		data = await fetchTaxas(context, url, timeoutMs);
-	} catch (error) {
-		throw new NodeApiError(context.getNode(), error as JsonObject, {
-			message: `Failed to fetch rate "${rateCode}" from BrasilAPI`,
-			itemIndex,
-		});
-	}
+	const taxa = normalizeTaxa(result.data);
+	const meta = buildMeta(result.provider, rateCode, result.errors, result.rateLimited, result.retryAfterMs);
 
-	const taxa = normalizeTaxa(data);
-	const meta = buildMeta('brasilapi', rateCode, [], false);
-
-	return buildResultItem(taxa, meta, data, includeRaw, itemIndex);
+	return buildResultItem(taxa, meta, result.data, includeRaw, itemIndex);
 }
