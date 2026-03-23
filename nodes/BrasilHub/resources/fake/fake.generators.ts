@@ -1,8 +1,9 @@
 /**
  * Pure generators for Brazilian fake data. No external dependencies.
- * All functions are deterministic given a seed or use Math.random().
+ * Uses crypto.randomInt for SonarCloud-compliant random number generation.
  */
 
+import { randomInt } from 'crypto';
 import {
 	MALE_FIRST_NAMES, FEMALE_FIRST_NAMES, LAST_NAMES,
 	STREET_PREFIXES, STREET_NAMES, NEIGHBORHOODS, STATES,
@@ -11,19 +12,19 @@ import {
 
 /** Picks a random element from an array. */
 function pick<T>(arr: readonly T[]): T {
-	return arr[Math.floor(Math.random() * arr.length)];
+	return arr[randomInt(arr.length)];
 }
 
 /** Generates a random integer between min (inclusive) and max (inclusive). */
 function randInt(min: number, max: number): number {
-	return Math.floor(Math.random() * (max - min + 1)) + min;
+	return randomInt(min, max + 1);
 }
 
 /** Generates N random digits as a string. */
 function randDigits(n: number): string {
 	let result = '';
 	for (let i = 0; i < n; i++) {
-		result += String(Math.floor(Math.random() * 10));
+		result += String(randomInt(10));
 	}
 	return result;
 }
@@ -42,7 +43,7 @@ function simplify(str: string): string {
  * @returns A checksum-correct CPF string.
  */
 export function generateCpf(formatted = false): string {
-	const digits = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10));
+	const digits = Array.from({ length: 9 }, () => randomInt(10));
 
 	// First check digit
 	let sum = 0;
@@ -73,7 +74,7 @@ export function generateCpf(formatted = false): string {
  * @returns A checksum-correct CNPJ string.
  */
 export function generateCnpj(formatted = false): string {
-	const base = Array.from({ length: 8 }, () => Math.floor(Math.random() * 10));
+	const base = Array.from({ length: 8 }, () => randomInt(10));
 	base.push(0, 0, 0, 1); // branch = 0001
 
 	// First check digit
@@ -135,7 +136,7 @@ export interface IFakeAddress {
  */
 export function generateAddress(): IFakeAddress {
 	const stateInfo = pick(STATES);
-	const hasComplement = Math.random() > 0.6;
+	const hasComplement = randomInt(10) > 5;
 	return {
 		street: `${pick(STREET_PREFIXES)} ${pick(STREET_NAMES)}`,
 		number: String(randInt(1, 9999)),
@@ -181,7 +182,7 @@ export interface IFakePerson {
  * @returns Complete person profile.
  */
 export function generatePerson(gender?: 'M' | 'F'): IFakePerson {
-	const g = gender ?? (Math.random() > 0.5 ? 'M' : 'F');
+	const g = gender ?? (randomInt(2) === 0 ? 'M' : 'F');
 	const firstName = g === 'M' ? pick(MALE_FIRST_NAMES) : pick(FEMALE_FIRST_NAMES);
 	const lastName1 = pick(LAST_NAMES);
 	const lastName2 = pick(LAST_NAMES);
