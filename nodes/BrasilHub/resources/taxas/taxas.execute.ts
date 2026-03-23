@@ -79,10 +79,10 @@ export async function taxasQuery(
 	const rateCode = String(context.getNodeParameter('rateCode', itemIndex) ?? '').trim();
 	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
-	if (!rateCode) {
+	if (!rateCode || !/^[A-Za-z0-9_-]{1,50}$/.test(rateCode)) {
 		throw new NodeOperationError(
 			context.getNode(),
-			'Rate code is required',
+			'Invalid rate code: must be 1-50 alphanumeric characters (e.g. Selic, CDI, IPCA)',
 			{ itemIndex },
 		);
 	}

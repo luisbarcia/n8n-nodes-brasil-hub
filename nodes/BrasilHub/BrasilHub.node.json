@@ -6,7 +6,7 @@
 	"subcategories": {
 		"Data & Storage": ["Request Making"]
 	},
-	"alias": ["brazil", "brasil", "brazilian", "cnpj", "cpf", "cep", "banks", "banco", "ddd", "feriados", "holidays", "fipe", "vehicle", "ibge", "states", "cities", "municipios", "ncm", "tax-classification", "area-code", "tax-id", "zip-code", "postal-code", "address", "endereco", "company", "empresa", "consulta", "receita", "validation", "public-data", "tabela-fipe", "pix", "instant-payment", "ispb", "banco-central", "pagamento", "fake", "faker", "test-data", "gerador", "dados-teste", "pessoa", "mock"],
+	"alias": ["brazil", "brasil", "brazilian", "cnpj", "cpf", "cep", "banks", "banco", "ddd", "feriados", "holidays", "fipe", "vehicle", "ibge", "states", "cities", "municipios", "ncm", "tax-classification", "area-code", "tax-id", "zip-code", "postal-code", "address", "endereco", "company", "empresa", "consulta", "receita", "validation", "public-data", "tabela-fipe", "pix", "instant-payment", "ispb", "banco-central", "pagamento", "fake", "faker", "test-data", "gerador", "dados-teste", "pessoa", "mock", "cambio", "exchange", "exchange-rate", "cotacao", "currency", "moeda", "taxas", "taxa", "selic", "cdi", "ipca", "juros", "interest-rate"],
 	"resources": {
 		"primaryDocumentation": [
 			{

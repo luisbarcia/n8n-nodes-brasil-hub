@@ -21,7 +21,7 @@ export const ibgeDescription: INodeProperties[] = [
 			{
 				name: 'States',
 				value: 'states',
-				action: 'List all brazilian states',
+				action: 'List all Brazilian states',
 				description: 'Fetch all 27 Brazilian states (UFs) with region info',
 			},
 			{

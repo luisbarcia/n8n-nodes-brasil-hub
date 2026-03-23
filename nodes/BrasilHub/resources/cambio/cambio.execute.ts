@@ -1,5 +1,5 @@
-import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
+import type { IExecuteFunctions, INodeExecutionData, JsonObject } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 import { buildMeta, buildResultItems, readCommonParams } from '../../shared/utils';
 import { clampTimeout, DEFAULT_TIMEOUT_MS } from '../../shared/fallback';
 import { normalizeCurrencies, normalizeCotacoes } from './cambio.normalize';
@@ -53,7 +53,15 @@ export async function cambioCurrencies(
 	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
 	const url = `${BASE_URL}/moedas`;
-	const data = await fetchCambio(context, url, timeoutMs);
+	let data: unknown;
+	try {
+		data = await fetchCambio(context, url, timeoutMs);
+	} catch (error) {
+		throw new NodeApiError(context.getNode(), error as JsonObject, {
+			message: 'Failed to fetch currencies from BrasilAPI',
+			itemIndex,
+		});
+	}
 
 	const currencies = normalizeCurrencies(data);
 	const rawItems = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
@@ -99,7 +107,15 @@ export async function cambioRate(
 	}
 
 	const url = `${BASE_URL}/cotacao/${encodeURIComponent(currencyCode)}/${encodeURIComponent(date)}`;
-	const data = await fetchCambio(context, url, timeoutMs);
+	let data: unknown;
+	try {
+		data = await fetchCambio(context, url, timeoutMs);
+	} catch (error) {
+		throw new NodeApiError(context.getNode(), error as JsonObject, {
+			message: `Failed to fetch rate for ${currencyCode} on ${date} from BrasilAPI`,
+			itemIndex,
+		});
+	}
 
 	const rates = normalizeCotacoes(data);
 	const obj = (data ?? {}) as Record<string, unknown>;
