@@ -148,16 +148,19 @@ describe('taxasQuery', () => {
 	it('should throw on empty rateCode', async () => {
 		const ctx = createMockContext({ rateCode: '' });
 		await expect(taxasQuery(ctx, 0)).rejects.toThrow('Invalid rate code');
+		expect(ctx.helpers.httpRequest).not.toHaveBeenCalled();
 	});
 
 	it('should throw on whitespace-only rateCode', async () => {
 		const ctx = createMockContext({ rateCode: '   ' });
 		await expect(taxasQuery(ctx, 0)).rejects.toThrow('Invalid rate code');
+		expect(ctx.helpers.httpRequest).not.toHaveBeenCalled();
 	});
 
 	it('should throw on rateCode with special characters', async () => {
 		const ctx = createMockContext({ rateCode: 'Selic@#$' });
 		await expect(taxasQuery(ctx, 0)).rejects.toThrow('Invalid rate code');
+		expect(ctx.helpers.httpRequest).not.toHaveBeenCalled();
 	});
 
 	it('should throw on rateCode with spaces', async () => {
@@ -222,10 +225,17 @@ describe('taxasQuery', () => {
 		await expect(taxasQuery(ctx, 0)).rejects.toThrow('Invalid rate code');
 	});
 
-	it('should encode special URL characters in rateCode', async () => {
+	it('should encode rateCode in URL (defense-in-depth)', async () => {
 		const ctx = createMockContext({ rateCode: 'CDI' }, queryResponse);
 		await taxasQuery(ctx, 0);
 		const callUrl = (ctx.helpers.httpRequest as jest.Mock).mock.calls[0][0].url;
 		expect(callUrl).toContain('/taxas/v1/CDI');
+	});
+
+	it('should include _meta.queried_at as ISO string', async () => {
+		const ctx = createMockContext({ rateCode: 'Selic' }, queryResponse);
+		const results = await taxasQuery(ctx, 0);
+		expect(results[0].json._meta).toHaveProperty('queried_at');
+		expect(typeof (results[0].json._meta as Record<string, unknown>).queried_at).toBe('string');
 	});
 });

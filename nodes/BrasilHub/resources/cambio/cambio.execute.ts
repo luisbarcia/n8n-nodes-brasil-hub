@@ -56,8 +56,8 @@ export async function cambioRate(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
-	const currencyCode = (context.getNodeParameter('currencyCode', itemIndex) as string).trim().toUpperCase();
-	const date = (context.getNodeParameter('date', itemIndex) as string).trim();
+	const currencyCode = String(context.getNodeParameter('currencyCode', itemIndex) ?? '').trim().toUpperCase();
+	const date = String(context.getNodeParameter('date', itemIndex) ?? '').trim();
 
 	if (!currencyCode || !CURRENCY_CODE_PATTERN.test(currencyCode)) {
 		throw new NodeOperationError(

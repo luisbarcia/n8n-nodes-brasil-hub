@@ -167,15 +167,16 @@ describe('cambioRate', () => {
 	it('should throw on invalid currency code — too short', async () => {
 		const ctx = createMockContext({ currencyCode: 'US', date: '2024-01-15' });
 		await expect(cambioRate(ctx, 0)).rejects.toThrow('Invalid currency code');
+		expect(ctx.helpers.httpRequest).not.toHaveBeenCalled();
 	});
 
 	it('should throw on invalid currency code — too long', async () => {
 		const ctx = createMockContext({ currencyCode: 'USDT', date: '2024-01-15' });
 		await expect(cambioRate(ctx, 0)).rejects.toThrow('Invalid currency code');
+		expect(ctx.helpers.httpRequest).not.toHaveBeenCalled();
 	});
 
-	it('should throw on invalid currency code — lowercase', async () => {
-		// The code uppercases internally, so lowercase should be accepted
+	it('should accept lowercase currency code and uppercase internally', async () => {
 		const ctx = createMockContext({ currencyCode: 'usd', date: '2024-01-15' }, cotacaoResponse);
 		const results = await cambioRate(ctx, 0);
 		expect(results).toHaveLength(2);
@@ -276,5 +277,19 @@ describe('cambioRate', () => {
 	it('should handle date with extra text', async () => {
 		const ctx = createMockContext({ currencyCode: 'USD', date: '2024-01-15T00:00:00' });
 		await expect(cambioRate(ctx, 0)).rejects.toThrow('Invalid date');
+		expect(ctx.helpers.httpRequest).not.toHaveBeenCalled();
+	});
+
+	it('should not call httpRequest for invalid date', async () => {
+		const ctx = createMockContext({ currencyCode: 'USD', date: 'not-a-date' });
+		await expect(cambioRate(ctx, 0)).rejects.toThrow('Invalid date');
+		expect(ctx.helpers.httpRequest).not.toHaveBeenCalled();
+	});
+
+	it('should include _meta.queried_at as ISO string', async () => {
+		const ctx = createMockContext({ currencyCode: 'USD', date: '2024-01-15' }, cotacaoResponse);
+		const results = await cambioRate(ctx, 0);
+		expect(results[0].json._meta).toHaveProperty('queried_at');
+		expect(typeof (results[0].json._meta as Record<string, unknown>).queried_at).toBe('string');
 	});
 });

@@ -13,7 +13,7 @@ export function normalizeTaxa(data: unknown): ITaxa {
 	const obj = (data != null && typeof data === 'object' ? data : {}) as Record<string, unknown>;
 	return {
 		name: safeStr(obj.nome),
-		value: typeof obj.valor === 'number' ? obj.valor : 0,
+		value: Number.isFinite(obj.valor) ? (obj.valor as number) : 0,
 	};
 }
 

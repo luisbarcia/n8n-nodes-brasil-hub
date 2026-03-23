@@ -65,10 +65,15 @@ describe('normalizeTaxa', () => {
 		expect(result).toEqual({ name: 'Selic', value: 0 });
 	});
 
-	it('should pass through NaN valor (typeof number)', () => {
+	it('should coerce NaN valor to 0 (Number.isFinite rejects NaN)', () => {
 		const result = normalizeTaxa({ nome: 'Selic', valor: NaN });
 		expect(result.name).toBe('Selic');
-		expect(result.value).toBeNaN();
+		expect(result.value).toBe(0);
+	});
+
+	it('should coerce Infinity valor to 0', () => {
+		const result = normalizeTaxa({ nome: 'Selic', valor: Infinity });
+		expect(result).toEqual({ name: 'Selic', value: 0 });
 	});
 
 	it('should accept zero as valid valor', () => {
