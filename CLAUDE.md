@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v1.0.x ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Holiday (Feriados), FIPE, IBGE, and NCM — 9 resources, 17 operations, 22 providers, configurable timeout, configurable provider order, rate limit awareness, CNPJ output mode.
+Community n8n node (`n8n-nodes-brasil-hub`) that centralizes Brazilian public data queries. A single "Brasil Hub" node with extensible resources — v1.4.x ships CNPJ (7 providers), CEP (4 providers), CPF, Banks, DDD, Holiday (Feriados), FIPE, IBGE, NCM, PIX, Câmbio, Taxas, and Fake — 13 resources, 28 operations, 25 providers, configurable timeout, configurable provider order, rate limit awareness, CNPJ output mode.
 
 - **License:** MIT
 - **Tech Stack:** TypeScript, n8n-workflow, Jest + ts-jest
@@ -47,45 +47,36 @@ nodes/BrasilHub/
 ├── brasilHub.svg                # Icon
 ├── types.ts                     # ICnpjResult, ICepResult, IFipe*, IMeta, IValidationResult
 ├── resources/
-│   ├── cnpj/
-│   │   ├── cnpj.description.ts  # INodeProperties[]
-│   │   ├── cnpj.execute.ts      # { query, validate }
-│   │   └── cnpj.normalize.ts    # Provider response → normalized schema
-│   ├── cep/
-│   │   ├── cep.description.ts
-│   │   ├── cep.execute.ts
-│   │   └── cep.normalize.ts
-│   ├── cpf/
-│   │   ├── cpf.description.ts   # Validate only (no query — local checksum)
-│   │   └── cpf.execute.ts
-│   ├── banks/
-│   │   ├── banks.description.ts # Query + List operations
-│   │   ├── banks.execute.ts
-│   │   └── banks.normalize.ts   # BrasilAPI + BancosBrasileiros
-│   ├── ddd/
-│   │   ├── ddd.description.ts
-│   │   ├── ddd.execute.ts
-│   │   └── ddd.normalize.ts     # BrasilAPI + municipios-brasileiros
-│   └── fipe/
-│       ├── fipe.description.ts  # Brands, Models, Years, Price operations
-│       ├── fipe.execute.ts      # 4 hierarchical operations (parallelum)
-│       └── fipe.normalize.ts    # normalizeBrands, normalizeModels, normalizeYears, normalizePrice
+│   ├── banks/                   # Query + List (BrasilAPI → BancosBrasileiros)
+│   ├── cambio/                  # List Currencies + Query Rate (BrasilAPI/BCB)
+│   ├── cep/                     # Query + Validate (BrasilAPI → ViaCEP → OpenCEP → ApiCEP)
+│   ├── cnpj/                    # Query + Validate (7 providers)
+│   ├── cpf/                     # Validate only (local checksum)
+│   ├── ddd/                     # Query (BrasilAPI → municipios-brasileiros)
+│   ├── fake/                    # Person, Company, CPF, CNPJ (local, no API)
+│   ├── feriados/                # Query (BrasilAPI → Nager.Date)
+│   ├── fipe/                    # Brands, Models, Years, Price, Ref Tables (parallelum)
+│   ├── ibge/                    # States + Cities (BrasilAPI → IBGE API)
+│   ├── ncm/                     # Query + Search (BrasilAPI)
+│   ├── pix/                     # List + Query (BrasilAPI)
+│   └── taxas/                   # List + Query (BrasilAPI)
 ├── shared/
 │   ├── fallback.ts              # Generic multi-provider fallback (10s timeout)
+│   ├── utils.ts                 # Shared utilities (buildMeta, buildResultItem, safeStr)
+│   ├── description-builders.ts  # Shared UI field builders (includeRawField)
 │   └── validators.ts            # CNPJ/CPF checksum, CEP format validation (local, no API)
 ```
 
 ### Router Pattern
 
 ```typescript
-const resourceOperations: Record<string, Record<string, ExecuteFunction>> = {
-  cnpj: { query: cnpjQuery, validate: cnpjValidate },
-  cep:  { query: cepQuery,  validate: cepValidate },
-  cpf:  { validate: cpfValidate },
-  banks: { query: banksQuery, list: banksList },
-  ddd:  { query: dddQuery },
-  fipe: { brands: fipeBrands, models: fipeModels, years: fipeYears, price: fipePrice },
-};
+// Built automatically from barrel-exported resource modules (IResourceDefinition[])
+const allResources: IResourceDefinition[] = [
+  banksResource, cambioResource, cepResource, cnpjResource, cpfResource,
+  dddResource, fakeResource, feriadosResource, fipeResource, ibgeResource,
+  ncmResource, pixResource, taxasResource,
+];
+const resourceOperations = Object.fromEntries(allResources.map(r => [r.resource, r.operations]));
 ```
 
 The `execute()` method reads `resource` + `operation` params and dispatches to the correct handler.
@@ -104,9 +95,14 @@ Zero changes to existing resource files — only the router registration.
 **CNPJ:** BrasilAPI → CNPJ.ws → ReceitaWS → MinhaReceita → OpenCNPJ.org → OpenCNPJ.com → CNPJA
 **CEP:** BrasilAPI → ViaCEP → OpenCEP → ApiCEP
 **Banks:** BrasilAPI → BancosBrasileiros
+**Câmbio:** BrasilAPI (BCB data)
 **DDD:** BrasilAPI → municipios-brasileiros
 **Holiday (Feriados):** BrasilAPI → Nager.Date
 **FIPE:** parallelum (single provider — hierarchy API)
+**IBGE:** BrasilAPI → IBGE API
+**NCM:** BrasilAPI
+**PIX:** BrasilAPI
+**Taxas:** BrasilAPI
 
 Fallback is automatic. BrasilAPI is always primary. Headers include `User-Agent: n8n-brasil-hub-node/1.0`. Timeout is configurable per-node (default 10s, range 1–60s).
 
@@ -130,7 +126,7 @@ Fallback is automatic. BrasilAPI is always primary. Headers include `User-Agent:
 - Após adicionar/modificar código: rodar `/code-documenter` para verificar cobertura
 - **Nunca commitar código exportado sem JSDoc** — isso é parte do checklist de qualidade
 
-Status atual: **92/92 exports documentados (100%)**.
+Status atual: **108/108 exports documentados (100%)**.
 
 ## n8n Compliance
 

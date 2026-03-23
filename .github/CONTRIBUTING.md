@@ -58,11 +58,19 @@ nodes/BrasilHub/
 │   ├── fallback.ts             # Multi-provider fallback logic
 │   └── utils.ts                # Shared utilities (stripNonDigits, safeStr, buildMeta)
 └── resources/
-    ├── banks/                  # Bank resource (description, execute, normalize)
-    ├── cep/                    # CEP resource (description, execute, normalize)
-    ├── cnpj/                   # CNPJ resource (description, execute, normalize)
-    ├── cpf/                    # CPF resource (description, execute, normalize)
-    └── ddd/                    # DDD resource (description, execute, normalize)
+    ├── banks/                  # Bank resource (Query + List)
+    ├── cambio/                 # Câmbio resource (List Currencies + Query Rate)
+    ├── cep/                    # CEP resource (Query + Validate)
+    ├── cnpj/                   # CNPJ resource (Query + Validate)
+    ├── cpf/                    # CPF resource (Validate only)
+    ├── ddd/                    # DDD resource (Query)
+    ├── fake/                   # Fake resource (Person, Company, CPF, CNPJ)
+    ├── feriados/               # Holiday resource (Query)
+    ├── fipe/                   # FIPE resource (Brands, Models, Years, Price, Ref Tables)
+    ├── ibge/                   # IBGE resource (States + Cities)
+    ├── ncm/                    # NCM resource (Query + Search)
+    ├── pix/                    # PIX resource (List + Query)
+    └── taxas/                  # Taxas resource (List + Query)
 ```
 
 ## Adding a New Resource

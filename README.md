@@ -5,7 +5,7 @@
 <h1 align="center">Brasil Hub for n8n</h1>
 
 <p align="center">
-  Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Holidays, FIPE, IBGE, NCM, PIX) + generate fake test data — automatic multi-provider fallback, zero credentials.
+  Query Brazilian public data (CNPJ, CEP, CPF, Banks, DDD, Holidays, FIPE, IBGE, NCM, PIX, Câmbio, Taxas) + generate fake test data — automatic multi-provider fallback, zero credentials.
 </p>
 
 <p align="center">
@@ -23,7 +23,7 @@
 
 ---
 
-> **v1.3** — 11 resources, 24 operations, 23 providers + local fake data generation. The API is stable and follows semantic versioning.
+> **v1.4** — 13 resources, 28 operations, 25 providers + local fake data generation. The API is stable and follows semantic versioning.
 
 ---
 
@@ -52,6 +52,8 @@ npm install n8n-nodes-brasil-hub
 |----------|-----------|-------------|-----------|
 | **Bank** | Query | Fetch bank info by COMPE code | BrasilAPI → BancosBrasileiros |
 | **Bank** | List | List all Brazilian banks | BrasilAPI → BancosBrasileiros |
+| **Câmbio** | List Currencies | List all available currencies from the Central Bank | BrasilAPI |
+| **Câmbio** | Query Rate | Fetch exchange rate quotations by currency and date | BrasilAPI |
 | **CEP** | Query | Fetch address data by CEP number | BrasilAPI → ViaCEP → OpenCEP → ApiCEP |
 | **CEP** | Validate | Check if CEP format is valid (local, no API) | — |
 | **CNPJ** | Query | Fetch company data by CNPJ number | BrasilAPI → CNPJ.ws → ReceitaWS → MinhaReceita → OpenCNPJ.org → OpenCNPJ.com → CNPJA |
@@ -74,6 +76,8 @@ npm install n8n-nodes-brasil-hub
 | **NCM** | Search | Search tax codes by description | BrasilAPI |
 | **PIX** | List | List all PIX participants | BrasilAPI |
 | **PIX** | Query | Look up PIX participant by ISPB code | BrasilAPI |
+| **Taxas** | List | List all available Brazilian interest rates | BrasilAPI |
+| **Taxas** | Query | Query a specific interest rate by code (Selic, CDI, IPCA) | BrasilAPI |
 
 ## Example Output
 
@@ -192,7 +196,7 @@ n8n 1.0+ with Node.js 20 or 22. The node follows semantic versioning -- minor up
 git clone https://github.com/luisbarcia/n8n-nodes-brasil-hub.git
 cd n8n-nodes-brasil-hub
 npm install
-npm test          # 1349 tests, 99%+ coverage
+npm test          # 1626 tests, 99%+ coverage
 npm run build
 npm run lint
 ```
