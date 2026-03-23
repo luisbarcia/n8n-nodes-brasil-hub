@@ -85,7 +85,10 @@ export async function fipeReferenceTables(
 	const allRaw = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
 	// Filter raw items to stay aligned with normalized tables when year filter is active
 	const rawItems = (filterYear >= 1000 && filterYear <= 9999)
-		? allRaw.filter((r) => String(r.Mes ?? '').endsWith(`/${String(filterYear)}`))
+		? allRaw.filter((r) => {
+			const mes = typeof r.Mes === 'string' ? r.Mes : '';
+			return mes.endsWith(`/${String(filterYear)}`);
+		})
 		: allRaw;
 	const meta = buildMeta('parallelum', 'referencias', [], false);
 
