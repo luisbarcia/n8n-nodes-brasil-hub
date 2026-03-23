@@ -174,6 +174,9 @@ Yes. Each resource with multiple providers has a "Primary Provider" dropdown. Pi
 **Does it work with n8n AI Agents?**
 Yes. Brasil Hub has `usableAsTool: true`, so you can add it as a tool in any n8n AI Agent workflow. The AI Summary output mode for CNPJ returns flat English fields optimized for LLM consumption.
 
+**Can I query exchange rates and interest rates?**
+Yes. The Câmbio resource fetches exchange rate quotations from the Central Bank (BCB) by currency and date. The Taxas resource queries official interest rates and indices (Selic, CDI, IPCA). Both use BrasilAPI as provider.
+
 **Can I generate fake test data?**
 Yes. The Fake resource generates realistic Brazilian test data locally (no API calls): person profiles with valid CPF, company profiles with valid CNPJ, or standalone CPF/CNPJ numbers. All checksums are correct.
 
