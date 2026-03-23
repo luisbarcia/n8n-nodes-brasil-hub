@@ -112,7 +112,7 @@ export class BrasilHub implements INodeType {
 					{ name: 'IBGE', value: 'ibge', description: 'Query Brazilian states and municipalities' },
 					{ name: 'NCM', value: 'ncm', description: 'Query tax classification codes by code or description' },
 					{ name: 'PIX', value: 'pix', description: 'Query PIX participants from the Central Bank directory' },
-					{ name: 'Taxas', value: 'taxas', description: 'Query Brazilian interest rates and indices (Selic, CDI, IPCA)' },
+					{ name: 'Taxa', value: 'taxas', description: 'Query Brazilian interest rates and indices (Selic, CDI, IPCA)' },
 				],
 				default: 'cnpj',
 			},
