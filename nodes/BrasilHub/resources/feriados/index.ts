@@ -2,6 +2,7 @@ import type { IResourceDefinition } from '../../types';
 import { feriadosDescription } from './feriados.description';
 import { feriadosQuery } from './feriados.execute';
 
+/** Resource definition for the feriados resource module. */
 export const feriadosResource: IResourceDefinition = {
 	resource: 'feriados',
 	description: feriadosDescription,

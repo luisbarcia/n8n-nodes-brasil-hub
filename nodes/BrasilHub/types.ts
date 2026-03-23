@@ -304,6 +304,10 @@ export interface ICurrency {
 	name: string;
 	/** Central Bank currency type ("A" = commercial, "B" = tourism/financial). */
 	currencyType: string;
+	/** Query metadata. Present when queried via API. */
+	_meta?: IMeta;
+	/** Raw provider response. Present only when "Include Raw Response" is enabled. */
+	_raw?: unknown;
 }
 
 /** Normalized exchange rate quotation from BrasilAPI câmbio endpoint. */
@@ -324,6 +328,10 @@ export interface ICambioRate {
 	quotedAt: string;
 	/** Bulletin type (e.g. "ABERTURA", "INTERMEDIARIO", "FECHAMENTO PTAX"). */
 	bulletinType: string;
+	/** Query metadata. Present when queried via API. */
+	_meta?: IMeta;
+	/** Raw provider response. Present only when "Include Raw Response" is enabled. */
+	_raw?: unknown;
 }
 
 /** Normalized interest rate from BrasilAPI taxas endpoint. */
@@ -332,6 +340,10 @@ export interface ITaxa {
 	name: string;
 	/** Rate percentage value (e.g. 14.75). */
 	value: number;
+	/** Query metadata. Present when queried via API. */
+	_meta?: IMeta;
+	/** Raw provider response. Present only when "Include Raw Response" is enabled. */
+	_raw?: unknown;
 }
 
 /** Signature for resource/operation execute handlers. */

@@ -2,6 +2,7 @@ import type { INodeProperties } from 'n8n-workflow';
 import { includeRawField } from '../../shared/description-builders';
 
 const showForCambio = { resource: ['cambio'] };
+const showForCambioRate = { resource: ['cambio'], operation: ['rate'] };
 
 /**
  * n8n node property definitions for the Câmbio (exchange rates) resource.
@@ -37,12 +38,7 @@ export const cambioDescription: INodeProperties[] = [
 		name: 'currencyCode',
 		type: 'string',
 		required: true,
-		displayOptions: {
-			show: {
-				...showForCambio,
-				operation: ['rate'],
-			},
-		},
+		displayOptions: { show: showForCambioRate },
 		default: '',
 		placeholder: 'e.g. USD',
 		description: 'ISO currency code to query (3 letters, e.g. USD, EUR, GBP)',
@@ -52,12 +48,7 @@ export const cambioDescription: INodeProperties[] = [
 		name: 'date',
 		type: 'string',
 		required: true,
-		displayOptions: {
-			show: {
-				...showForCambio,
-				operation: ['rate'],
-			},
-		},
+		displayOptions: { show: showForCambioRate },
 		default: '',
 		placeholder: 'e.g. 2024-01-15',
 		description: 'Date to query the exchange rate for (ISO format YYYY-MM-DD)',
