@@ -17,6 +17,38 @@ export function clampTimeout(value: number): number {
 }
 
 /**
+ * Extracts rate-limit info from an HTTP error when the status is 429.
+ *
+ * @param error - The caught error object from httpRequest.
+ * @returns Object with `rateLimited` flag and optional `retryAfterMs`.
+ */
+function extractRateLimitInfo(error: unknown): { rateLimited: boolean; retryAfterMs?: number } {
+	const httpCode = String((error as Record<string, unknown>)?.httpCode ?? '');
+	if (httpCode !== '429') {
+		return { rateLimited: false };
+	}
+
+	const retryHeader = (error as Record<string, Record<string, unknown>>)?.headers?.['retry-after'];
+	if (retryHeader == null) {
+		return { rateLimited: true };
+	}
+
+	const seconds = Number(retryHeader);
+	const retryAfterMs = Number.isFinite(seconds) && seconds > 0
+		? Math.round(seconds * 1000)
+		: undefined;
+	return { rateLimited: true, retryAfterMs };
+}
+
+/** Formats an error message with optional HTTP status code prefix. */
+function formatProviderError(providerName: string, error: unknown): string {
+	const message = error instanceof Error ? error.message : String(error);
+	const httpCode = String((error as Record<string, unknown>)?.httpCode ?? '');
+	const detail = httpCode ? `[${httpCode}] ${message}` : message;
+	return `${providerName}: ${detail}`;
+}
+
+/**
  * Queries multiple providers in sequence until one succeeds (fallback strategy).
  *
  * Tries each provider in order. Uses n8n's `httpRequest` helper with a
@@ -53,19 +85,13 @@ export async function queryWithFallback(
 
 			return { data, provider: provider.name, errors, rateLimited, retryAfterMs };
 		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			const httpCode = (error as Record<string, unknown>)?.httpCode;
-			const detail = httpCode ? `[${httpCode}] ${message}` : message;
-			errors.push(`${provider.name}: ${detail}`);
+			errors.push(formatProviderError(provider.name, error));
 
-			if (httpCode === 429 || httpCode === '429') {
+			const rateInfo = extractRateLimitInfo(error);
+			if (rateInfo.rateLimited) {
 				rateLimited = true;
-				const retryHeader = (error as Record<string, Record<string, unknown>>)?.headers?.['retry-after'];
-				if (retryHeader != null) {
-					const seconds = Number(retryHeader);
-					if (Number.isFinite(seconds) && seconds > 0) {
-						retryAfterMs = Math.round(seconds * 1000);
-					}
+				if (rateInfo.retryAfterMs !== undefined) {
+					retryAfterMs = rateInfo.retryAfterMs;
 				}
 			}
 		}

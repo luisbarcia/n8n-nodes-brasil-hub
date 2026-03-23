@@ -168,7 +168,7 @@ function normalizeMinhaReceita(data: Record<string, unknown>): ICnpjResult {
 		natureza_juridica: safeStr(data.natureza_juridica),
 		capital_social: safeCapital(data.capital_social),
 		atividade_principal: {
-			codigo: data.cnae_fiscal != null ? String(data.cnae_fiscal) : '',
+			codigo: data.cnae_fiscal == null ? '' : String(data.cnae_fiscal),
 			descricao: safeStr(data.cnae_fiscal_descricao),
 		},
 		endereco: {
@@ -206,7 +206,7 @@ function normalizeOpenCnpjOrg(data: Record<string, unknown>): ICnpjResult {
 
 	const rawCapital = data.capital_social;
 	const capitalSocial = typeof rawCapital === 'string'
-		? parseFloat(rawCapital.replaceAll('.', '').replace(',', '.')) || 0
+		? Number.parseFloat(rawCapital.replaceAll('.', '').replaceAll(',', '.')) || 0
 		: safeCapital(rawCapital);
 
 	return {
@@ -246,7 +246,7 @@ function normalizeOpenCnpjOrg(data: Record<string, unknown>): ICnpjResult {
 
 /** Maps OpenCNPJ.com wrapped camelCase response to {@link ICnpjResult}. */
 function normalizeOpenCnpjCom(raw: Record<string, unknown>): ICnpjResult {
-	const data = ((raw as Record<string, unknown>).data ?? raw) as Record<string, unknown>;
+	const data = ((raw.data ?? raw) as Record<string, unknown>);
 	const socios = Array.isArray(data.socios) ? data.socios : [];
 	return {
 		cnpj: safeStr(data.cnpj),
@@ -312,7 +312,7 @@ function normalizeCnpja(data: Record<string, unknown>): ICnpjResult {
 		natureza_juridica: safeStr(nature.text),
 		capital_social: safeCapital(company.equity),
 		atividade_principal: {
-			codigo: mainActivity.id != null ? String(mainActivity.id) : '',
+			codigo: mainActivity.id == null ? '' : String(mainActivity.id),
 			descricao: safeStr(mainActivity.text),
 		},
 		endereco: {

@@ -30,7 +30,7 @@ function randDigits(n: number): string {
 
 /** Removes accents and special characters, lowercases. */
 function simplify(str: string): string {
-	return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '.');
+	return str.normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').toLowerCase().replaceAll(/\s+/g, '.');
 }
 
 // ─── CPF Generator ──────────────────────────────────────────────

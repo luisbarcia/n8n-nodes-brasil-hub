@@ -51,7 +51,8 @@ export async function pixQuery(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const ispb = String(context.getNodeParameter('ispb', itemIndex) ?? '').replace(/\D/g, '');
+	const rawIspb = context.getNodeParameter('ispb', itemIndex);
+	const ispb = (rawIspb != null ? String(rawIspb) : '').replaceAll(/\D/g, '');
 	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
 	if (!ISPB_PATTERN.test(ispb)) {

@@ -52,7 +52,8 @@ export async function taxasQuery(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const rateCode = String(context.getNodeParameter('rateCode', itemIndex) ?? '').trim();
+	const rawRateCode = context.getNodeParameter('rateCode', itemIndex);
+	const rateCode = (rawRateCode != null ? String(rawRateCode) : '').trim();
 	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
 	if (!rateCode || !RATE_CODE_PATTERN.test(rateCode)) {
