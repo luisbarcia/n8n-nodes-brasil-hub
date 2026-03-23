@@ -56,15 +56,17 @@ Each new resource ships as its own MINOR release for faster iteration and easier
 - [x] Operations: `person`, `company`, `cpf`, `cnpj` (all local, no API)
 - [x] 1349 tests, 100% JSDoc coverage, testing arsenal audit passed
 
-## Future — Expansion (ideas, not committed)
+## v1.4.0 — Câmbio + Taxas ✅
 
-- [ ] **Câmbio** — Exchange rates from BCB ([#116](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/116))
-- [ ] **Taxas** — Interest rates and indices (Selic, CDI, IPCA) ([#117](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/117))
-- [ ] **CNES** — Health establishments (DataSUS) — APIs currently unavailable ([#111](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/111))
-- [ ] **Correios Tracking** — Package tracking — no public credential-free API found ([#112](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/112))
+- [x] **Câmbio** — Exchange rates from BCB (List Currencies + Query Rate) ([#116](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/116))
+- [x] **Taxas** — Interest rates and indices (Selic, CDI, IPCA) (List + Query) ([#117](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/117))
+- [x] Fix `_raw` index misalignment in `buildResultItems` ([#131](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/131))
+- [x] 1626 tests, 108/108 JSDoc coverage, testing arsenal audit passed
 
 ## Not Planned
 
+- **CNES** — Health establishments (DataSUS) — APIs unavailable/undocumented ([#111](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/111))
+- **Correios Tracking** — No public credential-free API found ([#112](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/112))
 - Authentication/credentials — All providers are public APIs
 - Caching — n8n handles caching at workflow level
 - Batch operations — Use n8n's built-in loop/split mechanisms
