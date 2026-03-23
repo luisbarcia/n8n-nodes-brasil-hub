@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1](https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.4.0...v1.4.1) (2026-03-23)
+
+
+### Fixed
+
+* add Câmbio and Taxas FAQ entries to README ([#142](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/142)) ([d1df769](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/d1df76970d1ecaed962cc1efb13a42a9c2403f7b))
+
+
+### Documentation
+
+* update living docs for v1.4.0 (13 resources, 28 ops, 25 providers) ([#140](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/140)) ([5ee6d6f](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/5ee6d6fc0a5256523e34a44f008074e967a7c95c))
+
 ## [1.4.0](https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.3.1...v1.4.0) (2026-03-23)
 
 
