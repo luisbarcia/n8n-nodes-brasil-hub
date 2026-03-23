@@ -5,6 +5,107 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0](https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.3.1...v1.4.0) (2026-03-23)
+
+
+### Added
+
+* add Bank resource with Query and List operations for v0.3.0 ([#51](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/51)) ([1c9f503](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/1c9f50340cee72aa237cf18d2b3bbeb169ce7460))
+* add CNPJ and CEP normalizers for all providers with tests ([f0e6493](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/f0e649361f3ddf474af99bceb3149342a4935c8a))
+* add CNPJ and CEP resource descriptions, execute handlers, and tests ([4a398da](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/4a398da115912eef17b78d259e55d210e63d9f7f))
+* add CNPJ Output Mode (Full + AI Summary) — v0.11.0 ([#84](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/84)) ([a452772](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/a452772c1994616ac327601411f8913f684e0d35))
+* add configurable provider order for 6 resources — v0.13.0 ([#88](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/88)) ([3b5a070](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/3b5a0702132da2ce760849cab45cf0f045c40105))
+* add configurable timeout parameter — v0.10.0 ([#81](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/81)) ([2187f18](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/2187f1886c8641110191f4edee59fb1ae0d05e26))
+* add CPF validate resource + router refactor for v0.2.0 ([#50](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/50)) ([b83fbd4](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/b83fbd426b21930ec434fd76ea4fb1023a63a1a5))
+* add DDD fallback provider (municipios-brasileiros) for v0.4.2 ([#54](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/54)) ([751ba99](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/751ba99fc5cea535555fd2349a079cdc995a4cf1))
+* add DDD resource with Query operation for v0.4.0 ([#52](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/52)) ([619e8f0](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/619e8f0fc80b113492b1fa61dd43f8e130745223))
+* add Fake resource — generate Brazilian test data ([#118](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/118)) ([9c866ab](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/9c866ab1621595925dee28d4a03917c45f13be52))
+* add Feriados resource — v0.6.0 ([#73](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/73)) ([9a54a57](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/9a54a57799b647a3476b2cdca97f8f6b1762a594))
+* add FIPE Reference Tables + PIX resource ([#113](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/113)) ([55bd18d](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/55bd18d9b61c4e2ee3f2b1308a4107fa3522e5bb))
+* add FIPE resource (Brands, Models, Years, Price) ([#69](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/69)) ([abf071f](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/abf071f55067ee377ee559f33c97eb4145c222bc))
+* add IBGE resource (States + Cities) — v0.8.0 ([#75](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/75)) ([60be9a7](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/60be9a72845182550477d129d5c5ea64553bbf91))
+* add NCM resource (Query + Search) — v0.9.0 ([#78](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/78)) ([0d47ba4](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/0d47ba4fe5f476b2b5f1365d99711e0b29574a8d))
+* add rate limit awareness (429 detection) — v0.12.0 ([#86](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/86)) ([c4ca704](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/c4ca70444e6e40f4a6c508d1c8b140254b9f12d3))
+* add validators (CNPJ checksum, CEP format) and multi-provider fallback ([7615ad0](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/7615ad0802dac43ad475f0807c1cfd8ed905033a))
+* assemble Brasil Hub node with resource router, codex, icon, and tests ([985d578](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/985d578127670a238df8d877c7a2b69b3f209027))
+* Câmbio + Taxas resources, fix _raw alignment ([#116](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/116), [#117](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/117), [#131](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/131)) ([#133](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/133)) ([d9d8221](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/d9d8221247b4921a76d6bfc5b87e2bd9d6e77495))
+* initial project setup with design spec, plan, and CI/CD ([48b9b85](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/48b9b8504efe3381302e48c13763bf4a55dd6ce1))
+* scaffold project with package.json, tsconfig, eslint, jest, and type definitions ([789787c](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/789787c93649f3cb34a56a08cf992d6808f520a7))
+* validate CNPJ checksum and CEP format before HTTP queries ([#23](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/23)) ([b08f0d5](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/b08f0d5ef5daefee64108abb33801304a1fe365c))
+
+
+### Fixed
+
+* add author email to package.json for Creator Portal ([#25](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/25)) ([fdd7e91](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/fdd7e91ccfd745d0a54419e15fd8a5395bf36fdf))
+* align package.json with n8n-nodes-starter template for Creator Portal vetting ([#26](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/26)) ([7fc6c93](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/7fc6c93e1d67687cb46429458604e88a44a4824c))
+* **ci:** add CODECOV_TOKEN for coverage upload ([6ae3de0](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/6ae3de07f13b815ef8c562526f3325eb21222436))
+* **ci:** add private-repository flag to SLSA provenance generator ([#17](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/17)) ([1d040db](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/1d040dbfd36119a30053d6e5803399daef15f499))
+* **ci:** change audit level to critical and remove continue-on-error ([566ae6f](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/566ae6ff2f3beb94794286422651d82fa63c394b)), closes [#8](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/8)
+* **ci:** configure Release Please to use simple v-tags without component prefix ([#106](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/106)) ([2402ad3](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/2402ad3eb55891b6a823e27e50da1263a49ca82a))
+* **ci:** correct SHA pins for Scorecard, SonarCloud, and Codecov actions ([c65c8e0](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/c65c8e0f7be22a3e38a08d875f1bae320f82fa23))
+* **ci:** disable Codecov auto-search to send only lcov.info ([25ef770](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/25ef77011164bc1214d700ca6c752437c69f3f3f))
+* **ci:** mock isolated-vm native addon for Jest ([0ecac0a](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/0ecac0a8d7a4fdc99b583f38e82fe2a25e6a8a66))
+* **ci:** replace SLSA generator with GitHub attestation ([#18](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/18)) ([485cd0f](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/485cd0f940d2cc489287885661c8d158aa7083d7))
+* **ci:** skip native addon compilation and drop Node 18 from matrix ([c56baea](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/c56baea2243fe3f2c80164d2eb142f53197e8513))
+* **ci:** skip prepublishOnly guard in release workflow ([aabba50](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/aabba5083e141fc9a7421197ea56c044b7c95f1a))
+* comply with n8n UX guidelines ([#27](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/27)) ([c6d82b5](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/c6d82b521ee698a5b4d051e9d252d15b49bbb78b))
+* FIPE buildMeta consistency + Holiday docs propagation — v1.0.2 ([#95](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/95)) ([fe0f0fd](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/fe0f0fd3b6d595e12ac936f20c8d27d0ebf1e31b))
+* NaN/Infinity guard in IBGE normalizers + dispatch tests ([#77](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/77)) ([a82dc2d](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/a82dc2d28079a59bee0989ab41151d12606f9fde))
+* reject CEPs below minimum range + expand validator tests ([#56](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/56)) ([72a35aa](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/72a35aa281164b49b5d006cbed5e3dd3bcca7397))
+* remove paths-ignore from CodeQL PR trigger ([#15](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/15)) ([a5b2a62](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/a5b2a62e7eb8dab64524c2cb17275967f52e8799))
+* remove setTimeout from fallback and correct node group ([4733503](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/47335032d1d496e0797357aa28318e8d7b48dd1e))
+* rename resource display name Feriado → Holiday ([#92](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/92)) ([7fbf2e1](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/7fbf2e1ca482b9dac8522648ae6e5eb27614f9c5))
+* resolve 6 bugs from adversarial attack testing ([#57](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/57)) ([2d1b789](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/2d1b7893d59a04493913b92e977508b74475393d))
+* resolve S6551 in safeStr by narrowing types before toString ([#31](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/31)) ([5388963](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/53889637dd99bb541609b3230473fe8d773ea4d6))
+* resolve SonarCloud code smells in node and utils ([#30](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/30)) ([ec79cd5](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/ec79cd57cf9fddf52a6d25347a5d540568d22ff7))
+* retroactive quality improvements for v0.4.1 ([#53](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/53)) ([ef62abf](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/ef62abfd5e5f23cb60c172ff36827b9ddd255a34))
+* **security:** FIPE input validation, null guards, attack tests ([#70](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/70)) ([26145ba](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/26145baa2d4f6ccbeb4106bc3fe200a0ee53891e))
+* **security:** runtime timeout clamping + boundary tests ([#83](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/83)) ([93b5813](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/93b5813d2215ec89f4db6b11618d5587ff334320))
+* testing arsenal findings on refactoring [#128](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/128) ([#132](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/132)) ([4375acf](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/4375acf025c32f449f246ef7954b11bf36d1bb47))
+* use Number.parseInt for check digit comparisons ([2e1fec2](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/2e1fec25dc4b6564f96f4d9cb79ce936ce853c0c))
+
+
+### Changed
+
+* apply code review fixes and add integration tests ([6cf016f](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/6cf016f5d8b67194c243a3963c69ce30d9441321))
+* architectural improvements for 20+ resource scaling ([#128](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/128)) ([a783209](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/a7832091316534e686873c267208c1392ee446a6))
+* fix SonarCloud findings (security + code smells) ([9471487](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/94714879f4075003621e5baf234982efceb856cb))
+* reduce cognitive complexity and use replaceAll ([#60](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/60)) ([9553be0](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/9553be01d585ace97b2d1b521994e956fd9423a5))
+
+
+### Documentation
+
+* add changelog following Keep a Changelog standard ([3f18bfb](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/3f18bfb0c364c3d1ed3f97c504dc47876022699b))
+* add CII Silver level documentation ([#13](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/13)) ([0c641e3](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/0c641e3facd79d9193f81bd854f1014d4a3d25fc))
+* add community health files and Copilot instructions ([246f798](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/246f7987c01993e9263f9abebcb68a77ee57b828))
+* add development status banner to README ([#59](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/59)) ([c4f6cf7](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/c4f6cf71c185d2e7b9c3480d3019378f3f46fc6b))
+* add GitHub Discussions to post-release workflow in CLAUDE.md ([#68](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/68)) ([487353b](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/487353bea590f4d498feca2158d710066d75ebc4))
+* add JSDoc to all 25 exported symbols ([0d068d6](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/0d068d60ed0bde85cf9d0547da4938087b5f8e1a))
+* add JSDoc to all internal functions and execute() method ([607a019](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/607a0192131c595325ad49e0aa30ff384eb1c6d7))
+* add MIT license ([eb66a65](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/eb66a6566e5c162ecf93102480f06c705db0f869))
+* add n8n skills reference to CLAUDE.md and update planning files ([c093ada](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/c093ada196f5a05037c3f1ad8433e3e46896881a))
+* add npm, CI, and license badges to README ([c09da15](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/c09da159706a3e1b7306505db80c2c79d8ebd0f5))
+* add OpenSSF Best Practices badge ([#12](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/12)) ([84b7a63](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/84b7a638f448ae392cf44aaef15b6d3701312869))
+* add pre-release workflow checklist to CLAUDE.md ([4957e69](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/4957e69bd9eefb1f766494b5d37457aa1e03bc74))
+* add README with installation, operations, example output, and providers ([bee8599](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/bee8599396a68aac315e26bcc819ccac8878cad1))
+* add RELEASE_CHECKLIST.md + update all living docs for v0.9.0 ([#80](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/80)) ([1fdc737](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/1fdc737ea06b5e3fffb6e0d671d388e52ac7e89d))
+* detail commit conventions, versioning, and changelog in CONTRIBUTING ([a377794](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/a377794090be1cf83e73b41a9fb5d305975806b4))
+* expand governance continuity plan for CII Silver ([#14](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/14)) ([d81736a](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/d81736a412ad88d7f4ad51ecc633b05807738763))
+* prepare release v0.1.1 ([4ba1ed9](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/4ba1ed96eb7831d83802951ce1154b65b5b9db7e))
+* propagate Feriado → Holiday rename to all living docs ([#94](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/94)) ([17de67b](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/17de67b072c76244204b1ab968ce9838d995e6a1))
+* SEO/AEO optimization — FAQ + tutorial + comparison article ([#126](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/126)) ([ac37564](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/ac37564bdcf0450b0c922e98a373ba55f34bc0e6))
+* update all docs for per-resource release strategy ([#49](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/49)) ([646a734](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/646a7342451eeac698ce8df9ab886f66149a63df))
+* update changelog and bump version for v0.1.3 ([#24](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/24)) ([e0bf506](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/e0bf5068ea6f99c864fe724ad28e917c1169c7af))
+* update changelog and bump version for v0.1.6 ([#28](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/28)) ([fbaa3e5](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/fbaa3e579456700b88f3b27318ae985b25bbf7b9))
+* update changelog and bump version for v0.4.3 ([#58](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/58)) ([f0d52c3](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/f0d52c38d5efbf3308c29e226f62b8f6170f340a))
+* update changelog and tracking files for v0.1.0 implementation ([b84f6a7](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/b84f6a71bbfc45e86c501d49416ccc1302ff0a66))
+* update changelog for v0.1.0 ([a1faf36](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/a1faf36c4a3af70867f84e19fbcb7b08a36cd9ad))
+* update changelog, planning files after CI/CD simplification ([#21](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/21)) ([fb21475](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/fb21475416ea6142722ed9bc17a226054a076ecd))
+* update documentation for v0.4.x ([#55](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/55)) ([1ee748b](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/1ee748b0d9b9b2d7f073c4acbfa612844e7a1264))
+* update living docs for v1.2.0 (10 resources, PIX + FIPE ref tables) ([#114](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/114)) ([950358f](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/950358fd08b4bc4c6ba49256da9718bae11a3330))
+* update planning files after v0.1.6 release ([#29](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/29)) ([bc38362](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/bc3836208da2471d4f9542e6df20b65a6885c984))
+* update progress.md with full session log and test results ([7f67e70](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/7f67e70d20f98392b4d6249faca91b64f755e25a))
+
 ## [1.3.1](https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.3.0...v1.3.1) (2026-03-20)
 
 
