@@ -1,8 +1,9 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { buildMeta, buildResultItem, buildResultItems, readCommonParams } from '../../shared/utils';
+import { buildMeta, buildResultItem, readCommonParams } from '../../shared/utils';
 import { queryWithFallback } from '../../shared/fallback';
 import type { IProvider } from '../../types';
+import { executeStandardList } from '../../shared/execute-helpers';
 import { normalizePixParticipants } from './pix.normalize';
 
 const ISPB_PATTERN = /^\d{8}$/;
@@ -16,6 +17,8 @@ function buildProviders(): IProvider[] {
 /**
  * Lists all PIX participants.
  *
+ * Delegates to {@link executeStandardList} facade.
+ *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
  * @returns One n8n item per PIX participant.
@@ -24,16 +27,11 @@ export async function pixList(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
-
-	const providers = buildProviders();
-	const result = await queryWithFallback(context, providers, timeoutMs);
-
-	const participants = normalizePixParticipants(result.data);
-	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta(result.provider, 'pix/participants', result.errors, result.rateLimited, result.retryAfterMs);
-
-	return buildResultItems(participants, meta, rawItems, includeRaw, itemIndex);
+	return executeStandardList(context, itemIndex, {
+		buildProviders,
+		normalize: normalizePixParticipants,
+		queryKey: 'pix/participants',
+	});
 }
 
 /**

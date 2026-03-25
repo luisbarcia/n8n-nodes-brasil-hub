@@ -1,8 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItems, readCommonParams, reorderProviders } from '../../shared/utils';
-import { queryWithFallback } from '../../shared/fallback';
+import { executeStandardList } from '../../shared/execute-helpers';
 import { normalizeFeriados } from './feriados.normalize';
 
 /**
@@ -22,8 +21,8 @@ function buildProviders(year: number): IProvider[] {
 /**
  * Queries Brazilian public holidays for a given year with multi-provider fallback.
  *
- * Returns one n8n item per holiday. Validates year range (1900–2199) before
- * making API calls. Providers: BrasilAPI → Nager.Date.
+ * Validates year range (1900–2199), then delegates to {@link executeStandardList} facade.
+ * Providers: BrasilAPI → Nager.Date.
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
@@ -35,7 +34,6 @@ export async function feriadosQuery(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const year = context.getNodeParameter('year', itemIndex) as number;
-	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 
 	if (!Number.isInteger(year) || year < 1900 || year > 2199) {
 		throw new NodeOperationError(
@@ -45,12 +43,9 @@ export async function feriadosQuery(
 		);
 	}
 
-	const providers = reorderProviders(buildProviders(year), primaryProvider);
-	const result = await queryWithFallback(context, providers, timeoutMs);
-
-	const feriados = normalizeFeriados(result.data, result.provider);
-	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta(result.provider, String(year), result.errors, result.rateLimited, result.retryAfterMs);
-
-	return buildResultItems(feriados, meta, rawItems, includeRaw, itemIndex);
+	return executeStandardList(context, itemIndex, {
+		buildProviders: () => buildProviders(year),
+		normalize: normalizeFeriados,
+		queryKey: String(year),
+	});
 }

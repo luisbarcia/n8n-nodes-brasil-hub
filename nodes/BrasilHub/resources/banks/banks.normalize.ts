@@ -1,5 +1,6 @@
 import type { IBank } from '../../types';
 import { safeStr } from '../../shared/utils';
+import { createListNormalizerDispatch } from '../../shared/execute-helpers';
 
 /** Normalizes a single BrasilAPI bank response. */
 function normalizeBrasilApiBank(data: Record<string, unknown>): IBank {
@@ -57,15 +58,15 @@ export function normalizeBank(data: unknown, provider: string, bankCode?: number
 /**
  * Normalizes a list of banks from a provider response.
  *
+ * Uses Strategy pattern list dispatch with automatic Array.isArray guard
+ * and null filtering.
+ *
  * @param data - Raw provider response (array of banks).
  * @param provider - Provider name.
  * @returns Array of normalized bank results.
+ * @throws {Error} If provider is unknown.
  */
-export function normalizeBanks(data: unknown, provider: string): IBank[] {
-	const normalizer = normalizers[provider];
-	if (!normalizer) {
-		throw new Error(`Unknown bank provider: ${provider}`);
-	}
-	const items = Array.isArray(data) ? data as Array<Record<string, unknown>> : [];
-	return items.map(normalizer);
-}
+export const normalizeBanks = createListNormalizerDispatch<IBank>({
+	brasilapi: normalizeBrasilApiBank,
+	bancosbrasileiros: normalizeBancosBrasileirosBank,
+}, 'bank');

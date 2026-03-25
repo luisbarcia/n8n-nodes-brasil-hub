@@ -1,5 +1,6 @@
 import type { ICnpjResult } from '../../types';
 import { safeStr, stripNonDigits } from '../../shared/utils';
+import { createNormalizerDispatch } from '../../shared/execute-helpers';
 
 /**
  * Safely coerces a value to a number, returning 0 for NaN/null/undefined.
@@ -341,22 +342,11 @@ function normalizeCnpja(data: Record<string, unknown>): ICnpjResult {
 	};
 }
 
-/** Provider name → normalizer function dispatch table. */
-const normalizers: Record<string, (data: Record<string, unknown>) => ICnpjResult> = {
-	brasilapi: normalizeBrasilApi,
-	cnpjws: normalizeCnpjWs,
-	receitaws: normalizeReceitaWs,
-	minhareceita: normalizeMinhaReceita,
-	opencnpjorg: normalizeOpenCnpjOrg,
-	opencnpjcom: normalizeOpenCnpjCom,
-	cnpja: normalizeCnpja,
-};
-
 /**
  * Normalizes raw CNPJ API response into the unified {@link ICnpjResult} schema.
  *
- * Dispatches to provider-specific normalizers (BrasilAPI, CNPJ.ws, ReceitaWS,
- * MinhaReceita, OpenCNPJ.org, OpenCNPJ.com, CNPJA) that handle field name
+ * Uses Strategy pattern dispatch to provider-specific normalizers (BrasilAPI, CNPJ.ws,
+ * ReceitaWS, MinhaReceita, OpenCNPJ.org, OpenCNPJ.com, CNPJA) that handle field name
  * mapping and data type coercion.
  *
  * @param data - Raw JSON response from the provider.
@@ -364,10 +354,12 @@ const normalizers: Record<string, (data: Record<string, unknown>) => ICnpjResult
  * @returns Normalized CNPJ result.
  * @throws {Error} If the provider name is not recognized.
  */
-export function normalizeCnpj(data: unknown, provider: string): ICnpjResult {
-	const normalizer = normalizers[provider];
-	if (!normalizer) {
-		throw new Error(`Unknown CNPJ provider: ${provider}`);
-	}
-	return normalizer((data ?? {}) as Record<string, unknown>);
-}
+export const normalizeCnpj = createNormalizerDispatch<ICnpjResult>({
+	brasilapi: normalizeBrasilApi,
+	cnpjws: normalizeCnpjWs,
+	receitaws: normalizeReceitaWs,
+	minhareceita: normalizeMinhaReceita,
+	opencnpjorg: normalizeOpenCnpjOrg,
+	opencnpjcom: normalizeOpenCnpjCom,
+	cnpja: normalizeCnpja,
+}, 'CNPJ');

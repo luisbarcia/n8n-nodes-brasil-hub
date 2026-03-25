@@ -1,11 +1,12 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { buildMeta, buildResultItem, buildResultItems, readCommonParams } from '../../shared/utils';
-import { queryWithFallback } from '../../shared/fallback';
+import { executeStandardQuery, executeStandardList } from '../../shared/execute-helpers';
 import { normalizeNcm, normalizeNcmList } from './ncm.normalize';
 
 /**
  * Queries a single NCM code from BrasilAPI.
+ *
+ * Validates the code is not empty, then delegates to {@link executeStandardQuery} facade.
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
@@ -17,24 +18,24 @@ export async function ncmQuery(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const ncmCode = (context.getNodeParameter('ncmCode', itemIndex) as string).trim();
-	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
 	if (!ncmCode) {
 		throw new NodeOperationError(context.getNode(), 'NCM code is required', { itemIndex });
 	}
 
-	const providers = [
-		{ name: 'brasilapi', url: `https://brasilapi.com.br/api/ncm/v1/${encodeURIComponent(ncmCode)}` },
-	];
-	const result = await queryWithFallback(context, providers, timeoutMs);
-	const normalized = normalizeNcm(result.data);
-	const meta = buildMeta(result.provider, ncmCode, result.errors, result.rateLimited, result.retryAfterMs);
-
-	return buildResultItem(normalized, meta, result.data, includeRaw, itemIndex);
+	return executeStandardQuery(context, itemIndex, {
+		buildProviders: () => [
+			{ name: 'brasilapi', url: `https://brasilapi.com.br/api/ncm/v1/${encodeURIComponent(ncmCode)}` },
+		],
+		normalize: normalizeNcm,
+		queryKey: ncmCode,
+	});
 }
 
 /**
  * Searches NCM codes by description keyword from BrasilAPI.
+ *
+ * Validates minimum term length, then delegates to {@link executeStandardList} facade.
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
@@ -46,7 +47,6 @@ export async function ncmSearch(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const searchTerm = (context.getNodeParameter('searchTerm', itemIndex) as string).trim();
-	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
 
 	if (searchTerm.length < 3) {
 		throw new NodeOperationError(
@@ -56,13 +56,11 @@ export async function ncmSearch(
 		);
 	}
 
-	const providers = [
-		{ name: 'brasilapi', url: `https://brasilapi.com.br/api/ncm/v1?search=${encodeURIComponent(searchTerm)}` },
-	];
-	const result = await queryWithFallback(context, providers, timeoutMs);
-	const items = normalizeNcmList(result.data);
-	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta(result.provider, searchTerm, result.errors, result.rateLimited, result.retryAfterMs);
-
-	return buildResultItems(items, meta, rawItems, includeRaw, itemIndex);
+	return executeStandardList(context, itemIndex, {
+		buildProviders: () => [
+			{ name: 'brasilapi', url: `https://brasilapi.com.br/api/ncm/v1?search=${encodeURIComponent(searchTerm)}` },
+		],
+		normalize: normalizeNcmList,
+		queryKey: searchTerm,
+	});
 }
