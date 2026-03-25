@@ -65,7 +65,7 @@ function normalizeApiCep(data: Record<string, unknown>): ICepResult {
  * @param data - Raw JSON response from the provider.
  * @param provider - Provider identifier (e.g. `"brasilapi"`, `"viacep"`, `"opencep"`, `"apicep"`).
  * @returns Normalized CEP result.
- * @throws {Error} If the provider name is not recognized.
+ * @throws If the provider name is not recognized.
  */
 export const normalizeCep = createNormalizerDispatch<ICepResult>({
 	brasilapi: normalizeBrasilApi,

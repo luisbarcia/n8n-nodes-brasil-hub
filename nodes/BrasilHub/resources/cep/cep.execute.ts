@@ -33,7 +33,7 @@ function buildProviders(cep: string): IProvider[] {
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data with normalized CEP result as JSON.
- * @throws {NodeOperationError} If the CEP is invalid (wrong length or all zeros) or all providers fail.
+ * @throws If the CEP is invalid (wrong length or all zeros) or all providers fail.
  */
 export async function cepQuery(
 	context: IExecuteFunctions,

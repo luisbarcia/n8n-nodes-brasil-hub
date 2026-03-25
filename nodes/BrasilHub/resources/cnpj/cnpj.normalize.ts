@@ -352,7 +352,7 @@ function normalizeCnpja(data: Record<string, unknown>): ICnpjResult {
  * @param data - Raw JSON response from the provider.
  * @param provider - Provider identifier (e.g. `"brasilapi"`, `"cnpjws"`, `"minhareceita"`).
  * @returns Normalized CNPJ result.
- * @throws {Error} If the provider name is not recognized.
+ * @throws If the provider name is not recognized.
  */
 export const normalizeCnpj = createNormalizerDispatch<ICnpjResult>({
 	brasilapi: normalizeBrasilApi,

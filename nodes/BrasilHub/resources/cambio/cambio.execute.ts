@@ -44,7 +44,7 @@ export async function cambioCurrencies(
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data (one per quotation).
- * @throws {NodeOperationError} If the currency code or date is invalid.
+ * @throws If the currency code or date is invalid.
  */
 export async function cambioRate(
 	context: IExecuteFunctions,

@@ -43,7 +43,7 @@ export async function pixList(
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
  * @returns Single n8n item with the matching participant.
- * @throws {NodeOperationError} If ISPB is invalid or not found.
+ * @throws If ISPB is invalid or not found.
  */
 export async function pixQuery(
 	context: IExecuteFunctions,

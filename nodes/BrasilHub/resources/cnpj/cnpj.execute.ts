@@ -56,7 +56,7 @@ function formatAiSummary(full: ICnpjResult): Record<string, unknown> {
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data with normalized CNPJ result as JSON.
- * @throws {NodeOperationError} If the CNPJ is invalid (wrong length or checksum) or all providers fail.
+ * @throws If the CNPJ is invalid (wrong length or checksum) or all providers fail.
  */
 export async function cnpjQuery(
 	context: IExecuteFunctions,

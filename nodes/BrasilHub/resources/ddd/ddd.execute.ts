@@ -12,7 +12,7 @@ import { normalizeDdd } from './ddd.normalize';
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data with normalized DDD result.
- * @throws {NodeOperationError} If the DDD is invalid or the provider fails.
+ * @throws If the DDD is invalid or the provider fails.
  */
 export async function dddQuery(
 	context: IExecuteFunctions,

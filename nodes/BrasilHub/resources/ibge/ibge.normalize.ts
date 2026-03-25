@@ -42,7 +42,7 @@ function normalizeIbgeCity(item: Record<string, unknown>): ICity {
  * @param data - Raw provider response (array of states).
  * @param provider - Provider name ("brasilapi" or "ibge").
  * @returns Array of normalized state results.
- * @throws {Error} If provider is unknown.
+ * @throws If provider is unknown.
  */
 export const normalizeStates = createListNormalizerDispatch<IState>({
 	brasilapi: normalizeState,
@@ -58,7 +58,7 @@ export const normalizeStates = createListNormalizerDispatch<IState>({
  * @param data - Raw provider response (array of cities).
  * @param provider - Provider name ("brasilapi" or "ibge").
  * @returns Array of normalized city results.
- * @throws {Error} If provider is unknown.
+ * @throws If provider is unknown.
  */
 export const normalizeCities = createListNormalizerDispatch<ICity>({
 	brasilapi: normalizeBrasilApiCity,

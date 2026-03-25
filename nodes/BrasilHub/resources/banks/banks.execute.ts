@@ -30,7 +30,7 @@ function buildQueryProviders(bankCode: number): IProvider[] {
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data with normalized bank result.
- * @throws {NodeOperationError} If the bank code is invalid or all providers fail.
+ * @throws If the bank code is invalid or all providers fail.
  */
 export async function banksQuery(
 	context: IExecuteFunctions,
@@ -62,7 +62,7 @@ export async function banksQuery(
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data (one per bank).
- * @throws {NodeOperationError} If all providers fail.
+ * @throws If all providers fail.
  */
 export async function banksList(
 	context: IExecuteFunctions,

@@ -42,7 +42,7 @@ export async function taxasList(
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Single n8n item with the normalized rate data.
- * @throws {NodeOperationError} If the rate code is empty or invalid.
+ * @throws If the rate code is empty or invalid.
  */
 export async function taxasQuery(
 	context: IExecuteFunctions,

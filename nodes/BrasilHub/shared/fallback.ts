@@ -59,7 +59,7 @@ function formatProviderError(providerName: string, error: unknown): string {
  * @param providers - Ordered list of provider endpoints to try.
  * @param timeoutMs - HTTP timeout in milliseconds (default: {@link DEFAULT_TIMEOUT_MS}).
  * @returns Raw response data from the first successful provider.
- * @throws {Error} When all providers fail, with concatenated error messages. Wrapped by the router as NodeOperationError with itemIndex.
+ * @throws When all providers fail, with concatenated error messages. Wrapped by the router as NodeOperationError with itemIndex.
  */
 export async function queryWithFallback(
 	context: IExecuteFunctions,

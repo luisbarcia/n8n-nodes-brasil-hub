@@ -11,7 +11,7 @@ import { normalizeNcm, normalizeNcmList } from './ncm.normalize';
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
  * @returns Single n8n item with normalized NCM data.
- * @throws {NodeOperationError} If NCM code is empty or the API fails.
+ * @throws If NCM code is empty or the API fails.
  */
 export async function ncmQuery(
 	context: IExecuteFunctions,
@@ -40,7 +40,7 @@ export async function ncmQuery(
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
  * @returns One n8n item per matching NCM code.
- * @throws {NodeOperationError} If search term is too short or the API fails.
+ * @throws If search term is too short or the API fails.
  */
 export async function ncmSearch(
 	context: IExecuteFunctions,

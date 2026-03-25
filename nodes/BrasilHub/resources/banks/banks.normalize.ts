@@ -64,7 +64,7 @@ export function normalizeBank(data: unknown, provider: string, bankCode?: number
  * @param data - Raw provider response (array of banks).
  * @param provider - Provider name.
  * @returns Array of normalized bank results.
- * @throws {Error} If provider is unknown.
+ * @throws If provider is unknown.
  */
 export const normalizeBanks = createListNormalizerDispatch<IBank>({
 	brasilapi: normalizeBrasilApiBank,

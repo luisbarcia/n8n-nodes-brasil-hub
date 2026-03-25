@@ -32,7 +32,7 @@ function normalizeNager(item: Record<string, unknown>): IFeriado {
  * @param data - Raw provider response (array of holidays).
  * @param provider - Provider name ("brasilapi" or "nagerdate").
  * @returns Array of normalized holiday results.
- * @throws {Error} If provider is unknown.
+ * @throws If provider is unknown.
  */
 export const normalizeFeriados = createListNormalizerDispatch<IFeriado>({
 	brasilapi: normalizeBrasilApi,

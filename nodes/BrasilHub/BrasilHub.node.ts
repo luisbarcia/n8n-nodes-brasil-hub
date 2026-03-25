@@ -137,7 +137,7 @@ export class BrasilHub implements INodeType {
 	 *
 	 * Supports `continueOnFail` — failed items return `{ error }` with `pairedItem` intact.
 	 *
-	 * @throws {NodeOperationError} If resource/operation pair is unknown or handler fails.
+	 * @throws If resource/operation pair is unknown or handler fails.
 	 */
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();

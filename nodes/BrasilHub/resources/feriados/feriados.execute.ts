@@ -27,7 +27,7 @@ function buildProviders(year: number): IProvider[] {
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data (one per holiday).
- * @throws {NodeOperationError} If the year is invalid or all providers fail.
+ * @throws If the year is invalid or all providers fail.
  */
 export async function feriadosQuery(
 	context: IExecuteFunctions,

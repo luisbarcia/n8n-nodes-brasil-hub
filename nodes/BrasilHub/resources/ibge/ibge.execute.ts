@@ -36,7 +36,7 @@ function buildCitiesProviders(uf: string): IProvider[] {
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
  * @returns One n8n item per state (27 total).
- * @throws {NodeOperationError} If all providers fail.
+ * @throws If all providers fail.
  */
 export async function ibgeStates(
 	context: IExecuteFunctions,
@@ -57,7 +57,7 @@ export async function ibgeStates(
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
  * @returns One n8n item per municipality.
- * @throws {NodeOperationError} If the UF is invalid or all providers fail.
+ * @throws If the UF is invalid or all providers fail.
  */
 export async function ibgeCities(
 	context: IExecuteFunctions,
