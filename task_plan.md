@@ -448,6 +448,105 @@ Each new resource ships as its own MINOR release:
 
 **Status:** future
 
+### Phase 26: v1.5.0 — NF-e Resource (Parse XML, Generate DANFE, Validate Key)
+**Goal:** Parsear XMLs de notas fiscais eletrônicas e gerar DANFE HTML. Primeiro resource com input/output binário.
+**Epic:** #155
+**Issues:** #156, #157, #158, #159, #160, #161, #162
+**Design spec:** `docs/superpowers/specs/2026-03-27-nfe-danfe-design.md`
+
+#### 26.1 Foundation: fast-xml-parser dependency (#156)
+- [ ] `npm install fast-xml-parser` (pin exact version)
+- [ ] Verify zero transitive deps + npm audit
+- [ ] Test removeNSPrefix works (ref: issue #596)
+- [ ] Add types to `types.ts` (INfeResult, INfeKeyResult, INfeEndereco)
+- **Status:** pending
+
+#### 26.2 Validate Key operation (#157)
+- [ ] RED: tests for modulo 11 algorithm, field extraction, edge cases
+- [ ] GREEN: `resources/nfe/utils/nfe-key.ts`
+- [ ] Edge cases: remainder 0→DV=0, remainder 1→DV=0, invalid length, non-numeric
+- [ ] Map UF codes (IBGE), emission types (1-9), model descriptions (55,57,58,65)
+- **Status:** pending
+
+#### 26.3 XML input resolver + model detection (#158)
+- [ ] RED: tests for text/binary input, BOM handling, encoding detection
+- [ ] GREEN: `resources/nfe/utils/xml-input.ts` + `detect-model.ts`
+- [ ] Handle: text field, binary data, BOM stripping, leading whitespace
+- [ ] Detect: NF-e(55) vs NFC-e(65) by ide/mod, CT-e(57) by namespace, MDF-e(58) by namespace
+- [ ] Security: reject non-XML binary (PDF check)
+- **Status:** pending
+
+#### 26.4 NF-e model 55 parser (#159) — LARGEST TASK
+- [ ] RED: tests with fixture XMLs (standard, cancelled, multi-item, iso8859, minimal, malformed, cdata)
+- [ ] GREEN: `resources/nfe/parsers/nfe55.parser.ts`
+- [ ] Config: parseTagValue=false (CRITICAL — leading zeros), isArray callback, removeNSPrefix
+- [ ] Parse all sections: ide, emit, dest, det[], total, transp, cobr, pag, infAdic, protNFe
+- [ ] Handle: nfeProc wrapper AND bare NFe root, cancelled(101), denied(110)
+- [ ] Security: reject <!DOCTYPE> (XXE), reject XML bombs, fail on >50MB
+- [ ] Create fixture XMLs in `__tests__/fixtures/` (sanitized — fake CNPJ/CPF)
+- **Status:** pending
+
+#### 26.5 Code128C barcode SVG generator (#160)
+- [ ] RED: tests for encoding, checksum mod 103, SVG output validity
+- [ ] GREEN: `resources/nfe/utils/barcode128.ts`
+- [ ] Encode 44-digit key as 22 pairs (Code128C)
+- [ ] Generate SVG with proper quiet zones (10x X-Dimension)
+- **Status:** pending
+
+#### 26.6 DANFE HTML template (#161)
+- [ ] RED: tests for HTML output (key elements, barcode, product rows, CSS, XSS prevention)
+- [ ] GREEN: `resources/nfe/templates/danfe55.template.ts`
+- [ ] CONFAZ-compliant layout: header, emitente, destinatário, produtos, impostos, transporte, pagamento, dados adicionais
+- [ ] CSS inline, @media print for A4, Code128 SVG embedded
+- [ ] HTML-escape ALL user data (XSS prevention — company names with <script>)
+- [ ] Output as n8n binary data (mimeType: text/html, fileName: danfe-{chave}.html)
+- **Status:** pending
+
+#### 26.7 Wire up resource in router (#162)
+- [ ] Create `nfe.description.ts` with displayOptions (showForNfe*, conditional XML Source)
+- [ ] Create `nfe.execute.ts` with operation router (parseXml, generateDanfe, validateKey)
+- [ ] Create `nfe.normalize.ts` (reserved)
+- [ ] Create `index.ts` barrel export
+- [ ] Register `nfeResource` in `BrasilHub.node.ts` allResources[]
+- [ ] Update `BrasilHub.node.json` codex metadata
+- [ ] n8n compliance: noDataExpression, action property, Title Case, descriptions
+- **Status:** pending
+
+#### 26.8 Testing Arsenal + Pre-release (#155)
+- [ ] TDD complete: all tasks above have RED→GREEN→REFACTOR
+- [ ] /testing-arsenal: test-master (attack tests) + test-skeptic + code-reviewer + security-reviewer + coverage-analyzer + gap-analyzer
+- [ ] Coverage ≥90% branches, ≥95% lines
+- [ ] /security-reviewer: XXE, XSS, billion laughs, path traversal
+- [ ] /code-documenter: JSDoc 100% on all new exports
+- [ ] Build + lint + test + audit clean
+- **Status:** pending
+
+#### 26.9 Release v1.5.0
+- [ ] Pre-release workflow 6 fases completas
+- [ ] ATUALIZAR TODOS OS LIVING DOCS (README, CHANGELOG, CLAUDE.md, copilot-instructions, codex, SECURITY.md)
+- [ ] CHANGELOG + tag + release + CI verde
+- [ ] npm publish verde
+- [ ] GitHub Discussions announcement
+- **Status:** pending
+
+**Status:** pending — design spec approved, issues created, awaiting implementation
+
+---
+
+### Phase 27: NFC-e model 65 (future) — #163
+- [ ] Parser + thermal DANFE template (80mm) + QR code
+- **Status:** future
+
+### Phase 28: CT-e model 57 (future) — #164
+- [ ] Parser + DACTE template
+- **Status:** future
+
+### Phase 29: MDF-e model 58 (future) — #165
+- [ ] Parser + DAMDFE template
+- **Status:** future
+
+---
+
 ## Notes
 - Plano detalhado: `docs/superpowers/plans/2026-03-10-n8n-nodes-brasil-hub.md`
 - Spec de design: `docs/superpowers/specs/2026-03-10-n8n-nodes-brasil-hub-design.md`

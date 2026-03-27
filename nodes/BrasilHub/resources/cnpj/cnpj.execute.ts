@@ -1,9 +1,8 @@
 import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import type { IProvider } from '../../types';
-import { buildMeta, buildResultItem, readCommonParams, reorderProviders } from '../../shared/utils';
+import type { IProvider, ICnpjResult } from '../../types';
+import { executeStandardQuery } from '../../shared/execute-helpers';
 import { validateCnpj, sanitizeCnpj } from '../../shared/validators';
-import { queryWithFallback } from '../../shared/fallback';
 import { normalizeCnpj } from './cnpj.normalize';
 
 const CNPJ_PROVIDERS: IProvider[] = [
@@ -21,17 +20,43 @@ function buildProviders(cnpj: string): IProvider[] {
 	return CNPJ_PROVIDERS.map((p) => ({ name: p.name, url: `${p.url}${cnpj}` }));
 }
 
+/** Formats a full CNPJ result into simplified output (6 key fields). */
+function formatSimplified(full: ICnpjResult): Record<string, unknown> {
+	return {
+		cnpj: full.cnpj,
+		razao_social: full.razao_social,
+		nome_fantasia: full.nome_fantasia,
+		situacao: full.situacao,
+		data_abertura: full.data_abertura,
+		porte: full.porte,
+	};
+}
+
+/** Formats a full CNPJ result into AI-friendly flat English output (8 key fields). */
+function formatAiSummary(full: ICnpjResult): Record<string, unknown> {
+	return {
+		cnpj: full.cnpj,
+		company: full.razao_social,
+		trade_name: full.nome_fantasia,
+		status: full.situacao,
+		since: full.data_abertura,
+		size: full.porte,
+		activity: full.atividade_principal ? `${full.atividade_principal.descricao} (${full.atividade_principal.codigo})` : '',
+		city: full.endereco ? `${full.endereco.municipio}/${full.endereco.uf}` : '',
+	};
+}
+
 /**
  * Executes a CNPJ query against public APIs with multi-provider fallback.
  *
- * Sanitizes input, validates length and checksum, queries providers in order
- * (BrasilAPI → CNPJ.ws → ReceitaWS), normalizes the response, and attaches metadata.
- * Optionally includes the raw provider response.
+ * Sanitizes input, validates length and checksum, then delegates to
+ * {@link executeStandardQuery} facade with output mode post-processing
+ * (BrasilAPI → CNPJ.ws → ReceitaWS → MinhaReceita → OpenCNPJ.org → OpenCNPJ.com → CNPJA).
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data with normalized CNPJ result as JSON.
- * @throws {NodeOperationError} If the CNPJ is invalid (wrong length or checksum) or all providers fail.
+ * @throws If the CNPJ is invalid (wrong length or checksum) or all providers fail.
  */
 export async function cnpjQuery(
 	context: IExecuteFunctions,
@@ -39,7 +64,6 @@ export async function cnpjQuery(
 ): Promise<INodeExecutionData[]> {
 	const cnpjInput = context.getNodeParameter('cnpj', itemIndex) as string;
 	const simplify = context.getNodeParameter('simplify', itemIndex, true) as boolean;
-	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 	const cnpj = sanitizeCnpj(cnpjInput);
 
 	if (cnpj.length !== 14) {
@@ -50,32 +74,18 @@ export async function cnpjQuery(
 		throw new NodeOperationError(context.getNode(), 'Invalid CNPJ checksum', { itemIndex });
 	}
 
-	const providers = reorderProviders(buildProviders(cnpj), primaryProvider);
-	const result = await queryWithFallback(context, providers, timeoutMs);
-
-	const full = normalizeCnpj(result.data, result.provider);
-	const meta = buildMeta(result.provider, cnpj, result.errors, result.rateLimited, result.retryAfterMs);
 	const outputMode = simplify ? 'simplified' : (context.getNodeParameter('outputMode', itemIndex, 'full') as string);
 
-	let normalized: Record<string, unknown>;
-	if (outputMode === 'simplified') {
-		normalized = { cnpj: full.cnpj, razao_social: full.razao_social, nome_fantasia: full.nome_fantasia, situacao: full.situacao, data_abertura: full.data_abertura, porte: full.porte };
-	} else if (outputMode === 'aiSummary') {
-		normalized = {
-			cnpj: full.cnpj,
-			company: full.razao_social,
-			trade_name: full.nome_fantasia,
-			status: full.situacao,
-			since: full.data_abertura,
-			size: full.porte,
-			activity: full.atividade_principal ? `${full.atividade_principal.descricao} (${full.atividade_principal.codigo})` : '',
-			city: full.endereco ? `${full.endereco.municipio}/${full.endereco.uf}` : '',
-		};
-	} else {
-		normalized = { ...full };
-	}
-
-	return buildResultItem(normalized, meta, result.data, includeRaw, itemIndex);
+	return executeStandardQuery(context, itemIndex, {
+		buildProviders: () => buildProviders(cnpj),
+		normalize: normalizeCnpj,
+		queryKey: cnpj,
+		postProcess: (full) => {
+			if (outputMode === 'simplified') return formatSimplified(full);
+			if (outputMode === 'aiSummary') return formatAiSummary(full);
+			return { ...full };
+		},
+	});
 }
 
 /**

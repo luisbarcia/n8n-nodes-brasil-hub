@@ -54,9 +54,11 @@ nodes/BrasilHub/
 ├── brasilHub.svg               # Node icon
 ├── types.ts                    # TypeScript interfaces
 ├── shared/
-│   ├── validators.ts           # CNPJ/CEP/CPF validation (local, no API)
+│   ├── description-builders.ts # Shared UI field builders (includeRawField)
+│   ├── execute-helpers.ts      # Facade + Strategy helpers (executeStandardQuery, createNormalizerDispatch)
 │   ├── fallback.ts             # Multi-provider fallback logic
-│   └── utils.ts                # Shared utilities (stripNonDigits, safeStr, buildMeta)
+│   ├── utils.ts                # Shared utilities (buildMeta, buildResultItem, safeStr)
+│   └── validators.ts           # CNPJ/CEP/CPF validation (local, no API)
 └── resources/
     ├── banks/                  # Bank resource (Query + List)
     ├── cambio/                 # Câmbio resource (List Currencies + Query Rate)

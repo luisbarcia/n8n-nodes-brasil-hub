@@ -1,5 +1,6 @@
 import type { IState, ICity } from '../../types';
 import { safeStr } from '../../shared/utils';
+import { createListNormalizerDispatch } from '../../shared/execute-helpers';
 
 /**
  * Normalizes a single state entry (same format for BrasilAPI and IBGE API).
@@ -32,50 +33,34 @@ function normalizeIbgeCity(item: Record<string, unknown>): ICity {
 	};
 }
 
-const stateNormalizers: Record<string, (item: Record<string, unknown>) => IState> = {
-	brasilapi: normalizeState,
-	ibge: normalizeState,
-};
-
-const cityNormalizers: Record<string, (item: Record<string, unknown>) => ICity> = {
-	brasilapi: normalizeBrasilApiCity,
-	ibge: normalizeIbgeCity,
-};
-
 /**
  * Normalizes a list of states from a provider response.
+ *
+ * Uses Strategy pattern list dispatch to provider-specific normalizers
+ * (BrasilAPI and IBGE share the same format).
  *
  * @param data - Raw provider response (array of states).
  * @param provider - Provider name ("brasilapi" or "ibge").
  * @returns Array of normalized state results.
- * @throws {Error} If provider is unknown.
+ * @throws If provider is unknown.
  */
-export function normalizeStates(data: unknown, provider: string): IState[] {
-	const normalizer = stateNormalizers[provider];
-	if (!normalizer) {
-		throw new Error(`Unknown IBGE states provider: ${provider}`);
-	}
-	if (!Array.isArray(data)) return [];
-	return (data as unknown[])
-		.filter((item) => item != null && typeof item === 'object')
-		.map((item) => normalizer(item as Record<string, unknown>));
-}
+export const normalizeStates = createListNormalizerDispatch<IState>({
+	brasilapi: normalizeState,
+	ibge: normalizeState,
+}, 'IBGE states');
 
 /**
  * Normalizes a list of cities from a provider response.
  *
+ * Uses Strategy pattern list dispatch with different normalizers per provider
+ * (BrasilAPI uses `codigo_ibge`, IBGE API uses `id`).
+ *
  * @param data - Raw provider response (array of cities).
  * @param provider - Provider name ("brasilapi" or "ibge").
  * @returns Array of normalized city results.
- * @throws {Error} If provider is unknown.
+ * @throws If provider is unknown.
  */
-export function normalizeCities(data: unknown, provider: string): ICity[] {
-	const normalizer = cityNormalizers[provider];
-	if (!normalizer) {
-		throw new Error(`Unknown IBGE cities provider: ${provider}`);
-	}
-	if (!Array.isArray(data)) return [];
-	return (data as unknown[])
-		.filter((item) => item != null && typeof item === 'object')
-		.map((item) => normalizer(item as Record<string, unknown>));
-}
+export const normalizeCities = createListNormalizerDispatch<ICity>({
+	brasilapi: normalizeBrasilApiCity,
+	ibge: normalizeIbgeCity,
+}, 'IBGE cities');

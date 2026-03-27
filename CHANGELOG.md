@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+* replace Math.random with crypto.randomInt in fake generators ([#145](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/145)) ([9830224](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/9830224))
+* resolve 16 SonarCloud issues (1 critical, 15 minor) ([#143](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/143)) ([50d42a3](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/50d42a3))
+* remove docs-arsenal spec from wrong project ([61752d1](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/61752d1))
+
+### Changed
+
+* refactor: extract Facade and Strategy helpers to reduce execute/normalize boilerplate ([4b9b52c](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/4b9b52c))
+
+### Documentation
+
+* migrate @throws tags from JSDoc to TSDoc format ([4e6e318](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/4e6e318))
+* add NF-e resource design spec and update planning files ([bafdeba](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/bafdeba))
+* add docs-arsenal plugin spec (feature-forge output) ([73e1f41](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/73e1f41))
+
 ## [1.4.1](https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.4.0...v1.4.1) (2026-03-23)
 
 

@@ -124,7 +124,7 @@ export async function fipeBrands(
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
  * @returns One n8n item per model.
- * @throws {NodeOperationError} If brandCode is empty.
+ * @throws If brandCode is empty.
  */
 export async function fipeModels(
 	context: IExecuteFunctions,
@@ -153,7 +153,7 @@ export async function fipeModels(
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
  * @returns One n8n item per year.
- * @throws {NodeOperationError} If brandCode or modelCode is empty.
+ * @throws If brandCode or modelCode is empty.
  */
 export async function fipeYears(
 	context: IExecuteFunctions,
@@ -184,7 +184,7 @@ export async function fipeYears(
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
  * @returns Single n8n item with normalized price data.
- * @throws {NodeOperationError} If brandCode, modelCode, or yearCode is empty.
+ * @throws If brandCode, modelCode, or yearCode is empty.
  */
 export async function fipePrice(
 	context: IExecuteFunctions,

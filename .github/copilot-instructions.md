@@ -20,9 +20,11 @@ Dictionary map router dispatches to per-resource handlers:
 nodes/BrasilHub/
 ├── BrasilHub.node.ts            # Node class + router
 ├── types.ts                     # Output interfaces
-├── shared/validators.ts         # CNPJ/CPF checksum, CEP format (local, no API)
-├── shared/fallback.ts           # Generic multi-provider fallback
-├── shared/utils.ts              # Shared utilities (stripNonDigits, safeStr)
+├── shared/description-builders.ts # Shared UI field builders (includeRawField)
+├── shared/execute-helpers.ts      # Facade + Strategy helpers (executeStandardQuery, createNormalizerDispatch)
+├── shared/fallback.ts             # Generic multi-provider fallback
+├── shared/utils.ts                # Shared utilities (buildMeta, buildResultItem, safeStr)
+├── shared/validators.ts           # CNPJ/CPF checksum, CEP format (local, no API)
 └── resources/{banks,cambio,cep,cnpj,cpf,ddd,fake,feriados,fipe,ibge,ncm,pix,taxas}/  # description, execute, normalize per resource
 ```
 
@@ -49,6 +51,7 @@ nodes/BrasilHub/
 
 ## Testing
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full testing guidelines. Summary:
 - TDD: write failing test first, then implement
 - Test normalizers with real API response fixtures per provider
 - Mock `IExecuteFunctions` context for execute handler tests
@@ -62,6 +65,7 @@ nodes/BrasilHub/
 
 ## Adding a New Resource
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed instructions. Summary:
 1. Create `resources/<name>/` with 3 files (description, execute, normalize)
 2. Add interfaces to `types.ts`
 3. Register in dictionary map in `BrasilHub.node.ts`

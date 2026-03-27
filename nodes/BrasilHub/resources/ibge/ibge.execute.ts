@@ -1,8 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItems, readCommonParams, reorderProviders } from '../../shared/utils';
-import { queryWithFallback } from '../../shared/fallback';
+import { executeStandardList } from '../../shared/execute-helpers';
 import { normalizeStates, normalizeCities } from './ibge.normalize';
 
 const VALID_UFS = new Set([
@@ -32,39 +31,39 @@ function buildCitiesProviders(uf: string): IProvider[] {
 /**
  * Lists all Brazilian states (UFs) with multi-provider fallback.
  *
+ * Delegates to {@link executeStandardList} facade.
+ *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
  * @returns One n8n item per state (27 total).
- * @throws {NodeOperationError} If all providers fail.
+ * @throws If all providers fail.
  */
 export async function ibgeStates(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
-
-	const result = await queryWithFallback(context, reorderProviders(STATES_PROVIDERS, primaryProvider), timeoutMs);
-	const states = normalizeStates(result.data, result.provider);
-	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta(result.provider, 'all', result.errors, result.rateLimited, result.retryAfterMs);
-
-	return buildResultItems(states, meta, rawItems, includeRaw, itemIndex);
+	return executeStandardList(context, itemIndex, {
+		buildProviders: () => STATES_PROVIDERS,
+		normalize: normalizeStates,
+		queryKey: 'all',
+	});
 }
 
 /**
  * Lists all municipalities for a given state with multi-provider fallback.
  *
+ * Validates UF, then delegates to {@link executeStandardList} facade.
+ *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index.
  * @returns One n8n item per municipality.
- * @throws {NodeOperationError} If the UF is invalid or all providers fail.
+ * @throws If the UF is invalid or all providers fail.
  */
 export async function ibgeCities(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const ufInput = (context.getNodeParameter('uf', itemIndex) as string).toUpperCase().trim();
-	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 
 	if (!VALID_UFS.has(ufInput)) {
 		throw new NodeOperationError(
@@ -74,11 +73,9 @@ export async function ibgeCities(
 		);
 	}
 
-	const providers = reorderProviders(buildCitiesProviders(ufInput), primaryProvider);
-	const result = await queryWithFallback(context, providers, timeoutMs);
-	const cities = normalizeCities(result.data, result.provider);
-	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta(result.provider, ufInput, result.errors, result.rateLimited, result.retryAfterMs);
-
-	return buildResultItems(cities, meta, rawItems, includeRaw, itemIndex);
+	return executeStandardList(context, itemIndex, {
+		buildProviders: () => buildCitiesProviders(ufInput),
+		normalize: normalizeCities,
+		queryKey: ufInput,
+	});
 }

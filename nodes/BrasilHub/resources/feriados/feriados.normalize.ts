@@ -1,5 +1,6 @@
 import type { IFeriado } from '../../types';
 import { safeStr } from '../../shared/utils';
+import { createListNormalizerDispatch } from '../../shared/execute-helpers';
 
 /** Normalizes a single BrasilAPI feriado entry. */
 function normalizeBrasilApi(item: Record<string, unknown>): IFeriado {
@@ -22,26 +23,18 @@ function normalizeNager(item: Record<string, unknown>): IFeriado {
 	};
 }
 
-const normalizers: Record<string, (item: Record<string, unknown>) => IFeriado> = {
-	brasilapi: normalizeBrasilApi,
-	nagerdate: normalizeNager,
-};
-
 /**
  * Normalizes a list of holidays from a provider response.
+ *
+ * Uses Strategy pattern list dispatch to provider-specific normalizers
+ * (BrasilAPI, Nager.Date) with automatic Array.isArray guard and null filtering.
  *
  * @param data - Raw provider response (array of holidays).
  * @param provider - Provider name ("brasilapi" or "nagerdate").
  * @returns Array of normalized holiday results.
- * @throws {Error} If provider is unknown.
+ * @throws If provider is unknown.
  */
-export function normalizeFeriados(data: unknown, provider: string): IFeriado[] {
-	const normalizer = normalizers[provider];
-	if (!normalizer) {
-		throw new Error(`Unknown feriados provider: ${provider}`);
-	}
-	if (!Array.isArray(data)) return [];
-	return (data as unknown[])
-		.filter((item) => item != null && typeof item === 'object')
-		.map((item) => normalizer(item as Record<string, unknown>));
-}
+export const normalizeFeriados = createListNormalizerDispatch<IFeriado>({
+	brasilapi: normalizeBrasilApi,
+	nagerdate: normalizeNager,
+}, 'feriados');

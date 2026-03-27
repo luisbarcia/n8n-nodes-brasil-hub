@@ -1,9 +1,8 @@
 import type { IExecuteFunctions, INodeExecutionData, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItem, readCommonParams, reorderProviders } from '../../shared/utils';
+import { executeStandardQuery } from '../../shared/execute-helpers';
 import { validateCep, sanitizeCep } from '../../shared/validators';
-import { queryWithFallback } from '../../shared/fallback';
 import { normalizeCep } from './cep.normalize';
 
 const CEP_PROVIDERS: IProvider[] = [
@@ -28,21 +27,19 @@ function buildProviders(cep: string): IProvider[] {
 /**
  * Executes a CEP query against public APIs with multi-provider fallback.
  *
- * Sanitizes input, validates length and format, queries providers in order
- * (BrasilAPI → ViaCEP → OpenCEP → ApiCEP), normalizes the response, and attaches metadata.
- * Optionally includes the raw provider response.
+ * Sanitizes input, validates length and format, then delegates to
+ * {@link executeStandardQuery} facade (BrasilAPI → ViaCEP → OpenCEP → ApiCEP).
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data with normalized CEP result as JSON.
- * @throws {NodeOperationError} If the CEP is invalid (wrong length or all zeros) or all providers fail.
+ * @throws If the CEP is invalid (wrong length or all zeros) or all providers fail.
  */
 export async function cepQuery(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const cepInput = context.getNodeParameter('cep', itemIndex) as string;
-	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 	const cep = sanitizeCep(cepInput);
 
 	if (cep.length !== 8) {
@@ -53,13 +50,11 @@ export async function cepQuery(
 		throw new NodeOperationError(context.getNode(), 'Invalid CEP', { itemIndex });
 	}
 
-	const providers = reorderProviders(buildProviders(cep), primaryProvider);
-	const result = await queryWithFallback(context, providers, timeoutMs);
-
-	const normalized = normalizeCep(result.data, result.provider);
-	const meta = buildMeta(result.provider, cep, result.errors, result.rateLimited, result.retryAfterMs);
-
-	return buildResultItem(normalized, meta, result.data, includeRaw, itemIndex);
+	return executeStandardQuery(context, itemIndex, {
+		buildProviders: () => buildProviders(cep),
+		normalize: normalizeCep,
+		queryKey: cep,
+	});
 }
 
 /**

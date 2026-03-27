@@ -1,8 +1,7 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { IProvider } from '../../types';
-import { buildMeta, buildResultItem, buildResultItems, readCommonParams, reorderProviders } from '../../shared/utils';
-import { queryWithFallback } from '../../shared/fallback';
+import { executeStandardQuery, executeStandardList } from '../../shared/execute-helpers';
 import { normalizeBank, normalizeBanks } from './banks.normalize';
 
 const BANKS_LIST_PROVIDERS: IProvider[] = [
@@ -26,17 +25,18 @@ function buildQueryProviders(bankCode: number): IProvider[] {
 /**
  * Queries a single bank by COMPE code with multi-provider fallback.
  *
+ * Validates code, then delegates to {@link executeStandardQuery} facade.
+ *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data with normalized bank result.
- * @throws {NodeOperationError} If the bank code is invalid or all providers fail.
+ * @throws If the bank code is invalid or all providers fail.
  */
 export async function banksQuery(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const bankCodeInput = context.getNodeParameter('bankCode', itemIndex) as string;
-	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 	const bankCode = Number.parseInt(bankCodeInput, 10);
 
 	if (!Number.isInteger(bankCode) || bankCode <= 0) {
@@ -47,38 +47,30 @@ export async function banksQuery(
 		);
 	}
 
-	const providers = reorderProviders(buildQueryProviders(bankCode), primaryProvider);
-	const result = await queryWithFallback(context, providers, timeoutMs);
-
-	const normalized = normalizeBank(result.data, result.provider, bankCode);
-
-	const meta = buildMeta(result.provider, String(bankCode), result.errors, result.rateLimited, result.retryAfterMs);
-
-	return buildResultItem(normalized, meta, result.data, includeRaw, itemIndex);
+	return executeStandardQuery(context, itemIndex, {
+		buildProviders: () => buildQueryProviders(bankCode),
+		normalize: (data, provider) => normalizeBank(data, provider, bankCode),
+		queryKey: String(bankCode),
+	});
 }
 
 /**
  * Lists all Brazilian banks with multi-provider fallback.
  *
- * Returns one n8n item per bank. Each item includes normalized data and metadata.
+ * Delegates to {@link executeStandardList} facade. Returns one n8n item per bank.
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data (one per bank).
- * @throws {NodeOperationError} If all providers fail.
+ * @throws If all providers fail.
  */
 export async function banksList(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
-
-	const result = await queryWithFallback(context, reorderProviders(BANKS_LIST_PROVIDERS, primaryProvider), timeoutMs);
-
-	const rawItems = result.data as Array<Record<string, unknown>>;
-	const banks = normalizeBanks(result.data, result.provider);
-
-	const meta = buildMeta(result.provider, 'all', result.errors, result.rateLimited, result.retryAfterMs);
-
-	return buildResultItems(banks, meta, rawItems, includeRaw, itemIndex);
+	return executeStandardList(context, itemIndex, {
+		buildProviders: () => BANKS_LIST_PROVIDERS,
+		normalize: normalizeBanks,
+		queryKey: 'all',
+	});
 }

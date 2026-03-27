@@ -3,6 +3,7 @@ import { NodeOperationError } from 'n8n-workflow';
 import { buildMeta, buildResultItems, readCommonParams } from '../../shared/utils';
 import { queryWithFallback } from '../../shared/fallback';
 import type { IProvider } from '../../types';
+import { executeStandardList } from '../../shared/execute-helpers';
 import { normalizeCurrencies, normalizeCotacoes } from './cambio.normalize';
 
 /** Pattern for validating ISO currency codes (3 uppercase letters). */
@@ -14,8 +15,7 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 /**
  * Lists all available currencies from the Central Bank via BrasilAPI.
  *
- * Returns one n8n item per currency. Uses queryWithFallback with a
- * single provider for consistent rate-limit awareness and error handling.
+ * Returns one n8n item per currency. Delegates to {@link executeStandardList} facade.
  *
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
@@ -25,18 +25,13 @@ export async function cambioCurrencies(
 	context: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-	const { includeRaw, timeoutMs } = readCommonParams(context, itemIndex);
-
-	const providers: IProvider[] = [
-		{ name: 'brasilapi', url: 'https://brasilapi.com.br/api/cambio/v1/moedas' },
-	];
-	const result = await queryWithFallback(context, providers, timeoutMs);
-
-	const currencies = normalizeCurrencies(result.data);
-	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
-	const meta = buildMeta(result.provider, 'moedas', result.errors, result.rateLimited, result.retryAfterMs);
-
-	return buildResultItems(currencies, meta, rawItems, includeRaw, itemIndex);
+	return executeStandardList(context, itemIndex, {
+		buildProviders: () => [
+			{ name: 'brasilapi', url: 'https://brasilapi.com.br/api/cambio/v1/moedas' },
+		],
+		normalize: normalizeCurrencies,
+		queryKey: 'moedas',
+	});
 }
 
 /**
@@ -49,7 +44,7 @@ export async function cambioCurrencies(
  * @param context - n8n execution context.
  * @param itemIndex - Current item index for parameter retrieval and item pairing.
  * @returns Array of n8n execution data (one per quotation).
- * @throws {NodeOperationError} If the currency code or date is invalid.
+ * @throws If the currency code or date is invalid.
  */
 export async function cambioRate(
 	context: IExecuteFunctions,

@@ -61,9 +61,10 @@ nodes/BrasilHub/
 │   ├── pix/                     # List + Query (BrasilAPI)
 │   └── taxas/                   # List + Query (BrasilAPI)
 ├── shared/
-│   ├── fallback.ts              # Generic multi-provider fallback (10s timeout)
-│   ├── utils.ts                 # Shared utilities (buildMeta, buildResultItem, safeStr)
 │   ├── description-builders.ts  # Shared UI field builders (includeRawField)
+│   ├── execute-helpers.ts       # Facade + Strategy helpers (executeStandardQuery, createNormalizerDispatch)
+│   ├── fallback.ts              # Generic multi-provider fallback (configurable timeout)
+│   ├── utils.ts                 # Shared utilities (buildMeta, buildResultItem, safeStr)
 │   └── validators.ts            # CNPJ/CPF checksum, CEP format validation (local, no API)
 ```
 
@@ -82,6 +83,8 @@ const resourceOperations = Object.fromEntries(allResources.map(r => [r.resource,
 The `execute()` method reads `resource` + `operation` params and dispatches to the correct handler.
 
 ### Adding a New Resource
+
+See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for detailed step-by-step instructions. Summary:
 
 1. Create `resources/<name>/` with 3 files (description, execute, normalize)
 2. Add interfaces to `types.ts`
@@ -216,139 +219,20 @@ gh run list --workflow=release.yml --limit 1
 - Se falhar: diagnosticar e corrigir imediatamente, antes de seguir para próxima tarefa
 - Nunca lançar release sem CI passando
 
-## Pre-Release Workflow — Checklist Obrigatório
+## Pre-Release Workflow — Regras
 
-Executar **antes de cada release**, na ordem abaixo. Cada fase usa skills específicas.
+**Checklist detalhado: [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md)** (6 fases, TODAS obrigatórias)
 
 **REGRAS INVIOLÁVEIS:**
-- **PROIBIDO publicar (tag/release/npm publish) sem completar TODAS as 5 fases E o Testing Arsenal.** Ambos são gates bloqueantes. Sem exceções.
-- **Executar TODAS as 5 fases**, na ordem. Nenhuma fase pode ser pulada.
-- **Testing Arsenal (`/testing-arsenal`) é obrigatório** — rodar ANTES da Fase 4 (Release). Mínimo: test-master, test-skeptic, code-reviewer, security-reviewer. Corrigir todos os findings CRITICAL/HIGH antes de prosseguir.
+- **PROIBIDO publicar (tag/release/npm publish) sem completar TODAS as 6 fases.** Sem exceções.
 - **Cada fase é um gate bloqueante** — não prosseguir para a próxima se houver findings Critical/High não resolvidos.
-- **Audits (Fase 1) devem COMPLETAR antes de fazer merge/tag/release** — rodar em background é OK, mas esperar resultado antes de prosseguir.
+- **Testing Arsenal (`/testing-arsenal`) é obrigatório** — Fase 3, mínimo: test-master, test-skeptic, code-reviewer, security-reviewer.
+- **Audits (Fase 1) devem COMPLETAR antes de merge/tag/release** — rodar em background é OK, mas esperar resultado.
 - **Fase 2 (test-master, simplify, code-documenter) é OBRIGATÓRIA** — não pular por parecer redundante.
-- **Paralelizar é permitido DENTRO de cada fase** (ex: 3 agents da Fase 2 em paralelo), mas não ENTRE fases.
-- **Lição aprendida:** v0.2.0–v0.4.0 pularam Fase 2; v0.5.0 publicou antes do Testing Arsenal — bugs e vulnerabilidades de segurança foram encontrados após publicação. Isso não pode se repetir.
+- **Paralelizar é permitido DENTRO de cada fase**, mas não ENTRE fases.
+- **Fase 6 (post-release) é obrigatória** — GitHub Discussions, npm verification, living docs check.
 
-### Fase 1: Compliance & Segurança (bloqueia release)
-
-| # | Skill | O que faz | Comando referência |
-|---|-------|-----------|--------------------|
-| 1 | `n8n-node-dev` | Audita compliance com requisitos de community node (17 checks: package.json, codex, icons, descriptions, ESLint) | `/n8n-node-dev` → checklist |
-| 2 | `n8n-validation` | Valida configuração do node (params, types, displayConditions) | `/n8n-validation` |
-| 3 | `security-reviewer` | Audit de segurança: input sanitization, SSRF, secrets exposure, deps | `/security-reviewer` |
-
-**Gate:** Todos os findings Critical/High devem ser corrigidos antes de prosseguir.
-
-### Fase 2: Qualidade de Código (bloqueia release)
-
-| # | Skill | O que faz | Target |
-|---|-------|-----------|--------------------|
-| 4 | `test-master` | Cobertura de testes ≥ 90% branches, edge cases | `/test-master` |
-| 5 | `simplify` | Code review: reuso, duplicação, eficiência | `/simplify` |
-| 6 | `code-documenter` | JSDoc 100% em funções/classes exportadas | `/code-documenter` |
-
-**Gate:** Coverage ≥ 90%, zero findings HIGH do simplify sem justificativa.
-
-### Fase 3: Testing Arsenal (bloqueia release)
-
-Rodar `/testing-arsenal` e executar no mínimo os 4 skills obrigatórios. Corrigir todos os findings antes de prosseguir.
-
-| # | Skill | O que faz | Obrigatório |
-|---|-------|-----------|----|
-| 7 | `test-master` | Attack tests adversariais (type confusion, null injection, XSS, overflow, unicode) | **SIM** |
-| 8 | `test-skeptic` | Auditar se os testes provam algo (false confidence, tautology, mock fidelity) | **SIM** |
-| 9 | `code-reviewer` | Code review (correctness, compliance, consistency, DRY) | **SIM** |
-| 10 | `security-reviewer` | Audit de segurança (SSRF, path traversal, input validation, URL encoding) | **SIM** |
-
-**Paralelização:** Steps 7+8 em paralelo (independentes), depois 9+10 em paralelo.
-
-**Gate:** Zero findings CRITICAL/HIGH. Todos os bugs encontrados devem ter regression tests.
-
-### Fase 4: Build & CI (bloqueia release)
-
-```bash
-# 11. Build limpo
-npx n8n-node build
-
-# 12. Lint limpo
-npx n8n-node lint
-
-# 13. Testes passando
-npx jest --coverage
-
-# 14. npm audit
-npm audit --audit-level=critical
-
-# 15. Push e verificar CI verde
-git push
-gh run list --limit 3
-```
-
-**Gate:** Tudo verde, zero erros.
-
-### Fase 5: Docs & Release (executar)
-
-**16. Atualizar TODOS os living docs (OBRIGATÓRIO):**
-- CHANGELOG.md — Nova entry [X.Y.Z] + links
-- package.json — version, description, keywords
-- README.md — Operations table, description, test count
-- CLAUDE.md — Overview, provider list, architecture
-- BrasilHub.node.json — Codex aliases
-- .github/copilot-instructions.md — Resource list, version
-- .github/SECURITY.md — Supported versions, provider list
-- ROADMAP.md — Marcar items como done
-- task_plan.md — Current Phase, checkboxes, status
-- progress.md — Session log, test results
-
-| # | Skill | O que faz |
-|---|-------|-----------|
-| 17 | `git-workflow-manager` | Conventional commits, CHANGELOG.md, tag semver |
-| 18 | `project-release` | Versioning, tag, gh release create |
-| 19 | `verification-before-completion` | Verificação final: CI verde, npm publicado |
-
-### Fase 6: Pós-Release (verificar + comunicar)
-
-```bash
-# 20. CI do release workflow passou
-gh run list --workflow=release.yml --limit 1
-
-# 21. Scan de community package passou (roda no release workflow)
-# Se falhar: corrigir e re-release
-
-# 22. Pacote no npm
-npm view n8n-nodes-brasil-hub version
-```
-
-**23. GitHub Discussions (OBRIGATÓRIO):**
-- Criar **Announcement** em Discussions com resumo do release (o que mudou, breaking changes, upgrade instructions)
-- Atualizar **Roadmap discussion** (#63) com status atual dos recursos planejados
-- Se houve deprecação de versões, mencionar no announcement
-
-**24. Living Docs verificação final:**
-- Grep por versão antiga no repo — confirmar que TODOS os docs refletem a nova versão
-- Se algum doc ficou desatualizado, corrigir e commitar antes de considerar release concluído
-
-**25. Deprecação de versões bugadas (se aplicável):**
-- `npm deprecate "n8n-nodes-brasil-hub@<X.Y.Z" "mensagem"` para versões com bugs críticos
-- Usar granular access token com bypass 2FA
-
-**Checklist detalhado: ver [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md)**
-
-### Resumo Rápido (copiar e colar)
-
-```
-PRE-RELEASE CHECKLIST (6 fases, TODAS obrigatórias):
-□ Fase 1: /n8n-node-dev → /n8n-validation → /security-reviewer
-□ Fase 2: /test-master → /simplify → /code-documenter
-□ Fase 3: /testing-arsenal → test-master + test-skeptic + code-reviewer + security-reviewer → fix findings
-□ Fase 4: build → lint → test → audit → push → CI verde
-□ Fase 5: ATUALIZAR TODOS OS DOCS → changelog → tag → release
-□ Fase 6: CI release verde → npm publicado → discussions → docs verification → deprecate
-
-⛔ PROIBIDO publicar sem completar TODAS as 6 fases.
-📋 Checklist detalhado: RELEASE_CHECKLIST.md
-```
+**Lições aprendidas:** v0.2.0–v0.4.0 pularam Fase 2; v0.5.0 publicou antes do Testing Arsenal; v0.8.0 esqueceu Discussions. Bugs e vulnerabilidades foram encontrados após publicação.
 
 ## Living Docs — Atualizar em Mudanças Estruturais
 
@@ -361,6 +245,7 @@ Estes arquivos contêm informações que ficam desatualizadas quando o projeto m
 | `.github/CONTRIBUTING.md` | Node.js version, project structure, test guidelines |
 | `.github/copilot-instructions.md` | Arquitetura, test guidelines, code style |
 | `.github/SECURITY.md` | Supported versions |
+| `SECURITY-ASSESSMENT.md` | Attack surface, threat table, resource/operation counts, provider list |
 | `CHANGELOG.md` | Detalhes técnicos nas entries (test matrix, fallback behavior) |
 | `package.json` | Keywords, engines, scripts |
 | `sonar-project.properties` | Source/test paths, exclusions |
@@ -374,6 +259,7 @@ Estes arquivos contêm informações que ficam desatualizadas quando o projeto m
 - Mudou test infra → grep `useFakeTimers`, `runWithTimers`, `jest.config`
 - Mudou CI pipeline → grep `sonarcloud`, `coverage`, workflow names
 - Adicionou arquivo em `shared/` → grep tree structures nos .md
+- Adicionou novo recurso → grep resource counts, operations counts, provider lists nos .md + articles
 - Mudou release flow → grep `npm publish`, `provenance`, `release.yml`
 
 ## Spec & Plan
