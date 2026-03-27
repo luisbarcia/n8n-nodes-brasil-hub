@@ -1,14 +1,14 @@
 ---
 title: How to query Brazilian public data in n8n without writing code
 published: false
-description: One node, 11 resources, 23 providers. Query CNPJ, CEP, CPF, banks, FIPE, IBGE, PIX and more with automatic fallback.
+description: One node, 13 resources, 25 providers. Query CNPJ, CEP, CPF, banks, FIPE, IBGE, PIX, Câmbio, Taxas and more with automatic fallback.
 tags: n8n, brazil, automation, api
 canonical_url: https://github.com/luisbarcia/n8n-nodes-brasil-hub
 ---
 
 If you automate anything involving Brazilian data in n8n, you've probably built the same thing I did: an HTTP Request node pointing at BrasilAPI, a Code node to normalize the response, and a silent prayer that the API stays up at 2am when your workflow runs.
 
-I got tired of rebuilding this for every project. So I built Brasil Hub -- a single n8n community node that handles CNPJ, CEP, CPF, banks, DDD, holidays, FIPE vehicle prices, IBGE geography, NCM tax codes, PIX participants, and even fake test data generation. 11 resources, 23 providers, automatic fallback, zero credentials.
+I got tired of rebuilding this for every project. So I built Brasil Hub -- a single n8n community node that handles CNPJ, CEP, CPF, banks, DDD, holidays, FIPE vehicle prices, IBGE geography, NCM tax codes, PIX participants, and even fake test data generation. 13 resources, 25 providers, automatic fallback, zero credentials.
 
 Here's how to use it.
 
@@ -96,8 +96,8 @@ For CNPJ queries, the AI Summary output mode returns flat English fields that LL
 
 ## The numbers
 
-- 11 resources, 24 operations, 23 providers
-- 1349 automated tests
+- 13 resources, 28 operations, 25 providers
+- 1626 automated tests
 - Zero runtime dependencies
 - MIT license
 - npm provenance + build attestation

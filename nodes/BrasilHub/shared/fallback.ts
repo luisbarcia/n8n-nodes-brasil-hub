@@ -10,7 +10,12 @@ export const MIN_TIMEOUT_MS = 1000;
 /** Maximum allowed timeout in milliseconds. */
 export const MAX_TIMEOUT_MS = 60000;
 
-/** Clamps a timeout value to the allowed range [MIN_TIMEOUT_MS, MAX_TIMEOUT_MS]. */
+/**
+ * Clamps a timeout value to the allowed range [MIN_TIMEOUT_MS, MAX_TIMEOUT_MS].
+ *
+ * @param value - Raw timeout value in milliseconds (non-finite values fall back to default).
+ * @returns Clamped timeout value within [1000, 60000] ms.
+ */
 export function clampTimeout(value: number): number {
 	const n = Number.isFinite(value) ? value : DEFAULT_TIMEOUT_MS;
 	return Math.max(MIN_TIMEOUT_MS, Math.min(MAX_TIMEOUT_MS, n));

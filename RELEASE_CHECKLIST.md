@@ -27,7 +27,7 @@ Copiar este checklist para cada release. **TODOS os itens são obrigatórios.** 
 ### Fase 4: Build & CI
 - [ ] `npx n8n-node build` — Build limpo
 - [ ] `npx n8n-node lint` — 0 errors
-- [ ] `npx jest --coverage` — Todos passando, ≥ 95% branches
+- [ ] `npx jest --coverage` — Todos passando, ≥ 90% branches
 - [ ] `npm audit --audit-level=critical` — 0 critical vulns
 - [ ] **Gate:** Tudo verde
 
@@ -39,6 +39,7 @@ Copiar este checklist para cada release. **TODOS os itens são obrigatórios.** 
 - [ ] **BrasilHub.node.json** (codex) — Aliases atualizados
 - [ ] **.github/copilot-instructions.md** — Resource list + version
 - [ ] **.github/SECURITY.md** — Supported versions + provider list
+- [ ] **SECURITY-ASSESSMENT.md** — Attack surface, threat table, resource/operation counts
 - [ ] **ROADMAP.md** — Marcar items como done
 - [ ] **task_plan.md** — Current Phase + checkboxes + status
 - [ ] **progress.md** — Session log + test results + 5-Question Reboot

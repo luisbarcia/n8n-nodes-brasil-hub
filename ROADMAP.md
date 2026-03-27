@@ -39,7 +39,7 @@ Each new resource ships as its own MINOR release for faster iteration and easier
 - [x] **Configurable Timeout** — Override default 10s timeout per operation
 - [x] **Rate Limit Awareness** — Detect HTTP 429, skip to next provider, expose in _meta
 - [x] **CNPJ Output Mode** — Simplified (default), Full, AI Summary
-- [ ] **Creator Portal resubmission** — Submit stable v1.0.0 for "Verified" badge
+- [ ] **Creator Portal resubmission** — Submit stable release for "Verified" badge (deferred — evaluating timing)
 
 ## v1.2.0 — FIPE Reference Tables + PIX ✅
 

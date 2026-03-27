@@ -1,7 +1,7 @@
 # Design Spec: NF-e Resource (Parse XML + Generate DANFE + Validate Key)
 
-**Date:** 2026-03-27
-**Status:** Draft
+**Date:** 2026-03-27  
+**Status:** Draft  
 **Goal:** Add NF-e resource to Brasil Hub that parses Brazilian fiscal document XMLs, generates print-ready DANFE HTML, and validates access keys — all 100% local, no API calls.
 
 ## Context

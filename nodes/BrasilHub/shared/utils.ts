@@ -25,6 +25,8 @@ export function safeStr(value: unknown): string {
  * @param provider - Name of the provider that returned the data.
  * @param query - Sanitized input used for the query.
  * @param errors - Error messages from providers that failed before the successful one.
+ * @param rateLimited - Whether the successful provider returned a 429 status.
+ * @param retryAfterMs - Milliseconds to wait before retrying (from `Retry-After` header).
  * @returns IMeta object ready to attach to the response.
  */
 export function buildMeta(
@@ -148,8 +150,11 @@ export function reorderProviders<T extends { name: string }>(providers: T[], pri
 
 /** Common parameters shared by all API-calling handlers. */
 export interface ICommonParams {
+	/** Whether to include the raw provider response alongside normalized output. */
 	includeRaw: boolean;
+	/** HTTP request timeout in milliseconds (clamped to 1000–60000). */
 	timeoutMs: number;
+	/** User-selected primary provider name, or `'auto'` for default fallback order. */
 	primaryProvider: string;
 }
 
