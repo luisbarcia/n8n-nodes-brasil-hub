@@ -1,5 +1,52 @@
 # Findings & Decisions
 
+## NF-e / DANFE — Technical Findings (2026-03-27)
+
+### XML Schema NF-e v4.00
+- **Namespace:** `http://www.portalfiscal.inf.br/nfe`
+- **Root:** `nfeProc` (authorized) or `NFe` (bare)
+- **Version:** 4.00 (current), UTF-8 mandatory (Rejeição 402 if not)
+- **Max items:** 990 per NF-e (`det nItem="1"` to `det nItem="990"`)
+- **NF-e vs NFC-e:** Same namespace — differentiate by `ide/mod` (55 vs 65)
+- **CT-e:** Different namespace (`/cte`), root `cteProc`/`CTe`
+- **MDF-e:** Different namespace (`/mdfe`), root `mdfeProc`/`MDFe`
+
+### fast-xml-parser Critical Config
+- `parseTagValue: false` — **MUST HAVE**. Without this, CNPJ `00822602000124` becomes `822602000124` (leading zeros lost)
+- `isArray` callback — `det`, `dup`, `detPag`, `vol` must be arrays even with 1 occurrence
+- `removeNSPrefix: true` — handles both prefixed (`nfe:NFe`) and non-prefixed XML
+- **Pin version** — issue #596 reported removeNSPrefix bug in specific version
+
+### Access Key (Chave de Acesso) Algorithm
+- 44 digits: cUF(2) + AAMM(4) + CNPJ(14) + mod(2) + serie(3) + nNF(9) + tpEmis(1) + cNF(8) + cDV(1)
+- Modulo 11: weights `2,3,4,5,6,7,8,9` cycling right-to-left on first 43 digits
+- **Edge case:** remainder < 2 (i.e., 0 or 1) → DV = 0. NOT `11 - remainder`.
+
+### Code128C Barcode (DANFE)
+- Encodes pairs of digits (44 digits = 22 pairs)
+- Checksum: modulo 103 (different from access key's modulo 11!)
+- CONFAZ spec: X-Dimension 0.25-0.33mm, height ≥5mm, quiet zone 10x
+- NFC-e (model 65) uses QR Code instead of Code128
+
+### Binary Data in n8n — First Use in Project
+- **Input:** `this.helpers.assertBinaryData(itemIndex, propertyName)` → Buffer.from(data, 'base64')
+- **Output:** `this.helpers.prepareBinaryData(buffer, fileName, mimeType)` → set in `binary` field
+- No existing pattern in project — this is new territory
+
+### No Public NF-e Status API
+- SEFAZ consulta pública has CAPTCHA (not API-friendly)
+- BrasilAPI doesn't have NF-e endpoint
+- NF-e.io is paid
+- Decision: replaced "Query Status" with "Validate Key" (100% local, reliable)
+
+### Sources
+- Portal NF-e (SEFAZ) — Esquemas XML
+- MOC SPED PR — DANFE/Código de Barras
+- XSD schemas PL_009_V4 (GitHub sped-nfe)
+- fast-xml-parser v4 docs + issue #596
+
+---
+
 ## Requirements
 - Community n8n node para dados públicos brasileiros
 - v1.0: CNPJ + CEP (2 resources, 2 operations cada: Query + Validate)
