@@ -241,7 +241,7 @@ describe('executeStandardList', () => {
 		const ctx = createMockContext();
 		(ctx.helpers.httpRequest as jest.Mock).mockResolvedValue(listData);
 
-		const normalize = jest.fn((_data: unknown) => [{ id: '1' }, { id: '2' }]);
+		const normalize = jest.fn(() => [{ id: '1' }, { id: '2' }]);
 		const result = await executeStandardList(ctx, 0, {
 			buildProviders: () => [{ name: 'prov1', url: 'https://api.test/v1/' }],
 			normalize,
