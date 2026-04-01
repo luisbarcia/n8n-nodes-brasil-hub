@@ -17,7 +17,7 @@ const CNPJ_PROVIDERS: IProvider[] = [
 
 /** Appends the sanitized CNPJ to each provider base URL. */
 function buildProviders(cnpj: string): IProvider[] {
-	return CNPJ_PROVIDERS.map((p) => ({ name: p.name, url: `${p.url}${cnpj}` }));
+	return CNPJ_PROVIDERS.map((p) => ({ name: p.name, url: `${p.url}${encodeURIComponent(cnpj)}` }));
 }
 
 /** Formats a full CNPJ result into simplified output (6 key fields). */

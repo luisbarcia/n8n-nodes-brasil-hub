@@ -14,12 +14,13 @@ const CEP_PROVIDERS: IProvider[] = [
 
 /** Appends the sanitized CEP to each provider base URL (ViaCEP needs `/json` suffix, ApiCEP needs hyphenated format). */
 function buildProviders(cep: string): IProvider[] {
+	const encoded = encodeURIComponent(cep);
 	return CEP_PROVIDERS.map((p) => {
 		if (p.name === 'apicep') {
 			const formatted = `${cep.slice(0, 5)}-${cep.slice(5)}`;
-			return { name: p.name, url: `${p.url}${formatted}.json` };
+			return { name: p.name, url: `${p.url}${encodeURIComponent(formatted)}.json` };
 		}
-		const suffix = p.name === 'viacep' ? `${cep}/json` : cep;
+		const suffix = p.name === 'viacep' ? `${encoded}/json` : encoded;
 		return { name: p.name, url: `${p.url}${suffix}` };
 	});
 }

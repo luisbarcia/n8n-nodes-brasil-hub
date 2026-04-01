@@ -139,10 +139,23 @@ describe('BrasilHub node', () => {
 					continueOnFail: jest.fn(() => false),
 					helpers: { httpRequest: jest.fn().mockResolvedValue(mockResponse) },
 				};
-				// Should not throw "Unknown resource/operation"
-				await expect(
-					node.execute.call(ctx as never),
-				).resolves.not.toThrow();
+				// Verify router dispatches correctly and returns valid n8n output structure
+				const output = await node.execute.call(ctx as never);
+				expect(Array.isArray(output)).toBe(true);
+				expect(output.length).toBeGreaterThanOrEqual(1);
+				// n8n execute returns [[...items]] (array of arrays)
+				const items = output[0];
+				expect(Array.isArray(items)).toBe(true);
+				// Each item (if any) must have json + pairedItem
+				for (const item of items) {
+					expect(item).toHaveProperty('json');
+					expect(item).toHaveProperty('pairedItem');
+					// Query/list operations include _meta; validate/fake have no _meta
+					if (operation !== 'validate' && resource !== 'fake') {
+						expect(item.json).toHaveProperty('_meta');
+						expect(item.json._meta).toHaveProperty('provider');
+					}
+				}
 			}
 		}
 	});

@@ -52,6 +52,12 @@ describe('validateCnpj', () => {
 		it('should validate CNPJ where second check digit remainder < 2', () => {
 			expect(validateCnpj('80000000000040').valid).toBe(true);
 		});
+
+		it('should validate CNPJ where first check digit remainder == 2 (mutation killer)', () => {
+			// sum(digits[0..11] * weights1) % 11 == 2 → check1 = 9
+			// If mutated to `<= 2`, check1 would be 0 instead of 9, rejecting this valid CNPJ.
+			expect(validateCnpj('65799311600997').valid).toBe(true);
+		});
 	});
 
 	describe('invalid CNPJs', () => {
@@ -134,6 +140,12 @@ describe('validateCpf', () => {
 		it('should validate CPF where remainders are less than 2', () => {
 			expect(validateCpf('12345678909').valid).toBe(true); // d1 remainder=1
 			expect(validateCpf('74650688000').valid).toBe(true); // both remainders=0
+		});
+
+		it('should validate CPF where first check digit remainder == 2 (mutation killer)', () => {
+			// sum(digits[0..8] * weights1) % 11 == 2 → check1 = 9
+			// If mutated to `<= 2`, check1 would be 0 instead of 9, rejecting this valid CPF.
+			expect(validateCpf('63947846991').valid).toBe(true);
 		});
 	});
 
