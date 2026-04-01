@@ -199,7 +199,7 @@ n8n 1.0+ with Node.js 20 or 22. The node follows semantic versioning -- minor up
 git clone https://github.com/luisbarcia/n8n-nodes-brasil-hub.git
 cd n8n-nodes-brasil-hub
 npm install
-npm test          # 1656 tests, 99%+ coverage
+npm test          # 1665 tests, 99%+ coverage
 npm run build
 npm run lint
 ```

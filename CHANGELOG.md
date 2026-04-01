@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* add response validation to fallback engine — fixes Ghost CNPJ (error-shaped HTTP 200 responses now trigger fallback) and FIPE silent garbage (error objects now throw) ([#176](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/176)) ([#178](https://github.com/luisbarcia/n8n-nodes-brasil-hub/pull/178))
+* add 404 short-circuit to fallback engine — stops chain immediately for "entity not found" instead of trying all providers ([#176](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/176))
+* add encodeURIComponent to CNPJ, CEP, DDD URL construction for defense-in-depth ([#175](https://github.com/luisbarcia/n8n-nodes-brasil-hub/pull/175))
+* address 6 pre-ship audit findings: execute-helpers direct tests, mutation killers, strengthened assertions, structural router test ([#171](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/171)) ([#175](https://github.com/luisbarcia/n8n-nodes-brasil-hub/pull/175))
 * replace Math.random with crypto.randomInt in fake generators ([#145](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/145)) ([9830224](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/9830224))
 * resolve 16 SonarCloud issues (1 critical, 15 minor) ([#143](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/143)) ([50d42a3](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/50d42a3))
 * remove docs-arsenal spec from wrong project ([61752d1](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/61752d1))
@@ -19,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
+* fix stale test counts, factual errors, and comparison article across 8+ docs ([#171](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/171), [#172](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/172), [#174](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/174)) ([#175](https://github.com/luisbarcia/n8n-nodes-brasil-hub/pull/175))
+* add docs/articles and PROJECT_INDEX to Living Docs table in CLAUDE.md
 * migrate @throws tags from JSDoc to TSDoc format ([4e6e318](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/4e6e318))
 * add NF-e resource design spec and update planning files ([bafdeba](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/bafdeba))
 * add docs-arsenal plugin spec (feature-forge output) ([73e1f41](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/73e1f41))

@@ -1,7 +1,7 @@
 # Repository Index — n8n-nodes-brasil-hub
 
 **Version:** 1.4.1 | **License:** MIT | **Node:** >=20.0.0
-**Stats:** 59 source files, 35 test files, 1656 tests, 130 JSDoc'd exports
+**Stats:** 59 source files, 35 test files, 1665 tests, 130 JSDoc'd exports
 
 ## Architecture
 
@@ -104,7 +104,7 @@ Each resource follows the pattern: `description.ts` + `execute.ts` + `normalize.
 | `pix/` | 4 | List + Query |
 | `taxas/` | 4 | List + Query |
 
-## Test Files (35 specs, 1656 tests)
+## Test Files (35 specs, 1665 tests)
 
 | Category | Files | Coverage |
 |----------|-------|----------|
