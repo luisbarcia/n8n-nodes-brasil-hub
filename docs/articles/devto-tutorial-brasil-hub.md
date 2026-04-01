@@ -97,7 +97,7 @@ For CNPJ queries, the AI Summary output mode returns flat English fields that LL
 ## The numbers
 
 - 13 resources, 28 operations, 25 providers
-- 1656 automated tests
+- 1665 automated tests
 - Zero runtime dependencies
 - MIT license
 - npm provenance + build attestation

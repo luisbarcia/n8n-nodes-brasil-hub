@@ -47,7 +47,7 @@ n8n-nodes-brasil-hub/
 │       ├── execute-helpers.ts    # Facade+Strategy: executeStandardQuery, executeStandardList, createNormalizerDispatch, createListNormalizerDispatch
 │       ├── description-builders.ts # UI field builders (includeRawField)
 │       └── validators.ts        # CNPJ/CPF checksum, CEP format (local, no API)
-├── __tests__/                    # 35 test files, 1656 tests
+├── __tests__/                    # 35 test files, 1665 tests
 ├── __mocks__/                    # isolated-vm stub
 ├── .github/workflows/            # 11 CI/CD workflows
 ├── docs/                         # Specs, plans, articles, research
@@ -137,7 +137,7 @@ Each resource directory contains 3-5 files:
 | `IProvider` | `{ name, url }` for fallback engine |
 | `IFallbackResult` | Internal fallback result before normalization |
 
-## 7. Test Files (35 files, 1656 tests)
+## 7. Test Files (35 files, 1665 tests)
 
 ### Unit Tests (resource-specific)
 | File | Tests |
@@ -304,7 +304,7 @@ Each resource directory contains 3-5 files:
 |--------|-------|
 | Source files (nodes/) | 59 .ts files |
 | Test files | 35 .spec.ts files |
-| Test count | 1656 |
+| Test count | 1665 |
 | CI workflows | 10 |
 | Resources | 13 |
 | Operations | 28 |

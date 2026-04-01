@@ -21,7 +21,7 @@ Three ways to query Brazilian public data in n8n. Here's how they compare.
 | Configurable timeout | 1-60s per operation | No | Yes |
 | Provider selection | Dropdown to pick primary provider | No | N/A |
 | Output modes | Simplified, Full, AI Summary (CNPJ) | Raw, Normalized | Raw |
-| Tests | 1656 | Unknown | N/A |
+| Tests | 1665 | Unknown | N/A |
 | npm provenance | Yes | No | N/A |
 
 ## When to use each
