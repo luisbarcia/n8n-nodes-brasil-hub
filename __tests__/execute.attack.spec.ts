@@ -295,13 +295,12 @@ describe('VECTOR 1: API returns garbage', () => {
 			expect(result.json).toHaveProperty('cnpj', '');
 		});
 
-		it('FIXED — API truly returns null → cnpjQuery produces empty defaults (no crash)', async () => {
+		it('FIXED — API truly returns null → cnpjQuery rejects (response validation)', async () => {
 			// Force httpRequest to resolve to null directly
 			const ctx = createCnpjContext({});
 			(ctx.helpers.httpRequest as jest.Mock).mockResolvedValue(null);
-			// normalizeCnpj(null, 'brasilapi') → null coerced to {} → empty defaults
-			const [result] = await cnpjQuery(ctx, 0);
-			expect(result.json).toHaveProperty('cnpj', '');
+			// validateResponse rejects null → all providers fail → throws
+			await expect(cnpjQuery(ctx, 0)).rejects.toThrow();
 		});
 
 		it('API returns empty object → cnpjQuery returns empty fields without crash', async () => {
@@ -353,14 +352,12 @@ describe('VECTOR 2: API returns error object instead of data', () => {
 		expect(result).toEqual([]);
 	});
 
-	it('End-to-end: error object flows through fallback → normalizer produces garbage', async () => {
+	it('FIXED — End-to-end: error object rejected by response validation → throws', async () => {
 		const errorResponse = { message: 'CNPJ not found', type: 'NOT_FOUND' };
 		const ctx = createCnpjContext({}, errorResponse);
-		const [result] = await cnpjQuery(ctx, 0);
-		// BUG: user gets an "empty" CNPJ result instead of an error
-		expect(result.json).toHaveProperty('cnpj', '');
-		expect(result.json).toHaveProperty('razao_social', '');
-		expect(result.json).toHaveProperty('_meta');
+		// validateResponse now detects error-shaped responses and triggers fallback.
+		// All providers return the same error → all fail → throws.
+		await expect(cnpjQuery(ctx, 0)).rejects.toThrow();
 	});
 });
 
@@ -1403,15 +1400,10 @@ describe('FIPE VECTOR 16: API returns error object instead of data', () => {
 		expect(results).toEqual([]);
 	});
 
-	it('fipePrice — error object → produces safe defaults (silent garbage)', async () => {
+	it('FIXED — fipePrice — error object → throws NodeOperationError', async () => {
 		const ctx = createFipeContext({}, { error: 'veiculo nao encontrado', status: 404 });
-		const results = await fipePrice(ctx, 0);
-		// BUG CANDIDATE: normalizePrice doesn't check for error responses
-		// It produces an item with vehicleType=0, brand='', etc.
-		expect(results).toHaveLength(1);
-		expect(results[0].json).toHaveProperty('vehicleType', 0);
-		expect(results[0].json).toHaveProperty('brand', '');
-		expect(results[0].json).toHaveProperty('price', '');
+		// fipePrice now detects error-shaped responses and throws
+		await expect(fipePrice(ctx, 0)).rejects.toThrow('Vehicle not found');
 	});
 
 	it('fipeBrands — HTML error page → returns empty (string is not array)', async () => {

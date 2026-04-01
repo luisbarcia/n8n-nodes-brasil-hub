@@ -58,6 +58,12 @@ describe('validateCnpj', () => {
 			// If mutated to `<= 2`, check1 would be 0 instead of 9, rejecting this valid CNPJ.
 			expect(validateCnpj('65799311600997').valid).toBe(true);
 		});
+
+		it('should validate CNPJ where second check digit remainder == 2 (mutation killer)', () => {
+			// sum(digits[0..12] * weights2) % 11 == 2 → check2 = 9
+			// If mutated to `<= 2`, check2 would be 0 instead of 9, rejecting this valid CNPJ.
+			expect(validateCnpj('01000000067909').valid).toBe(true);
+		});
 	});
 
 	describe('invalid CNPJs', () => {

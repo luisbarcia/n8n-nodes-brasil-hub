@@ -428,3 +428,126 @@ describe('reorderProviders', () => {
 		expect(providers).toEqual(original);
 	});
 });
+
+// =============================================================================
+// validateResponse callback
+// =============================================================================
+
+describe('queryWithFallback — validateResponse option', () => {
+	it('should reject response and try next provider when validateResponse throws', async () => {
+		let callIndex = 0;
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callIndex++;
+					if (callIndex === 1) return { message: 'not found', type: 'NOT_FOUND' };
+					return { cnpj: '11222333000181', razao_social: 'TESTE' };
+				}),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+
+		const result = await queryWithFallback(ctx, providers, 10000, {
+			validateResponse: (data) => {
+				const d = data as Record<string, unknown>;
+				if (d.message || d.type === 'NOT_FOUND') {
+					throw new Error('Error-shaped response');
+				}
+			},
+		});
+
+		expect(result.provider).toBe('provider2');
+		expect(result.errors).toHaveLength(1);
+		expect(result.errors[0]).toContain('Error-shaped response');
+		expect((result.data as Record<string, unknown>).razao_social).toBe('TESTE');
+	});
+
+	it('should pass data through when validateResponse does not throw', async () => {
+		const ctx = createMockContext([{ success: true, data: { valid: true } }]);
+		const result = await queryWithFallback(ctx, providers, 10000, {
+			validateResponse: () => { /* no-op — data is valid */ },
+		});
+
+		expect(result.data).toEqual({ valid: true });
+		expect(result.provider).toBe('provider1');
+	});
+
+	it('should throw when all providers fail validation', async () => {
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockResolvedValue({ error: true }),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+
+		await expect(
+			queryWithFallback(ctx, providers, 10000, {
+				validateResponse: () => { throw new Error('Bad response'); },
+			}),
+		).rejects.toThrow('No provider could fulfill the request');
+	});
+});
+
+// =============================================================================
+// isRetryable callback (404 short-circuit)
+// =============================================================================
+
+describe('queryWithFallback — isRetryable option', () => {
+	it('should stop fallback chain when isRetryable returns false (404)', async () => {
+		const error404 = Object.assign(new Error('Not Found'), { httpCode: 404 });
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockRejectedValue(error404),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+
+		await expect(
+			queryWithFallback(ctx, providers, 10000, {
+				isRetryable: (err) => {
+					const code = Number((err as Record<string, unknown>)?.httpCode);
+					return code !== 404;
+				},
+			}),
+		).rejects.toThrow('Not Found');
+
+		// Should NOT have tried other providers — stopped at first
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledTimes(1);
+	});
+
+	it('should continue fallback when isRetryable returns true (500)', async () => {
+		let callIndex = 0;
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn().mockImplementation(async () => {
+					callIndex++;
+					if (callIndex === 1) throw Object.assign(new Error('Server Error'), { httpCode: 500 });
+					return { ok: true };
+				}),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+
+		const result = await queryWithFallback(ctx, providers, 10000, {
+			isRetryable: (err) => {
+				const code = Number((err as Record<string, unknown>)?.httpCode);
+				return code !== 404;
+			},
+		});
+
+		expect(result.provider).toBe('provider2');
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledTimes(2);
+	});
+
+	it('should default to retryable when isRetryable is not provided', async () => {
+		const error404 = Object.assign(new Error('Not Found'), { httpCode: 404 });
+		const ctx = {
+			helpers: {
+				httpRequest: jest.fn()
+					.mockRejectedValueOnce(error404)
+					.mockResolvedValueOnce({ ok: true }),
+			},
+		} as unknown as Parameters<typeof queryWithFallback>[0];
+
+		// Without isRetryable, 404 is treated as retryable (old behavior)
+		const result = await queryWithFallback(ctx, providers, 10000);
+		expect(result.provider).toBe('provider2');
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledTimes(2);
+	});
+});

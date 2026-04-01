@@ -2,6 +2,7 @@ import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import type { IProvider } from '../types';
 import { buildMeta, buildResultItem, buildResultItems, readCommonParams, reorderProviders } from './utils';
 import { queryWithFallback } from './fallback';
+import type { IFallbackOptions } from './fallback';
 
 /**
  * Facade for single-item API query handlers (Facade + Strategy pattern).
@@ -26,11 +27,12 @@ export async function executeStandardQuery<T extends object>(
 		normalize: (data: unknown, provider: string) => T;
 		queryKey: string;
 		postProcess?: (normalized: T) => Record<string, unknown>;
+		fallbackOptions?: IFallbackOptions;
 	},
 ): Promise<INodeExecutionData[]> {
 	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 	const providers = reorderProviders(config.buildProviders(), primaryProvider);
-	const result = await queryWithFallback(context, providers, timeoutMs);
+	const result = await queryWithFallback(context, providers, timeoutMs, config.fallbackOptions);
 	const normalized = config.normalize(result.data, result.provider);
 	const meta = buildMeta(result.provider, config.queryKey, result.errors, result.rateLimited, result.retryAfterMs);
 	const output = config.postProcess ? config.postProcess(normalized) : { ...normalized };
@@ -58,11 +60,12 @@ export async function executeStandardList<T extends object>(
 		buildProviders: () => IProvider[];
 		normalize: (data: unknown, provider: string) => T[];
 		queryKey: string;
+		fallbackOptions?: IFallbackOptions;
 	},
 ): Promise<INodeExecutionData[]> {
 	const { includeRaw, timeoutMs, primaryProvider } = readCommonParams(context, itemIndex);
 	const providers = reorderProviders(config.buildProviders(), primaryProvider);
-	const result = await queryWithFallback(context, providers, timeoutMs);
+	const result = await queryWithFallback(context, providers, timeoutMs, config.fallbackOptions);
 	const normalized = config.normalize(result.data, result.provider);
 	const meta = buildMeta(result.provider, config.queryKey, result.errors, result.rateLimited, result.retryAfterMs);
 	const rawItems = Array.isArray(result.data) ? result.data as Array<Record<string, unknown>> : [];
