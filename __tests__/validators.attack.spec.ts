@@ -251,8 +251,8 @@ describe('VECTOR 4: Integer Overflow / Boundary Values', () => {
 
 	it('should handle CPF near Number.MAX_SAFE_INTEGER', () => {
 		const result = validateCpf('90071992547');
-		// Just checking it doesn't crash — checksum unlikely to match
-		expect(typeof result.valid).toBe('boolean');
+		// d1 expected 0 (remainder=0), actual digit is 4 → invalid checksum
+		expect(result.valid).toBe(false);
 	});
 });
 

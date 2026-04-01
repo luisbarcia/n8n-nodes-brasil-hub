@@ -40,11 +40,14 @@ describe('VECTOR 1: Malformed API responses', () => {
 		}
 	});
 
-	describe('normalizeCnpj — PASS: handles "", 42, true gracefully', () => {
+	describe('normalizeCnpj — PASS: handles "", 42, true gracefully (returns empty defaults)', () => {
 		for (const value of ['', 42, true] as const) {
 			for (const provider of ['brasilapi', 'cnpjws', 'receitaws'] as const) {
-				it(`${JSON.stringify(value)} (${provider})`, () => {
-					expect(() => normalizeCnpj(value, provider)).not.toThrow();
+				it(`${JSON.stringify(value)} (${provider}) → empty defaults`, () => {
+					const result = normalizeCnpj(value, provider);
+					expect(result.cnpj).toBe('');
+					expect(result.razao_social).toBe('');
+					expect(result.capital_social).toBe(0);
 				});
 			}
 		}
@@ -72,22 +75,27 @@ describe('VECTOR 1: Malformed API responses', () => {
 		}
 	});
 
-	describe('normalizeCep — PASS: handles "", 42, true gracefully', () => {
+	describe('normalizeCep — PASS: handles "", 42, true gracefully (returns empty defaults)', () => {
 		for (const value of ['', 42, true] as const) {
 			for (const provider of ['brasilapi', 'opencep'] as const) {
-				it(`${JSON.stringify(value)} (${provider})`, () => {
-					expect(() => normalizeCep(value, provider)).not.toThrow();
+				it(`${JSON.stringify(value)} (${provider}) → empty defaults`, () => {
+					const result = normalizeCep(value, provider);
+					expect(result.cep).toBe('');
+					expect(result.logradouro).toBe('');
 				});
 			}
 		}
-		it('true (viacep) does not throw', () => {
-			expect(() => normalizeCep(true, 'viacep')).not.toThrow();
+		it('true (viacep) → empty defaults', () => {
+			const result = normalizeCep(true, 'viacep');
+			expect(result.cep).toBe('');
 		});
-		it('"" (viacep) does not throw', () => {
-			expect(() => normalizeCep('', 'viacep')).not.toThrow();
+		it('"" (viacep) → empty defaults', () => {
+			const result = normalizeCep('', 'viacep');
+			expect(result.cep).toBe('');
 		});
-		it('42 (viacep) does not throw', () => {
-			expect(() => normalizeCep(42, 'viacep')).not.toThrow();
+		it('42 (viacep) → empty defaults', () => {
+			const result = normalizeCep(42, 'viacep');
+			expect(result.cep).toBe('');
 		});
 	});
 
@@ -101,15 +109,21 @@ describe('VECTOR 1: Malformed API responses', () => {
 		}
 	});
 
-	describe('normalizeBank — PASS: handles "", 42, true', () => {
-		it('"" (brasilapi)', () => {
-			expect(() => normalizeBank('', 'brasilapi')).not.toThrow();
+	describe('normalizeBank — PASS: handles "", 42, true (returns empty defaults)', () => {
+		it('"" (brasilapi) → empty defaults', () => {
+			const result = normalizeBank('', 'brasilapi');
+			expect(result.code).toBe(0);
+			expect(result.name).toBe('');
 		});
-		it('42 (brasilapi)', () => {
-			expect(() => normalizeBank(42, 'brasilapi')).not.toThrow();
+		it('42 (brasilapi) → empty defaults', () => {
+			const result = normalizeBank(42, 'brasilapi');
+			expect(result.code).toBe(0);
+			expect(result.name).toBe('');
 		});
-		it('true (brasilapi)', () => {
-			expect(() => normalizeBank(true, 'brasilapi')).not.toThrow();
+		it('true (brasilapi) → empty defaults', () => {
+			const result = normalizeBank(true, 'brasilapi');
+			expect(result.code).toBe(0);
+			expect(result.name).toBe('');
 		});
 	});
 
@@ -138,15 +152,21 @@ describe('VECTOR 1: Malformed API responses', () => {
 		}
 	});
 
-	describe('normalizeDdd — PASS: handles "", 42, true', () => {
-		it('"" (brasilapi)', () => {
-			expect(() => normalizeDdd('', 'brasilapi')).not.toThrow();
+	describe('normalizeDdd — PASS: handles "", 42, true (returns empty defaults)', () => {
+		it('"" (brasilapi) → empty defaults', () => {
+			const result = normalizeDdd('', 'brasilapi');
+			expect(result.state).toBe('');
+			expect(result.cities).toEqual([]);
 		});
-		it('42 (brasilapi)', () => {
-			expect(() => normalizeDdd(42, 'brasilapi')).not.toThrow();
+		it('42 (brasilapi) → empty defaults', () => {
+			const result = normalizeDdd(42, 'brasilapi');
+			expect(result.state).toBe('');
+			expect(result.cities).toEqual([]);
 		});
-		it('true (brasilapi)', () => {
-			expect(() => normalizeDdd(true, 'brasilapi')).not.toThrow();
+		it('true (brasilapi) → empty defaults', () => {
+			const result = normalizeDdd(true, 'brasilapi');
+			expect(result.state).toBe('');
+			expect(result.cities).toEqual([]);
 		});
 	});
 });
@@ -222,9 +242,11 @@ describe('VECTOR 2: Unexpected nested types', () => {
 		expect(result.code).toBe(0);
 	});
 
-	it('PASS — CNPJ: estabelecimento as string instead of object (cnpjws)', () => {
+	it('PASS — CNPJ: estabelecimento as string instead of object (cnpjws) → empty defaults', () => {
 		const data = { estabelecimento: 'not an object' };
-		expect(() => normalizeCnpj(data, 'cnpjws')).not.toThrow();
+		const result = normalizeCnpj(data, 'cnpjws');
+		expect(result.cnpj).toBe('');
+		expect(result.razao_social).toBe('');
 	});
 
 	describe('CNPJ capital_social type coercion', () => {
@@ -429,24 +451,29 @@ describe('VECTOR 7: ViaCEP error detection variants', () => {
 		expect(() => normalizeCep({ erro: 'true' }, 'viacep')).toThrow('CEP not found');
 	});
 
-	it('PASS — {erro: false} does NOT throw', () => {
-		expect(() => normalizeCep({ erro: false }, 'viacep')).not.toThrow();
+	it('PASS — {erro: false} does NOT throw and returns empty defaults', () => {
+		const result = normalizeCep({ erro: false }, 'viacep');
+		expect(result.cep).toBe('');
 	});
 
-	it('PASS — {erro: 0} (falsy number) does NOT throw', () => {
-		expect(() => normalizeCep({ erro: 0 }, 'viacep')).not.toThrow();
+	it('PASS — {erro: 0} (falsy number) does NOT throw and returns empty defaults', () => {
+		const result = normalizeCep({ erro: 0 }, 'viacep');
+		expect(result.cep).toBe('');
 	});
 
-	it('PASS — {erro: ""} (empty string) does NOT throw', () => {
-		expect(() => normalizeCep({ erro: '' }, 'viacep')).not.toThrow();
+	it('PASS — {erro: ""} (empty string) does NOT throw and returns empty defaults', () => {
+		const result = normalizeCep({ erro: '' }, 'viacep');
+		expect(result.cep).toBe('');
 	});
 
-	it('PASS — {erro: null} does NOT throw', () => {
-		expect(() => normalizeCep({ erro: null }, 'viacep')).not.toThrow();
+	it('PASS — {erro: null} does NOT throw and returns empty defaults', () => {
+		const result = normalizeCep({ erro: null }, 'viacep');
+		expect(result.cep).toBe('');
 	});
 
-	it('PASS — {erro: undefined} does NOT throw', () => {
-		expect(() => normalizeCep({ erro: undefined }, 'viacep')).not.toThrow();
+	it('PASS — {erro: undefined} does NOT throw and returns empty defaults', () => {
+		const result = normalizeCep({ erro: undefined }, 'viacep');
+		expect(result.cep).toBe('');
 	});
 
 	it('PASS — OpenCEP ignores erro field entirely', () => {
@@ -1354,11 +1381,14 @@ describe('CNPJ NEW PROVIDERS VECTOR 1: Malformed responses → safe defaults', (
 		}
 	});
 
-	describe('non-object primitives do not throw for new providers', () => {
+	describe('non-object primitives produce empty defaults for new providers', () => {
 		for (const value of ['', 42, true] as const) {
 			for (const provider of newProviders) {
-				it(`PASS — ${JSON.stringify(value)} (${provider}) does not throw`, () => {
-					expect(() => normalizeCnpj(value, provider)).not.toThrow();
+				it(`PASS — ${JSON.stringify(value)} (${provider}) → empty defaults`, () => {
+					const result = normalizeCnpj(value, provider);
+					expect(result.cnpj).toBe('');
+					expect(result.razao_social).toBe('');
+					expect(result.capital_social).toBe(0);
 				});
 			}
 		}

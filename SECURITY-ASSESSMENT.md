@@ -79,7 +79,7 @@ Threat model and security assurance case for n8n-nodes-brasil-hub.
 1. **Provider availability** — Public APIs may go down; mitigated by multi-provider fallback (up to 7 providers for CNPJ, 4 for CEP, 2 for Banks/DDD/Holiday/IBGE)
 2. **Data accuracy** — Data comes from public APIs; this node does not verify accuracy against official government databases
 3. **Rate limiting** — Providers may rate-limit; mitigated by HTTP 429 detection with `retryAfterMs` metadata in response `_meta`. Node does not auto-retry; downstream workflows can implement backoff using the metadata
-4. **devDependency vulnerabilities** — Known vulns in `@n8n/node-cli` transitive deps; these do NOT ship in the published package (`files: ["dist/nodes"]`). See findings.md for details.
+4. **devDependency vulnerabilities** — Known vulns in `@n8n/node-cli` transitive deps; these do NOT ship in the published package (`files: ["dist"]`). See findings.md for details.
 
 ## Verification
 

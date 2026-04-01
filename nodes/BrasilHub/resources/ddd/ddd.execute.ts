@@ -31,7 +31,7 @@ export async function dddQuery(
 
 	return executeStandardQuery(context, itemIndex, {
 		buildProviders: () => [
-			{ name: 'brasilapi', url: `https://brasilapi.com.br/api/ddd/v1/${ddd}` },
+			{ name: 'brasilapi', url: `https://brasilapi.com.br/api/ddd/v1/${encodeURIComponent(ddd)}` },
 			{ name: 'municipios', url: 'https://raw.githubusercontent.com/kelvins/municipios-brasileiros/main/json/municipios.json' },
 		],
 		normalize: (data, provider) => normalizeDdd(data, provider, ddd),

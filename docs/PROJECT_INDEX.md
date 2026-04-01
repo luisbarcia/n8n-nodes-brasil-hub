@@ -1,7 +1,7 @@
 # Repository Index — n8n-nodes-brasil-hub
 
 **Version:** 1.4.1 | **License:** MIT | **Node:** >=20.0.0
-**Stats:** 59 source files, 34 test files, 1626 tests, 108 JSDoc'd exports
+**Stats:** 59 source files, 35 test files, 1656 tests, 130 JSDoc'd exports
 
 ## Architecture
 
@@ -104,7 +104,7 @@ Each resource follows the pattern: `description.ts` + `execute.ts` + `normalize.
 | `pix/` | 4 | List + Query |
 | `taxas/` | 4 | List + Query |
 
-## Test Files (34 specs, 1626 tests)
+## Test Files (35 specs, 1656 tests)
 
 | Category | Files | Coverage |
 |----------|-------|----------|
@@ -159,7 +159,7 @@ Each resource follows the pattern: `description.ts` + `execute.ts` + `normalize.
 
 | File | Purpose |
 |------|---------|
-| `tsconfig.json` | TypeScript (ES2021, strict) |
+| `tsconfig.json` | TypeScript (es2019, strict) |
 | `jest.config.js` | Jest + ts-jest, isolated-vm mock |
 | `eslint.config.mjs` | n8n-node-cli ESLint config |
 | `sonar-project.properties` | SonarCloud analysis |
