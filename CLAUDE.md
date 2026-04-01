@@ -129,7 +129,7 @@ Fallback is automatic. BrasilAPI is always primary. Headers include `User-Agent:
 - Após adicionar/modificar código: rodar `/code-documenter` para verificar cobertura
 - **Nunca commitar código exportado sem JSDoc** — isso é parte do checklist de qualidade
 
-Status atual: **108/108 exports documentados (100%)**.
+Status atual: **130/130 exports documentados (100%)**.
 
 ## n8n Compliance
 
@@ -253,6 +253,9 @@ Estes arquivos contêm informações que ficam desatualizadas quando o projeto m
 | `task_plan.md` | Fases, status, erros |
 | `progress.md` | Log de sessão, 5-Question Reboot Check |
 | `findings.md` | Descobertas técnicas |
+| `docs/articles/*.md` | Resource/operation/provider counts, test counts, feature lists |
+| `PROJECT_INDEX.md` | File counts, test counts, JSDoc counts, workflow counts |
+| `docs/PROJECT_INDEX.md` | Same as PROJECT_INDEX.md (condensed version) |
 
 **Termos para grep após mudanças comuns:**
 - Mudou Node version → grep `Node 18`, `Node 20`, `node-version`, `node:`

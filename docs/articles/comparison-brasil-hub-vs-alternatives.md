@@ -10,9 +10,9 @@ Three ways to query Brazilian public data in n8n. Here's how they compare.
 
 | Feature | Brasil Hub | CNPJ Hub | HTTP Request |
 |---------|-----------|----------|-------------|
-| Resources | 11 (CNPJ, CEP, CPF, Banks, DDD, Fake, Holidays, FIPE, IBGE, NCM, PIX) | 1 (CNPJ only) | Any (manual setup) |
-| Operations | 24 | 2 (Query, Validate) | Unlimited (manual) |
-| Providers | 23 with automatic fallback | 5 with fallback | 1 per node (no fallback) |
+| Resources | 13 (CNPJ, CEP, CPF, Banks, DDD, Fake, Holidays, FIPE, IBGE, NCM, PIX, Câmbio, Taxas) | 1 (CNPJ only) | Any (manual setup) |
+| Operations | 28 | 2 (Query, Validate) | Unlimited (manual) |
+| Providers | 25 with automatic fallback | 5 with fallback | 1 per node (no fallback) |
 | Credentials needed | None | None | Depends on API |
 | Normalized output | Yes (same schema regardless of provider) | Yes | No (raw API response) |
 | Rate limit handling | Detects 429, skips to next provider | Configurable delay | Manual retry logic |
@@ -21,7 +21,7 @@ Three ways to query Brazilian public data in n8n. Here's how they compare.
 | Configurable timeout | 1-60s per operation | No | Yes |
 | Provider selection | Dropdown to pick primary provider | No | N/A |
 | Output modes | Simplified, Full, AI Summary (CNPJ) | Raw, Normalized | Raw |
-| Tests | 1626 | Unknown | N/A |
+| Tests | 1656 | Unknown | N/A |
 | npm provenance | Yes | No | N/A |
 
 ## When to use each
@@ -56,7 +56,7 @@ The output fields match common schemas, so downstream nodes should work with min
 
 ## Migration from CNPJ Hub
 
-Brasil Hub covers everything CNPJ Hub does, plus 10 more resources:
+Brasil Hub covers everything CNPJ Hub does, plus 12 more resources:
 
 1. Install Brasil Hub
 2. Replace CNPJ Hub nodes with Brasil Hub (Resource: CNPJ)

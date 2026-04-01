@@ -61,7 +61,7 @@ Each new resource ships as its own MINOR release for faster iteration and easier
 - [x] **Câmbio** — Exchange rates from BCB (List Currencies + Query Rate) ([#116](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/116))
 - [x] **Taxas** — Interest rates and indices (Selic, CDI, IPCA) (List + Query) ([#117](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/117))
 - [x] Fix `_raw` index misalignment in `buildResultItems` ([#131](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/131))
-- [x] 1626 tests, 108/108 JSDoc coverage, testing arsenal audit passed
+- [x] 1656 tests, 130/130 JSDoc coverage, testing arsenal audit passed
 
 ## Not Planned
 
