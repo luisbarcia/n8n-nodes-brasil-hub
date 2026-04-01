@@ -204,6 +204,18 @@ export async function fipePrice(
 	);
 	const data = await fetchFipe(context, url, timeoutMs);
 
+	// Detect error-shaped responses from FIPE API (HTTP 200 with error body)
+	if (data != null && typeof data === 'object' && !Array.isArray(data)) {
+		const d = data as Record<string, unknown>;
+		if (d.error || d.erro || d.codigo === '0') {
+			throw new NodeOperationError(
+				context.getNode(),
+				`Vehicle not found: ${String(d.error ?? d.erro ?? d.message ?? 'unknown')}`,
+				{ itemIndex },
+			);
+		}
+	}
+
 	const price = normalizePrice(data);
 	const meta = buildMeta('parallelum', `${vehicleType}/${brandCode}/${modelCode}/${yearCode}`, [], false);
 

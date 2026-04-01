@@ -429,4 +429,56 @@ describe('BrasilHub.execute()', () => {
 		expect(results[0].pairedItem).toEqual({ item: 0 });
 		expect(results[1].pairedItem).toEqual({ item: 1 });
 	});
+
+	it('should process multiple items with API calls and correct pairedItem indexes', async () => {
+		const ctx = createExecuteContext({
+			resource: 'banks',
+			operation: 'query',
+			items: [{ json: {} }, { json: {} }, { json: {} }],
+			httpResponse: { ispb: '00000000', name: 'BCO DO BRASIL S.A.', code: 1, fullName: 'Banco do Brasil S.A.' },
+		});
+		const [results] = await node.execute.call(ctx);
+		expect(results).toHaveLength(3);
+		expect(results[0].pairedItem).toEqual({ item: 0 });
+		expect(results[1].pairedItem).toEqual({ item: 1 });
+		expect(results[2].pairedItem).toEqual({ item: 2 });
+		// Each item should have API results with _meta
+		for (const item of results) {
+			expect(item.json).toHaveProperty('code', 1);
+			expect(item.json).toHaveProperty('_meta');
+		}
+		expect(ctx.helpers.httpRequest).toHaveBeenCalledTimes(3);
+	});
+
+	it('should handle mixed success/failure in batch with continueOnFail', async () => {
+		const node2 = new BrasilHub();
+		const ctx = createExecuteContext({
+			resource: 'cnpj',
+			operation: 'validate',
+			items: [{ json: {} }, { json: {} }, { json: {} }],
+			continueOnFail: true,
+		});
+		// Item 0: valid, Item 1: invalid (too short), Item 2: valid
+		(ctx.getNodeParameter as jest.Mock).mockImplementation((name: string, index: number, fallback?: unknown) => {
+			const params: Record<string, unknown> = {
+				resource: 'cnpj', operation: 'validate', includeRaw: false,
+			};
+			if (name === 'cnpj') {
+				const cnpjs = ['11222333000181', '123', '33000167000101'];
+				return cnpjs[index] ?? '11222333000181';
+			}
+			return params[name] ?? fallback;
+		});
+		const [results] = await node2.execute.call(ctx);
+		expect(results).toHaveLength(3);
+		// Item 0: valid CNPJ
+		expect(results[0].json.valid).toBe(true);
+		expect(results[0].pairedItem).toEqual({ item: 0 });
+		// Item 1: invalid CNPJ → error via continueOnFail
+		expect(results[1].json).toHaveProperty('valid', false);
+		expect(results[1].pairedItem).toEqual({ item: 1 });
+		// Item 2: valid CNPJ
+		expect(results[2].json.valid).toBe(true);
+		expect(results[2].pairedItem).toEqual({ item: 2 });
+	});
 });

@@ -85,6 +85,21 @@ export async function cnpjQuery(
 			if (outputMode === 'aiSummary') return formatAiSummary(full);
 			return { ...full };
 		},
+		fallbackOptions: {
+			validateResponse: (data) => {
+				if (data == null || typeof data !== 'object') {
+					throw new Error('Provider returned empty or non-object response');
+				}
+				const d = data as Record<string, unknown>;
+				if (d.message || d.type === 'NOT_FOUND' || d.status === 'ERROR') {
+					throw new Error(`Provider returned error: ${String(d.message ?? d.type ?? 'unknown')}`);
+				}
+			},
+			isRetryable: (error) => {
+				const code = Number((error as Record<string, unknown>)?.httpCode);
+				return code !== 404;
+			},
+		},
 	});
 }
 
