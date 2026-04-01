@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2](https://github.com/luisbarcia/n8n-nodes-brasil-hub/compare/v1.4.1...v1.4.2) (2026-04-01)
+
+
+### Fixed
+
+* add response validation to fallback engine (Ghost CNPJ + 404 short-circuit) ([#178](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/178)) ([84413c5](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/84413c5aed27a5152d30ff8d59d7c6b834f3d679))
+* address pre-ship audit and docs audit findings ([#175](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/175)) ([21bf919](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/21bf9192b13edcd17f0585553dd71a94e4a6d2c1))
+* replace Math.random with crypto.randomInt in fake generators ([#145](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/145)) ([9830224](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/9830224c7461e47c80a22b2b702a3ecca309d27d))
+* resolve 16 SonarCloud issues (1 critical, 15 minor) ([#143](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/143)) ([50d42a3](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/50d42a3b5f952edfb47a593eb17d1ce210e561e4))
+
+
+### Documentation
+
+* fix 9 documentation audit findings ([#166](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/166)) ([972c2e8](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/972c2e8c3bc58ca532731d63bfc8a5a41536dc5e))
+* update test counts and changelog for v1.4.2 pre-release ([#179](https://github.com/luisbarcia/n8n-nodes-brasil-hub/issues/179)) ([dff6cdc](https://github.com/luisbarcia/n8n-nodes-brasil-hub/commit/dff6cdc18d646ccd5d1c3394319f2cb5a9f39e0b))
+
 ## [Unreleased]
 
 ### Fixed
